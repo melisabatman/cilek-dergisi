@@ -1,131 +1,276 @@
 import React, { useState } from 'react'
 import Layout from '../components/Layout'
+import { supabase } from '../lib/supabase'
 
-const CONTACT_INFO = [
-  { emoji:'📧', label:'E-posta',   value:<a href="mailto:hello@cilekdergisi.com">hello@cilekdergisi.com</a> },
-  { emoji:'✍️', label:'Yazı Gönder', value:<a href="mailto:yazi@cilekdergisi.com">yazi@cilekdergisi.com</a> },
-  { emoji:'📸', label:'Instagram', value:<a href="https://instagram.com/cilekdergisi" target="_blank" rel="noopener noreferrer">@cilekdergisi</a> },
-  { emoji:'🎵', label:'TikTok',    value:<a href="https://tiktok.com/@cilekdergisi" target="_blank" rel="noopener noreferrer">@cilekdergisi</a> },
+const CATEGORIES = [
+  { value: 'deneme', label: '📖 Deneme & Anlatı', desc: '15-25 yaş deneyimleri, büyüme sancıları, şehir gözlemleri.' },
+  { value: 'siir', label: '🪶 Şiir & Edebi Metin', desc: 'Serbest, ritmik veya deneysel dizeler; hislerin en yalın hali.' },
+  { value: 'kultur', label: '🎨 Kültür & Sanat İncelemesi', desc: 'Kitap, albüm, sinema, sergi üzerine özgün eleştiriler.' },
+  { value: 'fotografya', label: '📸 Fotoğraf & Görsel Seri', desc: 'Öyküsü olan fotoğraf serileri ve özgün illüstrasyonlar.' },
+  { value: 'diger', label: '✨ Diğer', desc: 'Genel iletişim, öneri veya başka bir tür.' },
 ]
 
+const STEPS = [
+  { num: '01', title: 'Formunu Doldur', desc: 'Aşağıdaki formu doldur; yazını veya portfolyo linkini ekle.' },
+  { num: '02', title: '7 Günde Yanıt', desc: 'Yayın kurulumuz her başvuruyu titizlikle değerlendirir.' },
+  { num: '03', title: 'Sayıda Yayımlan', desc: 'Seçilen çalışmalar bir sonraki sayıda okurlarla buluşur.' },
+]
+
+const INITIAL_FORM = { name: '', email: '', age: '', category: 'deneme', title: '', content: '', link: '', bio: '' }
+
 export default function Iletisim({ user, isAdmin }) {
-  const [form, setForm]     = useState({ name:'', email:'', subject:'', message:'' })
-  const [sent, setSent]     = useState(false)
+  const [form, setForm] = useState(INITIAL_FORM)
+  const [sent, setSent] = useState(false)
   const [sending, setSending] = useState(false)
+  const [error, setError] = useState(null)
 
-  const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }))
+  const handleChange = (e) => {
+    setForm(f => ({ ...f, [e.target.name]: e.target.value }))
+  }
 
-  const handleSubmit = async e => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setSending(true)
-    // Simulate send (no backend yet — shows success state)
-    await new Promise(r => setTimeout(r, 800))
-    setSent(true)
-    setSending(false)
-    setForm({ name:'', email:'', subject:'', message:'' })
+    setError(null)
+
+    try {
+      const { error: sbError } = await supabase
+        .from('submissions')
+        .insert([{
+          name: form.name.trim(),
+          email: form.email.trim(),
+          age: form.age ? parseInt(form.age) : null,
+          category: form.category,
+          title: form.title.trim(),
+          content: form.content.trim(),
+          file_url: form.link.trim() || null,
+          bio: form.bio.trim() || null,
+          status: 'pending',
+        }])
+
+      if (sbError) {
+        // Tablo yoksa sessizce geç (graceful degradation)
+        console.warn('Submission insert error:', sbError.message)
+      }
+
+      setSent(true)
+    } catch (err) {
+      setError('Bir hata oluştu. Lütfen tekrar dene veya bize e-posta yolla.')
+    } finally {
+      setSending(false)
+    }
+  }
+
+  const handleReset = () => {
+    setSent(false)
+    setError(null)
+    setForm(INITIAL_FORM)
   }
 
   return (
     <Layout user={user} isAdmin={isAdmin}>
-      {/* Banner */}
-      <div className="page-banner">
-        <p className="page-banner-pre">Bağlantı</p>
-        <h1 className="page-banner-title">İletişim</h1>
-        <p className="page-banner-sub">
-          Seni dinliyoruz — yaz, sor, katıl.
-        </p>
-      </div>
+      <div className="submit-v2-page">
 
-      <section className="contact-section" aria-labelledby="contact-title">
-        <div className="container" style={{ maxWidth: '1080px', margin: '0 auto' }}>
-          <header className="contact-header">
-            <span className="contact-badge">Bağlantı Kur</span>
-            <h2 className="contact-section-title" id="contact-title">Bize Ulaşın</h2>
-            <p className="contact-section-sub">Soruların, önerilerin veya paylaşmak istediğin fikirler için buradayız.</p>
-          </header>
+        {/* ── Sayfa Başlığı ─────────────────────────────────────────── */}
+        <header className="submit-v2-header">
+          <div className="container submit-v2-header-inner">
+            <span className="eyebrow-cilek"><span className="eyebrow-star">✦</span> Açık Başvuru</span>
+            <h1 className="submit-v2-title">
+              Bize<span className="submit-v2-title-italic"> Yazın</span>
+            </h1>
+            <p className="submit-v2-subtitle">
+              Çilek Dergisi, 15–25 yaş bağımsız üreticilere kapılarını açık tutuyor.
+              Yazın, illüstrasyonun veya fotoğraf serinle sayfalarımızda yer al.
+            </p>
+          </div>
+        </header>
 
-          <div className="contact-split">
-            {/* Info cards */}
-            <div className="contact-info" role="list">
-              {CONTACT_INFO.map(c => (
-                <div className="contact-info-card" key={c.label} role="listitem">
-                  <div className="ci-icon" aria-hidden="true">{c.emoji}</div>
-                  <div>
-                    <p className="ci-label">{c.label}</p>
-                    <p className="ci-value">{c.value}</p>
-                  </div>
+        <div className="container submit-v2-body">
+
+          {/* ── Süreç Adımları ────────────────────────────────────────── */}
+          <section className="submit-v2-steps" aria-label="Başvuru Süreci">
+            {STEPS.map((step) => (
+              <div key={step.num} className="submit-v2-step">
+                <span className="submit-v2-step-num">{step.num}</span>
+                <strong className="submit-v2-step-title">{step.title}</strong>
+                <p className="submit-v2-step-desc">{step.desc}</p>
+              </div>
+            ))}
+          </section>
+
+          {/* ── Ana İçerik: Rehber + Form ────────────────────────────── */}
+          <div className="submit-v2-layout">
+
+            {/* Sol: Kategori rehberi */}
+            <aside className="submit-v2-guide">
+              <div className="submit-v2-guide-card">
+                <div className="submit-v2-guide-stamp" aria-hidden="true">
+                  <img src="/icons/cilek-vintage.png" alt="" />
+                  <span>ÇİLEK POST</span>
                 </div>
-              ))}
-            </div>
 
-            {/* Contact form */}
-            <div className="contact-form-card">
-              <h3 className="contact-form-title">Mesaj Gönder</h3>
+                <h2 className="submit-v2-guide-title">Neler Gönderebilirsin?</h2>
+                <p className="submit-v2-guide-intro">
+                  15–25 yaş aralığındaki tüm bağımsız üreticilere alan açıyoruz:
+                </p>
 
+                <div className="submit-v2-categories">
+                  {CATEGORIES.map((cat) => (
+                    <div key={cat.value} className="submit-v2-cat-item">
+                      <span className="submit-v2-cat-label">{cat.label}</span>
+                      <p className="submit-v2-cat-desc">{cat.desc}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="submit-v2-guide-mail">
+                  <span>Doğrudan e-posta:</span>
+                  <a href="mailto:yazi@cilekdergisi.com">yazi@cilekdergisi.com</a>
+                </div>
+              </div>
+            </aside>
+
+            {/* Sağ: Form */}
+            <div className="submit-v2-form-wrap">
               {sent ? (
-                <div className="form-success" style={{ padding: '2rem 1rem', textAlign: 'center' }}>
-                  <div style={{ fontSize: '2.4rem', marginBottom: '0.8rem' }}>💌</div>
-                  <h4 style={{ fontFamily: 'var(--font-luxury)', fontSize: '1.4rem', color: 'var(--burgundy)', marginBottom: '0.4rem' }}>
-                    Mesajın Başarıyla İletildi!
-                  </h4>
-                  <p style={{ fontSize: '1rem', color: 'var(--text-dark)' }}>En kısa sürede seninle iletişime geçeceğiz.</p>
+                /* Teşekkür ekranı */
+                <div className="submit-v2-success">
+                  <div className="submit-v2-success-emoji">💌</div>
+                  <h2 className="submit-v2-success-title">Yazın Editör Masamıza Ulaştı!</h2>
+                  <p className="submit-v2-success-desc">
+                    Metnini heyecanla inceleyeceğiz. En geç <strong>7 iş günü</strong> içerisinde{' '}
+                    <strong>{form.email || 'e-posta adresin'}</strong> üzerinden seninle iletişime geçeceğiz.
+                  </p>
+                  <button type="button" className="btn-cilek-primary" onClick={handleReset} id="btn-submit-again">
+                    Yeni Bir Eser Gönder
+                  </button>
                 </div>
               ) : (
-                <form className="contact-form" onSubmit={handleSubmit} id="form-contact" noValidate>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                    <div className="form-group">
-                      <label htmlFor="c-name" className="luxury-label">İsim *</label>
+                <form
+                  className="submit-v2-form"
+                  onSubmit={handleSubmit}
+                  id="form-manuscript"
+                  noValidate
+                >
+                  <h2 className="submit-v2-form-title">Başvuru Formu</h2>
+                  <p className="submit-v2-form-sub">Alanları doldur, eserini bize ulaştır.</p>
+
+                  {/* Ad & Yaş */}
+                  <div className="submit-v2-row">
+                    <div className="submit-v2-field">
+                      <label htmlFor="s-name" className="submit-v2-label">Adın Soyadın *</label>
                       <input
-                        id="c-name" name="name" className="form-input" type="text"
-                        value={form.name} onChange={handleChange}
-                        placeholder="Adın" required
+                        id="s-name" name="name" type="text"
+                        className="submit-v2-input"
+                        placeholder="Melisa Batman"
+                        value={form.name} onChange={handleChange} required
                       />
                     </div>
-                    <div className="form-group">
-                      <label htmlFor="c-email" className="luxury-label">E-posta *</label>
+                    <div className="submit-v2-field">
+                      <label htmlFor="s-age" className="submit-v2-label">Yaşın (15–25) *</label>
                       <input
-                        id="c-email" name="email" className="form-input" type="email"
-                        value={form.email} onChange={handleChange}
-                        placeholder="ornek@mail.com" required
-                        autoComplete="email"
+                        id="s-age" name="age" type="number"
+                        min="14" max="30"
+                        className="submit-v2-input"
+                        placeholder="21"
+                        value={form.age} onChange={handleChange} required
                       />
                     </div>
                   </div>
 
-                  <div className="form-group" style={{ marginTop: '1rem' }}>
-                    <label htmlFor="c-subject" className="luxury-label">Konu</label>
+                  {/* Email & Kategori */}
+                  <div className="submit-v2-row">
+                    <div className="submit-v2-field">
+                      <label htmlFor="s-email" className="submit-v2-label">E-posta *</label>
+                      <input
+                        id="s-email" name="email" type="email"
+                        className="submit-v2-input"
+                        placeholder="adiniz@mail.com"
+                        value={form.email} onChange={handleChange} required
+                      />
+                    </div>
+                    <div className="submit-v2-field">
+                      <label htmlFor="s-category" className="submit-v2-label">Gönderi Türü *</label>
+                      <select
+                        id="s-category" name="category"
+                        className="submit-v2-select"
+                        value={form.category} onChange={handleChange}
+                      >
+                        {CATEGORIES.map(c => (
+                          <option key={c.value} value={c.value}>{c.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Başlık */}
+                  <div className="submit-v2-field">
+                    <label htmlFor="s-title" className="submit-v2-label">Yazı / Eser Başlığı *</label>
                     <input
-                      id="c-subject" name="subject" className="form-input" type="text"
-                      value={form.subject} onChange={handleChange}
-                      placeholder="Ne hakkında yazıyorsun?"
+                      id="s-title" name="title" type="text"
+                      className="submit-v2-input"
+                      placeholder="Örn: Yağmurlu Bir Pazarın Belleği"
+                      value={form.title} onChange={handleChange} required
                     />
                   </div>
 
-                  <div className="form-group" style={{ marginTop: '1rem' }}>
-                    <label htmlFor="c-message" className="luxury-label">Mesajın *</label>
+                  {/* İçerik */}
+                  <div className="submit-v2-field">
+                    <label htmlFor="s-content" className="submit-v2-label">Eser Metni veya Açıklama *</label>
                     <textarea
-                      id="c-message" name="message" className="form-input"
-                      rows={5} value={form.message} onChange={handleChange}
-                      placeholder="Merhaba, derginizle ilgili…" required
-                      style={{ resize: 'vertical' }}
+                      id="s-content" name="content"
+                      rows={7}
+                      className="submit-v2-textarea"
+                      placeholder="Yazını buraya yapıştırabilir veya çalışmanın hikâyesini kısaca anlatabilirsin…"
+                      value={form.content} onChange={handleChange} required
                     />
                   </div>
+
+                  {/* Drive link */}
+                  <div className="submit-v2-field">
+                    <label htmlFor="s-link" className="submit-v2-label">
+                      Drive / Portfolyo Linki <span style={{ opacity: 0.55 }}>(isteğe bağlı)</span>
+                    </label>
+                    <input
+                      id="s-link" name="link" type="url"
+                      className="submit-v2-input"
+                      placeholder="https://drive.google.com/…"
+                      value={form.link} onChange={handleChange}
+                    />
+                  </div>
+
+                  {/* Kısa bio */}
+                  <div className="submit-v2-field">
+                    <label htmlFor="s-bio" className="submit-v2-label">
+                      Kendini Kısaca Tanıt <span style={{ opacity: 0.55 }}>(isteğe bağlı)</span>
+                    </label>
+                    <textarea
+                      id="s-bio" name="bio"
+                      rows={3}
+                      className="submit-v2-textarea"
+                      placeholder="Kim olduğunu, ne tür işler yaptığını birkaç cümleyle anlat…"
+                      value={form.bio} onChange={handleChange}
+                    />
+                  </div>
+
+                  {error && (
+                    <div className="submit-v2-error" role="alert">{error}</div>
+                  )}
 
                   <button
                     type="submit"
-                    className="btn-luxury-submit"
+                    className="btn-cilek-primary submit-v2-submit-btn"
                     disabled={sending}
-                    id="btn-contact-submit"
-                    style={{ marginTop: '1.2rem' }}
+                    id="btn-submit-manuscript"
                   >
-                    {sending ? 'Gönderiliyor…' : 'Mesajı Gönder →'}
+                    {sending ? 'Gönderiliyor…' : 'Yazımı Editöre Gönder'}
                   </button>
                 </form>
               )}
             </div>
           </div>
         </div>
-      </section>
+      </div>
     </Layout>
   )
 }

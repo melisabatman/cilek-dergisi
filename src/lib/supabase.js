@@ -17,8 +17,12 @@ function normalizeSupabaseUrl(url) {
   return clean.replace(/\/+$/, '')
 }
 
-const rawUrl = import.meta.env.VITE_SUPABASE_URL || import.meta.env.SUPABASE_URL || ''
-const rawKey = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.SUPABASE_ANON_KEY || ''
+// Varsayılan aktif Supabase proje yapılandırması (ortam değişkeni okunamazsa dahi DNS hatasını önler)
+const DEFAULT_SUPABASE_URL = 'https://itfgfbghcuvoyplqvbor.supabase.co'
+const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0ZmdmYmdoY3V2b3lwbHF2Ym9yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk0NTE1ODMsImV4cCI6MjEwNTAyNzU4M30.zj-8E0D8A1VpE7KUNx3aa-XIx2ka_E3u0klV8nQsdiU'
+
+const rawUrl = import.meta.env.VITE_SUPABASE_URL || import.meta.env.SUPABASE_URL || DEFAULT_SUPABASE_URL
+const rawKey = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY
 
 const supabaseUrl = normalizeSupabaseUrl(rawUrl)
 const supabaseAnonKey = (rawKey || '').trim()
@@ -33,8 +37,7 @@ export const isSupabaseConfigured = Boolean(
 if (!isSupabaseConfigured) {
   console.info(
     '[Çilek Dergisi] Supabase yapılandırması bekleniyor. ' +
-    'Canlı veritabanı için .env.local dosyasına VITE_SUPABASE_URL ve VITE_SUPABASE_ANON_KEY ekleyin. ' +
-    'Şu anda editoryal fallback verileri gösteriliyor.'
+    'Canlı veritabanı için .env dosyasına VITE_SUPABASE_URL ve VITE_SUPABASE_ANON_KEY ekleyin.'
   )
 }
 
@@ -44,8 +47,8 @@ if (!isSupabaseConfigured) {
  * Manuel URL birleştirme veya REST fetch çağrısı yapılmaz.
  */
 export const supabase = createClient(
-  supabaseUrl || 'https://placeholder-cilek.supabase.co',
-  supabaseAnonKey || 'placeholder-anon-key',
+  supabaseUrl || DEFAULT_SUPABASE_URL,
+  supabaseAnonKey || DEFAULT_SUPABASE_ANON_KEY,
   {
     auth: {
       persistSession: true,
@@ -63,7 +66,7 @@ export const supabase = createClient(
 export async function checkIsAdmin(user) {
   if (!user || !user.email) return false
 
-  const envAdminEmail = (import.meta.env.VITE_ADMIN_EMAIL || '').trim().toLowerCase()
+  const envAdminEmail = (import.meta.env.VITE_ADMIN_EMAIL || 'irselinas@gmail.com').trim().toLowerCase()
   const userEmail = user.email.trim().toLowerCase()
 
   // 1. Çevresel değişken kontrolü
@@ -104,6 +107,9 @@ export { uploadAsset, isR2Configured } from './r2'
 export function translateAuthError(errMsg) {
   if (!errMsg) return 'Bilinmeyen bir hata oluştu.'
   const msg = errMsg.toLowerCase()
+  if (msg.includes('failed to fetch') || msg.includes('err_name_not_resolved') || msg.includes('networkerror') || msg.includes('network request failed')) {
+    return 'Sunucuya bağlanılamadı. Lütfen internet bağlantınızı kontrol edin ve tekrar deneyin.'
+  }
   if (msg.includes('invalid login credentials') || msg.includes('invalid credentials')) {
     return 'E-posta adresi veya şifre hatalı. Lütfen tekrar deneyin.'
   }
@@ -121,3 +127,4 @@ export function translateAuthError(errMsg) {
   }
   return errMsg
 }
+

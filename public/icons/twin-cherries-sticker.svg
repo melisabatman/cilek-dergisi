@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 180" width="100%" height="100%" fill="none">
+  <defs>
+    <!-- Cherry 3D gradients -->
+    <radialGradient id="cherryLeftGrad" cx="35%" cy="30%" r="65%">
+      <stop offset="0%" stop-color="#FF6584" />
+      <stop offset="25%" stop-color="#DE1B45" />
+      <stop offset="70%" stop-color="#9C0A26" />
+      <stop offset="100%" stop-color="#540514" />
+    </radialGradient>
+    <radialGradient id="cherryRightGrad" cx="35%" cy="30%" r="65%">
+      <stop offset="0%" stop-color="#FF6584" />
+      <stop offset="25%" stop-color="#DE1B45" />
+      <stop offset="70%" stop-color="#9C0A26" />
+      <stop offset="100%" stop-color="#540514" />
+    </radialGradient>
+    <linearGradient id="stemGrad" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#3D6B40" />
+      <stop offset="50%" stop-color="#5D9961" />
+      <stop offset="100%" stop-color="#2D5230" />
+    </linearGradient>
+    <linearGradient id="leafGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6DB673" />
+      <stop offset="100%" stop-color="#2B592F" />
+    </linearGradient>
+    <filter id="stickerShadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="3" dy="6" stdDeviation="5" flood-color="#5C0D1A" flood-opacity="0.38" />
+    </filter>
+  </defs>
+
+  <!-- Sticker Group with Shadow -->
+  <g filter="url(#stickerShadow)">
+    <!-- Stems -->
+    <!-- Left Stem -->
+    <path d="M 68 105 C 72 65, 115 35, 140 18" stroke="url(#stemGrad)" stroke-width="7" stroke-linecap="round" fill="none" />
+    <!-- Right Stem -->
+    <path d="M 148 118 C 145 75, 130 35, 140 18" stroke="url(#stemGrad)" stroke-width="7" stroke-linecap="round" fill="none" />
+
+    <!-- Leaf on the stem joint -->
+    <path d="M 140 18 C 165 5, 185 20, 182 42 C 165 40, 145 32, 140 18 Z" fill="url(#leafGrad)" stroke="#1F4522" stroke-width="2" />
+    <!-- Leaf vein -->
+    <path d="M 141 19 C 158 28, 172 35, 180 40" stroke="#8FE096" stroke-width="2" stroke-linecap="round" fill="none" />
+
+    <!-- Left Cherry Body -->
+    <ellipse cx="64" cy="118" rx="42" ry="40" fill="url(#cherryLeftGrad)" stroke="#6B0C1E" stroke-width="2.5" />
+    <!-- Left Cherry Gloss Highlight -->
+    <path d="M 44 96 C 52 90, 68 92, 72 98 C 65 96, 48 98, 44 96 Z" fill="#FFFFFF" opacity="0.85" />
+    <circle cx="48" cy="104" r="5" fill="#FFFFFF" opacity="0.9" />
+
+    <!-- Right Cherry Body -->
+    <ellipse cx="145" cy="128" rx="42" ry="40" fill="url(#cherryRightGrad)" stroke="#6B0C1E" stroke-width="2.5" />
+    <!-- Right Cherry Gloss Highlight -->
+    <path d="M 125 106 C 133 100, 149 102, 153 108 C 146 106, 129 108, 125 106 Z" fill="#FFFFFF" opacity="0.85" />
+    <circle cx="129" cy="114" r="5" fill="#FFFFFF" opacity="0.9" />
+
+    <!-- Letters on Cherries ("Ç" on Left, "D" on Right) -->
+    <!-- Left "Ç" -->
+    <text x="64" y="132" font-family="'Playfair Display', serif" font-size="34" font-weight="900" fill="#FFF2E5" text-anchor="middle" letter-spacing="1">Ç</text>
+    <!-- Right "D" -->
+    <text x="145" y="142" font-family="'Playfair Display', serif" font-size="34" font-weight="900" fill="#FFF2E5" text-anchor="middle" letter-spacing="1">D</text>
+  </g>
+</svg>

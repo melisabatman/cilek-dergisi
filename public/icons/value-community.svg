@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="100%" height="100%" fill="none" stroke="#7D1535" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Cherub / Little Angel line art -->
+  <!-- Halo -->
+  <ellipse cx="40" cy="18" rx="12" ry="4" stroke-width="1.4" stroke-dasharray="2 2" fill="none" />
+  <!-- Head & curls -->
+  <circle cx="40" cy="28" r="9" stroke-width="1.8" fill="#FFF2F6" />
+  <path d="M 33 24 C 34 21, 38 21, 39 23 C 41 21, 45 21, 47 24" stroke-width="1.4" />
+  <!-- Smiling face dots -->
+  <circle cx="37" cy="28" r="1" fill="#7D1535" />
+  <circle cx="43" cy="28" r="1" fill="#7D1535" />
+  <path d="M 38 32 C 39 34, 41 34, 42 32" stroke-width="1.2" />
+  <!-- Wings -->
+  <!-- Left Wing -->
+  <path d="M 31 36 C 18 32, 14 42, 22 50 C 26 54, 32 52, 33 46" stroke-width="1.6" fill="#FFF8FA" />
+  <!-- Right Wing -->
+  <path d="M 49 36 C 62 32, 66 42, 58 50 C 54 54, 48 52, 47 46" stroke-width="1.6" fill="#FFF8FA" />
+  <!-- Little Body/Robe holding a strawberry or heart -->
+  <path d="M 34 40 C 32 52, 30 62, 40 64 C 50 62, 48 52, 46 40" stroke-width="1.8" fill="#FFF2F6" />
+  <!-- Little heart in hands -->
+  <path d="M 40 45 C 37 42, 34 43, 36 47 C 38 50, 40 53, 40 53 C 40 53, 42 50, 44 47 C 46 43, 43 42, 40 45 Z" fill="#E8385B" stroke="#7D1535" stroke-width="1" />
+</svg>

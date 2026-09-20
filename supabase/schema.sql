@@ -57,6 +57,13 @@ create table if not exists public.page_comments (
 create index if not exists idx_page_comments_mag_page 
   on public.page_comments (magazine_id, page_number);
 
+-- (E) SITE_SETTINGS TABLOSU (Site Metinleri, Mektup ve Medya Ayarları)
+create table if not exists public.site_settings (
+  key         text primary key,
+  value       jsonb not null default '{}'::jsonb,
+  updated_at  timestamp with time zone default now()
+);
+
 -- ================================================================
 -- 3. ROW LEVEL SECURITY (RLS) POLİTİKALARI
 -- ================================================================
@@ -66,6 +73,7 @@ alter table public.magazines enable row level security;
 alter table public.team_members enable row level security;
 alter table public.admins enable row level security;
 alter table public.page_comments enable row level security;
+alter table public.site_settings enable row level security;
 
 -- Admin Yardımcı Fonksiyonu
 create or replace function public.is_admin()
@@ -162,6 +170,21 @@ create policy "Owner or admin delete page_comments"
     public.is_admin() or 
     auth.jwt()->>'email' is not null
   );
+
+-- --- SITE_SETTINGS POLİTİKALARI ---
+-- Herkes site ayarlarını ve metinlerini okuyabilir (Public Read)
+drop policy if exists "Public read site_settings" on public.site_settings;
+create policy "Public read site_settings"
+  on public.site_settings for select
+  using (true);
+
+-- Adminler ayarları güncelleyebilir veya ekleyebilir
+drop policy if exists "Admin upsert site_settings" on public.site_settings;
+create policy "Admin upsert site_settings"
+  on public.site_settings for all
+  to authenticated
+  using (public.is_admin() or auth.jwt()->>'email' is not null)
+  with check (public.is_admin() or auth.jwt()->>'email' is not null);
 
 -- ================================================================
 -- 4. STORAGE BUCKET'LARI & POLİTİKALARI

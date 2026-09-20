@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" width="100%" height="100%" fill="none">
+  <g stroke="#7D1535" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Top ribbon bow loops -->
+    <path d="M 80 42 C 65 24, 42 22, 52 38 C 62 54, 76 46, 80 44" stroke-width="3" fill="#FDE8EF" />
+    <path d="M 80 42 C 95 24, 118 22, 108 38 C 98 54, 84 46, 80 44" stroke-width="3" fill="#FDE8EF" />
+    
+    <!-- Bow center knot -->
+    <ellipse cx="80" cy="42" rx="6" ry="5" fill="#7D1535" />
+
+    <!-- Ribbon tails intertwining into monogram letters -->
+    <path d="M 76 46 C 65 60, 48 72, 42 88 C 38 98, 48 106, 62 102 C 78 98, 86 78, 80 62 C 74 48, 62 52, 60 62" stroke-width="3.2" fill="none" />
+    <path d="M 84 46 C 95 60, 112 72, 118 88 C 122 98, 112 106, 98 102 C 82 98, 74 78, 80 62" stroke-width="3.2" fill="none" />
+
+    <!-- Monogram letters Ç & D Calligraphic flourishes -->
+    <!-- "Ç" cedilla tail -->
+    <path d="M 64 105 C 66 112, 60 116, 56 114" stroke-width="2.5" />
+    
+    <!-- Central decorative heart/loop -->
+    <path d="M 80 72 C 74 65, 68 70, 72 76 C 76 82, 80 88, 80 88 C 80 88, 84 82, 88 76 C 92 70, 86 65, 80 72 Z" fill="#7D1535" stroke="none" />
+  </g>
+</svg>

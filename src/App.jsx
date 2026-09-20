@@ -49,9 +49,10 @@ export default function App() {
         <Route path="/"           element={<Home       user={user} isAdmin={isAdmin} />} />
         <Route path="/dergiler"   element={<Dergiler   user={user} isAdmin={isAdmin} />} />
         <Route path="/hakkimizda" element={<Hakkimizda user={user} isAdmin={isAdmin} />} />
-        <Route path="/ekibimiz"   element={<Ekibimiz   user={user} isAdmin={isAdmin} />} />
-        <Route path="/iletisim"   element={<Iletisim   user={user} isAdmin={isAdmin} />} />
-        <Route path="/auth"       element={<Auth       user={user} isAdmin={isAdmin} />} />
+        <Route path="/ekibimiz"     element={<Ekibimiz   user={user} isAdmin={isAdmin} />} />
+        <Route path="/yazi-gonderi" element={<Iletisim   user={user} isAdmin={isAdmin} />} />
+        <Route path="/iletisim"     element={<Iletisim   user={user} isAdmin={isAdmin} />} />
+        <Route path="/auth"         element={<Auth       user={user} isAdmin={isAdmin} />} />
         <Route path="/admin"      element={<Admin      user={user} isAdmin={isAdmin} />} />
         <Route path="/oku/:id"    element={<ReaderPage user={user} isAdmin={isAdmin} />} />
       </Routes>

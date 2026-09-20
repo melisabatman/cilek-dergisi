@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 360" width="100%" height="100%" fill="none">
+  <defs>
+    <!-- Soft shadow for the entire badge -->
+    <filter id="laceShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#051C0B" flood-opacity="0.32" />
+    </filter>
+    <!-- Pattern for scalloped lace edge -->
+  </defs>
+
+  <g filter="url(#laceShadow)">
+    <!-- Outer Lace Scallops Ring: Built with layered overlapping ellipses / path -->
+    <!-- Outer scalloped path: 28 petal lobes around the perimeter -->
+    <path d="
+      M 270 20
+      C 320 20, 368 25, 405 38
+      C 445 52, 480 75, 502 105
+      C 525 138, 532 175, 524 212
+      C 514 250, 488 285, 452 308
+      C 415 330, 370 342, 322 347
+      C 288 350, 252 350, 218 347
+      C 170 342, 125 330, 88 308
+      C 52 285, 26 250, 16 212
+      C 8 175, 15 138, 38 105
+      C 60 75, 95 52, 135 38
+      C 172 25, 220 20, 270 20 Z"
+      fill="#FFFBF2"
+      stroke="#EDE1CE"
+      stroke-width="3"
+    />
+
+    <!-- Decorative eyelets around the border (scallop lace eyelet holes) -->
+    <!-- Upper scallops & eyelets -->
+    <g fill="#135028" opacity="0.85">
+      <!-- 24 eyelet dots placed around perimeter in green background showing through -->
+      <circle cx="270" cy="30" r="3.5" />
+      <circle cx="310" cy="32" r="3.5" />
+      <circle cx="350" cy="38" r="3.5" />
+      <circle cx="390" cy="48" r="3.5" />
+      <circle cx="426" cy="62" r="3.5" />
+      <circle cx="458" cy="82" r="3.5" />
+      <circle cx="482" cy="108" r="3.5" />
+      <circle cx="498" cy="138" r="3.5" />
+      <circle cx="504" cy="170" r="3.5" />
+      <circle cx="498" cy="202" r="3.5" />
+      <circle cx="482" cy="232" r="3.5" />
+      <circle cx="458" cy="258" r="3.5" />
+      <circle cx="426" cy="278" r="3.5" />
+      <circle cx="390" cy="292" r="3.5" />
+      <circle cx="350" cy="302" r="3.5" />
+      <circle cx="310" cy="308" r="3.5" />
+      <circle cx="270" cy="310" r="3.5" />
+      <circle cx="230" cy="308" r="3.5" />
+      <circle cx="190" cy="302" r="3.5" />
+      <circle cx="150" cy="292" r="3.5" />
+      <circle cx="114" cy="278" r="3.5" />
+      <circle cx="82" cy="258" r="3.5" />
+      <circle cx="58" cy="232" r="3.5" />
+      <circle cx="42" cy="202" r="3.5" />
+      <circle cx="36" cy="170" r="3.5" />
+      <circle cx="42" cy="138" r="3.5" />
+      <circle cx="58" cy="108" r="3.5" />
+      <circle cx="82" cy="82" r="3.5" />
+      <circle cx="114" cy="62" r="3.5" />
+      <circle cx="150" cy="48" r="3.5" />
+      <circle cx="190" cy="38" r="3.5" />
+      <circle cx="230" cy="32" r="3.5" />
+    </g>
+
+    <!-- Inner Oval Body -->
+    <ellipse cx="270" cy="170" rx="205" ry="122" fill="#FFFDF8" stroke="#DEC8B2" stroke-width="1.8" />
+    <!-- Delicate dashed stitch line inside lace -->
+    <ellipse cx="270" cy="170" rx="192" ry="110" fill="none" stroke="#7D1535" stroke-width="1.2" stroke-dasharray="5 5" opacity="0.5" />
+
+    <!-- Center Calligraphy: "All about Us" -->
+    <text x="270" y="160" font-family="'Great Vibes', 'Playfair Display', cursive" font-size="52" fill="#2E0E18" text-anchor="middle" font-weight="600">All about Us</text>
+
+    <!-- Hand-drawn Ribbon Bow Below the Text -->
+    <g transform="translate(270, 205) scale(0.72)" stroke="#2E0E18" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <!-- Left Bow Loop -->
+      <path d="M 0 -2 C -18 -22, -45 -18, -36 5 C -28 22, -8 8, 0 0" fill="#FFF2F6" />
+      <path d="M -16 -4 C -26 -12, -34 -8, -28 4" stroke-width="1.4" opacity="0.6" />
+      <!-- Right Bow Loop -->
+      <path d="M 0 -2 C 18 -22, 45 -18, 36 5 C 28 22, 8 8, 0 0" fill="#FFF2F6" />
+      <path d="M 16 -4 C 26 -12, 34 -8, 28 4" stroke-width="1.4" opacity="0.6" />
+      <!-- Center Knot -->
+      <ellipse cx="0" cy="0" rx="6" ry="5.5" fill="#2E0E18" />
+      <!-- Left Ribbon Tail -->
+      <path d="M -3 4 C -12 20, -22 36, -30 52 C -24 50, -18 48, -14 54 C -12 40, -6 24, -1 6" fill="#FFF2F6" />
+      <!-- Right Ribbon Tail -->
+      <path d="M 3 4 C 12 20, 22 36, 30 52 C 24 50, 18 48, 14 54 C 12 40, 6 24, 1 6" fill="#FFF2F6" />
+    </g>
+  </g>
+</svg>

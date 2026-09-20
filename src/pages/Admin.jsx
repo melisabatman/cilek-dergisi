@@ -2,6 +2,8 @@ import React, { useEffect, useState, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase, checkIsAdmin } from '../lib/supabase'
 import { uploadAsset, isR2Configured } from '../lib/r2'
+import { useSiteContent, DEFAULT_SITE_CONTENT } from '../lib/siteContent'
+import WelcomePostcardModal from '../components/WelcomePostcardModal'
 
 export default function Admin({ user, isAdmin: propIsAdmin }) {
   const navigate = useNavigate()
@@ -74,6 +76,35 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
   const [memberPhotoFile, setMemberPhotoFile] = useState(null)
   const [memberPhotoPreview, setMemberPhotoPreview] = useState('')
   const [memberPhotoUrl, setMemberPhotoUrl] = useState('')
+
+  // -------------------------------------------------------------
+  // 3. SİTE İÇERİK & CMS DURUMU (CMS HOOK & STATES)
+  // -------------------------------------------------------------
+  const { content, updateContent } = useSiteContent()
+
+  // 3A. HOŞ GELDİN MEKTUBU DURUMU (LETTER)
+  const [letterState, setLetterState] = useState(() => content?.letter || DEFAULT_SITE_CONTENT.letter)
+  const [previewLetterModalOpen, setPreviewLetterModalOpen] = useState(false)
+  const [savingLetter, setSavingLetter] = useState(false)
+
+  // 3B. SİTE METİNLERİ DURUMU (SITE TEXTS)
+  const [siteState, setSiteState] = useState(() => content?.site || DEFAULT_SITE_CONTENT.site)
+  const [savingSite, setSavingSite] = useState(false)
+
+  // 3C. MEDYA & FOTOĞRAFLAR DURUMU (MEDIA)
+  const [mediaState, setMediaState] = useState(() => content?.media || DEFAULT_SITE_CONTENT.media)
+  const [uploadingMedia, setUploadingMedia] = useState(false)
+  const [mediaUploadFile, setMediaUploadFile] = useState(null)
+  const [mediaUploadPreview, setMediaUploadPreview] = useState('')
+  const [mediaUploadTitle, setMediaUploadTitle] = useState('')
+  const [mediaCopiedId, setMediaCopiedId] = useState(null)
+  const [savingMediaSettings, setSavingMediaSettings] = useState(false)
+
+  useEffect(() => {
+    if (content?.letter) setLetterState(content.letter)
+    if (content?.site) setSiteState(content.site)
+    if (content?.media) setMediaState(content.media)
+  }, [content])
 
   // -------------------------------------------------------------
   // VERİLERİ ÇEKME FONKSİYONLARI
@@ -384,6 +415,176 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
   }
 
   // -------------------------------------------------------------
+  // 3. HOŞ GELDİN MEKTUBU İŞLEMLERİ (LETTER HANDLERS)
+  // -------------------------------------------------------------
+  const handleLetterChange = (field, val) => {
+    setLetterState(prev => ({ ...prev, [field]: val }))
+  }
+
+  const handlePerkChange = (index, val) => {
+    setLetterState(prev => {
+      const perks = [...(prev.perks || [])]
+      perks[index] = val
+      return { ...prev, perks }
+    })
+  }
+
+  const handleAddPerk = () => {
+    setLetterState(prev => ({ ...prev, perks: [...(prev.perks || []), ''] }))
+  }
+
+  const handleRemovePerk = (index) => {
+    setLetterState(prev => ({
+      ...prev,
+      perks: (prev.perks || []).filter((_, i) => i !== index)
+    }))
+  }
+
+  const handleSaveLetter = async (e) => {
+    if (e) e.preventDefault()
+    setSavingLetter(true)
+    try {
+      await updateContent({ letter: letterState })
+      showFeedback('success', 'Hoş Geldin Mektubu başarıyla güncellendi!')
+    } catch (err) {
+      showFeedback('error', 'Mektup kaydedilirken hata oluştu.')
+    } finally {
+      setSavingLetter(false)
+    }
+  }
+
+  const handleResetLetter = () => {
+    if (window.confirm('Hoş geldin mektubunu orijinal fabrika ayarlarına sıfırlamak istediğinize emin misiniz?')) {
+      setLetterState(DEFAULT_SITE_CONTENT.letter)
+      updateContent({ letter: DEFAULT_SITE_CONTENT.letter })
+      showFeedback('success', 'Mektup varsayılan değerlerine sıfırlandı.')
+    }
+  }
+
+  // -------------------------------------------------------------
+  // 4. SİTE METİNLERİ İŞLEMLERİ (SITE CONTENT HANDLERS)
+  // -------------------------------------------------------------
+  const handleSiteChange = (field, val) => {
+    setSiteState(prev => ({ ...prev, [field]: val }))
+  }
+
+  const handleSaveSite = async (e) => {
+    if (e) e.preventDefault()
+    setSavingSite(true)
+    try {
+      await updateContent({ site: siteState })
+      showFeedback('success', 'Site metinleri başarıyla güncellendi!')
+    } catch (err) {
+      showFeedback('error', 'Metinler kaydedilirken hata oluştu.')
+    } finally {
+      setSavingSite(false)
+    }
+  }
+
+  const handleResetSite = () => {
+    if (window.confirm('Tüm site metinlerini orijinal varsayılan hallerine döndürmek istediğinize emin misiniz?')) {
+      setSiteState(DEFAULT_SITE_CONTENT.site)
+      updateContent({ site: DEFAULT_SITE_CONTENT.site })
+      showFeedback('success', 'Site metinleri varsayılan değerlerine sıfırlandı.')
+    }
+  }
+
+  // -------------------------------------------------------------
+  // 5. MEDYA & FOTOĞRAFLAR İŞLEMLERİ (MEDIA HANDLERS)
+  // -------------------------------------------------------------
+  const handleMediaFileSelect = (e) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setMediaUploadFile(file)
+      setMediaUploadPreview(URL.createObjectURL(file))
+      if (!mediaUploadTitle) {
+        setMediaUploadTitle(file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' '))
+      }
+    }
+  }
+
+  const handleUploadNewMedia = async (e) => {
+    e.preventDefault()
+    if (!mediaUploadFile) {
+      showFeedback('error', 'Lütfen yüklenecek bir fotoğraf seçin.')
+      return
+    }
+
+    setUploadingMedia(true)
+    try {
+      const cleanPrefix = `site_media_${Date.now()}`
+      const { publicUrl, error: uploadErr } = await uploadAsset('covers', mediaUploadFile, cleanPrefix)
+      if (uploadErr) throw uploadErr
+
+      const newItem = {
+        id: 'm-' + Date.now(),
+        name: mediaUploadTitle.trim() || mediaUploadFile.name,
+        url: publicUrl,
+        date: new Date().toISOString().split('T')[0]
+      }
+
+      const updatedGallery = [newItem, ...(mediaState.gallery || [])]
+      const nextMedia = { ...mediaState, gallery: updatedGallery }
+      setMediaState(nextMedia)
+      await updateContent({ media: nextMedia })
+
+      // Formu temizle
+      setMediaUploadFile(null)
+      setMediaUploadPreview('')
+      setMediaUploadTitle('')
+      showFeedback('success', `"${newItem.name}" fotoğrafı kütüphaneye başarıyla eklendi!`)
+    } catch (err) {
+      console.error('Media upload error:', err)
+      showFeedback('error', 'Fotoğraf yüklenirken hata oluştu: ' + (err.message || 'Bilinmeyen hata'))
+    } finally {
+      setUploadingMedia(false)
+    }
+  }
+
+  const handleCopyMediaUrl = (url, id) => {
+    if (!url) return
+    navigator.clipboard.writeText(url)
+    setMediaCopiedId(id)
+    setTimeout(() => setMediaCopiedId(null), 2500)
+    showFeedback('success', 'Fotoğraf bağlantısı (URL) panoya kopyalandı!')
+  }
+
+  const handleDeleteMedia = async (id) => {
+    const updatedGallery = (mediaState.gallery || []).filter(item => item.id !== id)
+    const nextMedia = { ...mediaState, gallery: updatedGallery }
+    setMediaState(nextMedia)
+    await updateContent({ media: nextMedia })
+    showFeedback('success', 'Fotoğraf galeriden silindi.')
+  }
+
+  const handleSetAsFounderPhoto = async (url) => {
+    const nextMedia = { ...mediaState, founder_photo: url }
+    setMediaState(nextMedia)
+    await updateContent({ media: nextMedia })
+    showFeedback('success', 'Seçilen görsel Kurucu Fotoğrafı olarak atandı!')
+  }
+
+  const handleSetAsAboutPhoto = async (url, slot) => {
+    const nextMedia = { ...mediaState, [`about_photo_${slot}`]: url }
+    setMediaState(nextMedia)
+    await updateContent({ media: nextMedia })
+    showFeedback('success', `Seçilen görsel Hakkımızda Polaroid ${slot} olarak atandı!`)
+  }
+
+  const handleSaveMediaSettings = async (e) => {
+    if (e) e.preventDefault()
+    setSavingMediaSettings(true)
+    try {
+      await updateContent({ media: mediaState })
+      showFeedback('success', 'Site fotoğraf tercihleri başarıyla kaydedildi!')
+    } catch (err) {
+      showFeedback('error', 'Fotoğraf tercihleri kaydedilemedi.')
+    } finally {
+      setSavingMediaSettings(false)
+    }
+  }
+
+  // -------------------------------------------------------------
   // YETKİ KONTROL EKRANLARI (LOADING VEYA ERİŞİM ENGELİ)
   // -------------------------------------------------------------
   if (authChecking) {
@@ -516,6 +717,36 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
             id="tab-btn-team"
           >
             👥 Ekip Yönetimi ({teamMembers.length})
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'letter'}
+            className={`admin-tab-btn ${activeTab === 'letter' ? 'active' : ''}`}
+            onClick={() => setActiveTab('letter')}
+            id="tab-btn-letter"
+          >
+            💌 Hoş Geldin Mektubu
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'content'}
+            className={`admin-tab-btn ${activeTab === 'content' ? 'active' : ''}`}
+            onClick={() => setActiveTab('content')}
+            id="tab-btn-content"
+          >
+            ✍️ Site Metinleri
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'media'}
+            className={`admin-tab-btn ${activeTab === 'media' ? 'active' : ''}`}
+            onClick={() => setActiveTab('media')}
+            id="tab-btn-media"
+          >
+            🖼️ Medya & Fotoğraflar ({mediaState?.gallery?.length || 0})
           </button>
         </div>
 
@@ -1131,7 +1362,744 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
           </div>
         )}
 
+        {/* -------------------------------------------------------------
+            TAB 3: HOŞ GELDİN MEKTUBU YÖNETİMİ
+        ------------------------------------------------------------- */}
+        {activeTab === 'letter' && (
+          <div className="admin-tab-content">
+            <div className="admin-cms-header">
+              <div>
+                <h2 className="admin-card-title">💌 Hoş Geldin Mektubu Düzenleyici</h2>
+                <p className="admin-card-subtitle">
+                  Yeni veya kayıtlı okurların sitenin sağ üst köşesindeki mektup simgesine tıkladığında açılan nostaljik zarf ve mektubun tüm metinlerini buradan düzenleyebilirsiniz.
+                </p>
+              </div>
+              <div className="admin-cms-actions">
+                <button
+                  type="button"
+                  className="btn-cms-preview"
+                  onClick={() => setPreviewLetterModalOpen(true)}
+                  id="btn-preview-welcome-letter"
+                >
+                  👁️ Mektubu Canlı Önizle
+                </button>
+                <button
+                  type="button"
+                  className="btn-cms-reset"
+                  onClick={handleResetLetter}
+                  id="btn-reset-welcome-letter"
+                >
+                  Varsayılanlara Dön
+                </button>
+              </div>
+            </div>
+
+            <form onSubmit={handleSaveLetter} className="admin-cms-form" id="form-letter-admin">
+              {/* Bölüm 1: Zarf & Dış Kapak Ayarları */}
+              <div className="admin-cms-section-card">
+                <div className="cms-section-title">
+                  <span className="cms-section-icon">✉️</span>
+                  <div>
+                    <h3>Aşama 1: Nostaljik Kartpostal & Zarf Detayları</h3>
+                    <small>Kullanıcının mektubu açmadan önce gördüğü mühürlü zarf üzerindeki etiketler.</small>
+                  </div>
+                </div>
+
+                <div className="admin-form-row">
+                  <div className="admin-field-group" style={{ flex: 1 }}>
+                    <label className="admin-label">Zarf Gönderici Bilgisi (FROM)</label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={letterState.envelope_sender || ''}
+                      onChange={(e) => handleLetterChange('envelope_sender', e.target.value)}
+                      placeholder="Örn: Çilek Dergisi Editoryal Masası"
+                    />
+                  </div>
+                  <div className="admin-field-group" style={{ flex: 1 }}>
+                    <label className="admin-label">Zarf Marka Alt Başlığı</label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={letterState.envelope_sub || ''}
+                      onChange={(e) => handleLetterChange('envelope_sub', e.target.value)}
+                      placeholder="Örn: Bağımsız Dijital Gençlik Yayını"
+                    />
+                  </div>
+                  <div className="admin-field-group" style={{ flex: 1 }}>
+                    <label className="admin-label">Zarfı Aç Buton Metni</label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={letterState.button_open || ''}
+                      onChange={(e) => handleLetterChange('button_open', e.target.value)}
+                      placeholder="Örn: Mektubu Aç ve Oku ✂️"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Bölüm 2: Mektup Başlık ve Karşılama */}
+              <div className="admin-cms-section-card">
+                <div className="cms-section-title">
+                  <span className="cms-section-icon">🏷️</span>
+                  <div>
+                    <h3>Aşama 2: Mektup Başlığı & Karşılama</h3>
+                    <small>Zarf açıldığında en üstte parıldayan rozet, ana başlık ve selamlama.</small>
+                  </div>
+                </div>
+
+                <div className="admin-form-row">
+                  <div className="admin-field-group" style={{ flex: '0 0 240px' }}>
+                    <label className="admin-label">Üst Rozet / Etiket</label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={letterState.badge || ''}
+                      onChange={(e) => handleLetterChange('badge', e.target.value)}
+                      placeholder="Örn: ÖZEL ÇİLEK MEKTUBU"
+                    />
+                  </div>
+                  <div className="admin-field-group" style={{ flex: 1 }}>
+                    <label className="admin-label">Mektup Ana Başlığı</label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={letterState.title || ''}
+                      onChange={(e) => handleLetterChange('title', e.target.value)}
+                      placeholder="Örn: THANK YOU SO MUCH!"
+                    />
+                  </div>
+                </div>
+
+                <div className="admin-field-group">
+                  <label className="admin-label">Alt Başlık (Selamlama)</label>
+                  <input
+                    type="text"
+                    className="admin-input"
+                    value={letterState.subtitle || ''}
+                    onChange={(e) => handleLetterChange('subtitle', e.target.value)}
+                    placeholder="Örn: Çilek Ailesine Aramıza Hoş Geldin Sevgili {name} 🍓"
+                  />
+                  <span className="admin-field-hint">İpucu: <code>{'{name}'}</code> yazdığınız yer giriş yapan okuyucunun adıyla otomatik değişir.</span>
+                </div>
+              </div>
+
+              {/* Bölüm 3: Mektup İçeriği ve Gövdesi */}
+              <div className="admin-cms-section-card">
+                <div className="cms-section-title">
+                  <span className="cms-section-icon">✍️</span>
+                  <div>
+                    <h3>Aşama 3: Mektup Metni & Alıntı</h3>
+                    <small>Mektubun kalbini oluşturan el yazısı açılış cümlesi ve ana paragraf.</small>
+                  </div>
+                </div>
+
+                <div className="admin-field-group">
+                  <label className="admin-label">El Yazısı Açılış Alıntısı (Lead)</label>
+                  <input
+                    type="text"
+                    className="admin-input"
+                    value={letterState.lead_quote || ''}
+                    onChange={(e) => handleLetterChange('lead_quote', e.target.value)}
+                    placeholder='Örn: “Kendine ait bir oda, kendine ait bir ses...”'
+                  />
+                </div>
+
+                <div className="admin-field-group">
+                  <label className="admin-label">Ana Mektup Paragrafı</label>
+                  <textarea
+                    rows={4}
+                    className="admin-textarea"
+                    value={letterState.body_paragraph || ''}
+                    onChange={(e) => handleLetterChange('body_paragraph', e.target.value)}
+                    placeholder="Çilek Dergisi'nin bağımsız sayfalarına katıldığın için..."
+                  />
+                </div>
+              </div>
+
+              {/* Bölüm 4: Kazanımlar / Ayrıcalıklar Listesi */}
+              <div className="admin-cms-section-card">
+                <div className="cms-section-title" style={{ justifyContent: 'space-between', width: '100%' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                    <span className="cms-section-icon">🎁</span>
+                    <div>
+                      <h3>Aşama 4: Neler Kazandın? (Kazanımlar Listesi)</h3>
+                      <small>Okuyucunun dergiye üye olarak kazandığı haklar ve ayrıcalıklar.</small>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn-add-toc-item"
+                    onClick={handleAddPerk}
+                  >
+                    + Madde Ekle
+                  </button>
+                </div>
+
+                <div className="admin-field-group">
+                  <label className="admin-label">Kazanımlar Kutusu Başlığı</label>
+                  <input
+                    type="text"
+                    className="admin-input"
+                    value={letterState.perks_title || ''}
+                    onChange={(e) => handleLetterChange('perks_title', e.target.value)}
+                    placeholder="Örn: Aramıza Katılarak Neler Kazandın?"
+                  />
+                </div>
+
+                <div className="toc-inputs-list">
+                  {(letterState.perks || []).map((perk, pIdx) => (
+                    <div key={pIdx} className="toc-input-row">
+                      <span className="toc-row-number">{pIdx + 1}.</span>
+                      <input
+                        type="text"
+                        className="admin-input toc-item-input"
+                        value={perk}
+                        onChange={(e) => handlePerkChange(pIdx, e.target.value)}
+                        placeholder="Örn: 📖 **Tüm Sayılara Sınırsız Erişim:** Sayfaları kitap gibi çevirerek oku."
+                      />
+                      <button
+                        type="button"
+                        className="btn-remove-toc"
+                        onClick={() => handleRemovePerk(pIdx)}
+                        title="Maddeyi Sil"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Bölüm 5: İmza & Keşfet Butonu */}
+              <div className="admin-cms-section-card">
+                <div className="cms-section-title">
+                  <span className="cms-section-icon">✒️</span>
+                  <div>
+                    <h3>Aşama 5: Kapanış & İmza</h3>
+                    <small>Mektup sonundaki iyi dilek cümlesi, imza ve aksiyon butonu.</small>
+                  </div>
+                </div>
+
+                <div className="admin-form-row">
+                  <div className="admin-field-group" style={{ flex: 1 }}>
+                    <label className="admin-label">Kapanış İyi Dilek Cümlesi</label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={letterState.signoff_quote || ''}
+                      onChange={(e) => handleLetterChange('signoff_quote', e.target.value)}
+                      placeholder="Sayfalarımızın arasında kendi rengini bulman dileğiyle,"
+                    />
+                  </div>
+                  <div className="admin-field-group" style={{ flex: 1 }}>
+                    <label className="admin-label">İmza Metni</label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={letterState.signoff_signature || ''}
+                      onChange={(e) => handleLetterChange('signoff_signature', e.target.value)}
+                      placeholder="Sevgiyle, Çilek Dergi Ekibi ♥"
+                    />
+                  </div>
+                  <div className="admin-field-group" style={{ flex: 1 }}>
+                    <label className="admin-label">Alt Aksiyon Buton Metni</label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={letterState.button_explore || ''}
+                      onChange={(e) => handleLetterChange('button_explore', e.target.value)}
+                      placeholder="Dergileri Keşfetmeye Başla"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Kaydet Bar */}
+              <div className="admin-cms-submit-bar">
+                <button
+                  type="submit"
+                  className="btn-admin-submit-cms"
+                  disabled={savingLetter}
+                  id="btn-save-letter"
+                >
+                  {savingLetter ? 'Kaydediliyor…' : '💾 Mektup Değişikliklerini Kaydet'}
+                </button>
+                <button
+                  type="button"
+                  className="btn-cms-preview-secondary"
+                  onClick={() => setPreviewLetterModalOpen(true)}
+                >
+                  Canlı Önizle 👁️
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* -------------------------------------------------------------
+            TAB 4: SİTE METİNLERİ YÖNETİMİ
+        ------------------------------------------------------------- */}
+        {activeTab === 'content' && (
+          <div className="admin-tab-content">
+            <div className="admin-cms-header">
+              <div>
+                <h2 className="admin-card-title">✍️ Site Metinleri Düzenleyici</h2>
+                <p className="admin-card-subtitle">
+                  Ana sayfa manşetleri, karşılama metinleri, kayan duyuru şeridi, Hakkımızda hikayesi ve kurucu sözlerini buradan düzenleyebilirsiniz.
+                </p>
+              </div>
+              <div className="admin-cms-actions">
+                <button
+                  type="button"
+                  className="btn-cms-reset"
+                  onClick={handleResetSite}
+                  id="btn-reset-site-content"
+                >
+                  Varsayılan Metinlere Dön
+                </button>
+              </div>
+            </div>
+
+            <form onSubmit={handleSaveSite} className="admin-cms-form" id="form-site-content-admin">
+              {/* BÖLÜM 1: ANA SAYFA HERO & MANŞET */}
+              <div className="admin-cms-section-card">
+                <div className="cms-section-title">
+                  <span className="cms-section-icon">🌟</span>
+                  <div>
+                    <h3>1. Ana Sayfa Hero (Giriş) Bölümü</h3>
+                    <small>Ziyaretçilerin siteye girdiğinde ilk karşılaştığı büyük başlık ve açıklamalar.</small>
+                  </div>
+                </div>
+
+                <div className="admin-form-row">
+                  <div className="admin-field-group" style={{ flex: '0 0 200px' }}>
+                    <label className="admin-label">Üst Başlık (Eyebrow)</label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={siteState.hero_eyebrow || ''}
+                      onChange={(e) => handleSiteChange('hero_eyebrow', e.target.value)}
+                      placeholder="Örn: Çilek Dergisi"
+                    />
+                  </div>
+                  <div className="admin-field-group" style={{ flex: 1 }}>
+                    <label className="admin-label">Başlık 1. Satır</label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={siteState.hero_title_line1 || ''}
+                      onChange={(e) => handleSiteChange('hero_title_line1', e.target.value)}
+                      placeholder="Örn: Kendi sesini"
+                    />
+                  </div>
+                  <div className="admin-field-group" style={{ flex: 1 }}>
+                    <label className="admin-label">Başlık Vurgulu Kelime (İtalik)</label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={siteState.hero_title_italic || ''}
+                      onChange={(e) => handleSiteChange('hero_title_italic', e.target.value)}
+                      placeholder="Örn: özgürce"
+                    />
+                  </div>
+                  <div className="admin-field-group" style={{ flex: 1 }}>
+                    <label className="admin-label">Başlık 2. Kısım (El Yazısı)</label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={siteState.hero_title_script || ''}
+                      onChange={(e) => handleSiteChange('hero_title_script', e.target.value)}
+                      placeholder="Örn: duyurduğun alan."
+                    />
+                  </div>
+                </div>
+
+                <div className="admin-field-group">
+                  <label className="admin-label">Hero Alt Açıklama Paragrafı</label>
+                  <textarea
+                    rows={3}
+                    className="admin-textarea"
+                    value={siteState.hero_copy || ''}
+                    onChange={(e) => handleSiteChange('hero_copy', e.target.value)}
+                    placeholder="15–25 yaş arası bağımsız yaratıcılar için özenle kürate edilmiş editoryal alan..."
+                  />
+                </div>
+
+                <div className="admin-field-group">
+                  <label className="admin-label">Kayan Duyuru Şeridi Metni (Marquee)</label>
+                  <input
+                    type="text"
+                    className="admin-input"
+                    value={siteState.hero_marquee || ''}
+                    onChange={(e) => handleSiteChange('hero_marquee', e.target.value)}
+                    placeholder="✦ Sayı 06 yayında · Şimdi oku ✦ Her ay yeni bir sayı ✦ Bağımsız Gençlik ✦"
+                  />
+                  <span className="admin-field-hint">En üstte sağdan sola sürekli akan duyuru bandı.</span>
+                </div>
+              </div>
+
+              {/* BÖLÜM 2: HAKKIMIZDA & HİKÂYEMİZ */}
+              <div className="admin-cms-section-card">
+                <div className="cms-section-title">
+                  <span className="cms-section-icon">📖</span>
+                  <div>
+                    <h3>2. Hakkımızda Sayfası & Hikâyemiz</h3>
+                    <small>/hakkimizda sayfasında yer alan açılış sözü ve detaylı marka anlatısı.</small>
+                  </div>
+                </div>
+
+                <div className="admin-field-group">
+                  <label className="admin-label">Büyük Duygusal Açılış Sözü</label>
+                  <input
+                    type="text"
+                    className="admin-input"
+                    value={siteState.about_opening_quote || ''}
+                    onChange={(e) => handleSiteChange('about_opening_quote', e.target.value)}
+                    placeholder="Her gencin anlatacak sahici, kırılgan ve özgün bir hikâyesi vardır."
+                  />
+                </div>
+
+                <div className="admin-field-group">
+                  <label className="admin-label">Hikâyemiz Başlığı</label>
+                  <input
+                    type="text"
+                    className="admin-input"
+                    value={siteState.about_story_title || ''}
+                    onChange={(e) => handleSiteChange('about_story_title', e.target.value)}
+                    placeholder="Çilek Dergisi'nin Doğuşu"
+                  />
+                </div>
+
+                <div className="admin-form-row">
+                  <div className="admin-field-group" style={{ flex: 1 }}>
+                    <label className="admin-label">Hikaye Paragraf 1</label>
+                    <textarea
+                      rows={4}
+                      className="admin-textarea"
+                      value={siteState.about_story_p1 || ''}
+                      onChange={(e) => handleSiteChange('about_story_p1', e.target.value)}
+                    />
+                  </div>
+                  <div className="admin-field-group" style={{ flex: 1 }}>
+                    <label className="admin-label">Hikaye Paragraf 2</label>
+                    <textarea
+                      rows={4}
+                      className="admin-textarea"
+                      value={siteState.about_story_p2 || ''}
+                      onChange={(e) => handleSiteChange('about_story_p2', e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="admin-field-group">
+                  <label className="admin-label">Hikaye Paragraf 3</label>
+                  <textarea
+                    rows={3}
+                    className="admin-textarea"
+                    value={siteState.about_story_p3 || ''}
+                    onChange={(e) => handleSiteChange('about_story_p3', e.target.value)}
+                  />
+                </div>
+
+                <div className="admin-field-group">
+                  <label className="admin-label">Hakkımızda Manifesto Vurgu Alıntısı</label>
+                  <textarea
+                    rows={2}
+                    className="admin-textarea"
+                    value={siteState.about_manifesto_quote || ''}
+                    onChange={(e) => handleSiteChange('about_manifesto_quote', e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* BÖLÜM 3: KURUCU & EDİTÖR KÖŞESİ */}
+              <div className="admin-cms-section-card">
+                <div className="cms-section-title">
+                  <span className="cms-section-icon">🍓</span>
+                  <div>
+                    <h3>3. Kurucu / Editör Alıntı & Biyografisi</h3>
+                    <small>Hem ana sayfada hem de Hakkımızda sayfasında gösterilen kurucu mesajı.</small>
+                  </div>
+                </div>
+
+                <div className="admin-field-group">
+                  <label className="admin-label">Kurucu Alıntısı (Neden Çilek?)</label>
+                  <textarea
+                    rows={2}
+                    className="admin-textarea"
+                    value={siteState.about_founder_quote || ''}
+                    onChange={(e) => handleSiteChange('about_founder_quote', e.target.value)}
+                  />
+                </div>
+
+                <div className="admin-field-group">
+                  <label className="admin-label">Kurucu Biyografi / Editoryal Açıklama</label>
+                  <textarea
+                    rows={2}
+                    className="admin-textarea"
+                    value={siteState.about_founder_bio || ''}
+                    onChange={(e) => handleSiteChange('about_founder_bio', e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* BÖLÜM 4: DERGİLER SAYFASI BAŞLIĞI */}
+              <div className="admin-cms-section-card">
+                <div className="cms-section-title">
+                  <span className="cms-section-icon">📚</span>
+                  <div>
+                    <h3>4. Dergiler Arşivi Sayfa Başlığı</h3>
+                    <small>/dergiler sayfasının üstündeki başlık ve editoryal açıklama cümlesi.</small>
+                  </div>
+                </div>
+
+                <div className="admin-form-row">
+                  <div className="admin-field-group" style={{ flex: '0 0 240px' }}>
+                    <label className="admin-label">Sayfa Başlığı</label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={siteState.magazines_title || ''}
+                      onChange={(e) => handleSiteChange('magazines_title', e.target.value)}
+                      placeholder="Tüm Sayılar"
+                    />
+                  </div>
+                  <div className="admin-field-group" style={{ flex: 1 }}>
+                    <label className="admin-label">Açıklama Cümlesi</label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={siteState.magazines_subtitle || ''}
+                      onChange={(e) => handleSiteChange('magazines_subtitle', e.target.value)}
+                      placeholder="15-25 yaşın bağımsız edebiyat, sanat ve kültür serüveni..."
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Kaydet Bar */}
+              <div className="admin-cms-submit-bar">
+                <button
+                  type="submit"
+                  className="btn-admin-submit-cms"
+                  disabled={savingSite}
+                  id="btn-save-site-texts"
+                >
+                  {savingSite ? 'Kaydediliyor…' : '💾 Tüm Site Metinlerini Kaydet'}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* -------------------------------------------------------------
+            TAB 5: MEDYA & FOTOĞRAFLAR YÖNETİMİ
+        ------------------------------------------------------------- */}
+        {activeTab === 'media' && (
+          <div className="admin-tab-content">
+            <div className="admin-two-col-grid">
+              
+              {/* SOL SÜTUN: FOTOĞRAF YÜKLE VE SİTE GÖRSELLERİNİ BELİRLE */}
+              <div className="admin-form-card">
+                <div className="admin-card-header">
+                  <div>
+                    <h2 className="admin-card-title">🖼️ Yeni Fotoğraf Yükle</h2>
+                    <p className="admin-card-subtitle">
+                      Cloudflare R2 kovanına doğrudan yeni yüksek çözünürlüklü fotoğraflar yükleyin ve sitenin her yerinde kullanın.
+                    </p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleUploadNewMedia} className="admin-form" id="form-upload-media">
+                  <div className="admin-field-group">
+                    <label className="admin-label">Fotoğraf Başlığı / İsmi</label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={mediaUploadTitle}
+                      onChange={(e) => setMediaUploadTitle(e.target.value)}
+                      placeholder="Örn: Kurucu Çalışma Masası Fotoğrafı"
+                    />
+                  </div>
+
+                  <div className="admin-upload-box" style={{ marginTop: '0.8rem' }}>
+                    <input
+                      type="file"
+                      id="media-file-input"
+                      accept="image/*"
+                      onChange={handleMediaFileSelect}
+                      style={{ display: 'none' }}
+                    />
+                    {mediaUploadPreview ? (
+                      <div className="upload-preview-wrap">
+                        <img src={mediaUploadPreview} alt="Önizleme" className="upload-preview-img" style={{ maxHeight: '200px', objectFit: 'contain' }} />
+                        <label htmlFor="media-file-input" className="btn-change-file">
+                          Farklı Fotoğraf Seç
+                        </label>
+                      </div>
+                    ) : (
+                      <label htmlFor="media-file-input" className="upload-dropzone">
+                        <span className="upload-drop-icon">📸</span>
+                        <strong>Fotoğraf Seçmek İçin Tıklayın</strong>
+                        <small>PNG, JPG, WEBP veya GIF (Maks. 10MB)</small>
+                      </label>
+                    )}
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="btn-admin-submit-mag"
+                    disabled={uploadingMedia || !mediaUploadFile}
+                    id="btn-submit-media-upload"
+                    style={{ marginTop: '1.2rem' }}
+                  >
+                    {uploadingMedia ? 'Yükleniyor…' : '☁️ Cloudflare R2 Kovanına Yükle'}
+                  </button>
+                </form>
+
+                {/* SİTE ANA FOTOĞRAFLARI SEÇİCİ */}
+                <div className="admin-card-header" style={{ marginTop: '2.5rem', borderTop: '2px dashed var(--c-pink)', paddingTop: '1.5rem' }}>
+                  <div>
+                    <h3 className="admin-card-title" style={{ fontSize: '1.15rem' }}>🎯 Site Ana Fotoğrafları</h3>
+                    <p className="admin-card-subtitle">
+                      Sitede sabit kullanılan kurucu fotoğrafı ve Hakkımızda polaroidlerini buradan doğrudan link yapıştırarak veya aşağıdaki galeriden tek tıkla seçebilirsiniz.
+                    </p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleSaveMediaSettings} className="admin-form">
+                  <div className="admin-field-group">
+                    <label className="admin-label">Kurucu Fotoğrafı URL</label>
+                    <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+                      <input
+                        type="text"
+                        className="admin-input"
+                        value={mediaState.founder_photo || ''}
+                        onChange={(e) => setMediaState({ ...mediaState, founder_photo: e.target.value })}
+                        placeholder="https://... veya /icons/cilek-vintage.png"
+                      />
+                      {mediaState.founder_photo && (
+                        <img
+                          src={mediaState.founder_photo}
+                          alt="Kurucu Önizleme"
+                          style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--c-bordo)' }}
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="admin-field-group">
+                    <label className="admin-label">Hakkımızda Polaroid 1 URL</label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={mediaState.about_photo_1 || ''}
+                      onChange={(e) => setMediaState({ ...mediaState, about_photo_1: e.target.value })}
+                      placeholder="/icons/icon4.png veya görsel linki"
+                    />
+                  </div>
+
+                  <div className="admin-field-group">
+                    <label className="admin-label">Hakkımızda Polaroid 2 URL</label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={mediaState.about_photo_2 || ''}
+                      onChange={(e) => setMediaState({ ...mediaState, about_photo_2: e.target.value })}
+                      placeholder="/icons/icon1.png veya görsel linki"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="btn-admin-submit-mag"
+                    disabled={savingMediaSettings}
+                    style={{ background: 'var(--c-bordo)', marginTop: '0.6rem' }}
+                  >
+                    {savingMediaSettings ? 'Kaydediliyor…' : '✓ Site Fotoğraf Tercihlerini Kaydet'}
+                  </button>
+                </form>
+              </div>
+
+              {/* SAĞ SÜTUN: FOTOĞRAF GALERİSİ & LİSTESİ */}
+              <div className="admin-list-card">
+                <div className="admin-card-header">
+                  <div>
+                    <h2 className="admin-card-title">
+                      📚 Fotoğraf Kütüphanesi ({mediaState?.gallery?.length || 0})
+                    </h2>
+                    <p className="admin-card-subtitle">
+                      Yüklenen tüm görseller burada listelenir. Tek tıkla bağlantısını kopyalayabilir veya sitenin ilgili alanına atayabilirsiniz.
+                    </p>
+                  </div>
+                </div>
+
+                {(!mediaState?.gallery || mediaState.gallery.length === 0) ? (
+                  <div className="admin-empty-state">
+                    <span className="empty-state-icon">🖼️</span>
+                    <h3>Henüz fotoğraf yüklenmemiş</h3>
+                    <p>Sol taraftaki yükleme kutusunu kullanarak yeni bir fotoğraf ekleyin.</p>
+                  </div>
+                ) : (
+                  <div className="admin-media-gallery-grid">
+                    {mediaState.gallery.map((item) => (
+                      <div key={item.id} className="admin-media-item-card">
+                        <div className="media-card-thumb-wrap">
+                          <img src={item.url} alt={item.name} className="media-card-thumb" />
+                        </div>
+                        <div className="media-card-meta">
+                          <strong className="media-card-name" title={item.name}>{item.name}</strong>
+                          <span className="media-card-date">{item.date || 'Sistem Görseli'}</span>
+                        </div>
+                        <div className="media-card-actions">
+                          <button
+                            type="button"
+                            className={`btn-media-copy ${mediaCopiedId === item.id ? 'copied' : ''}`}
+                            onClick={() => handleCopyMediaUrl(item.url, item.id)}
+                            title="Fotoğraf URL adresini panoya kopyala"
+                          >
+                            {mediaCopiedId === item.id ? '✓ Kopyalandı!' : '📋 URL Kopyala'}
+                          </button>
+                          
+                          <div className="media-card-assign-group">
+                            <button
+                              type="button"
+                              className="btn-media-assign"
+                              onClick={() => handleSetAsFounderPhoto(item.url)}
+                              title="Bu fotoğrafı kurucu fotoğrafı yap"
+                            >
+                              Kurucu Yap
+                            </button>
+                            <button
+                              type="button"
+                              className="btn-media-delete"
+                              onClick={() => handleDeleteMedia(item.id)}
+                              title="Galeriden sil"
+                            >
+                              Sil
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+            </div>
+          </div>
+        )}
+
       </div>
+
+      {/* Hoş Geldin Mektubu Canlı Önizleme Modalı */}
+      <WelcomePostcardModal
+        isOpen={previewLetterModalOpen}
+        onClose={() => setPreviewLetterModalOpen(false)}
+        user={user}
+      />
     </div>
   )
 }

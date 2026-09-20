@@ -26,29 +26,42 @@ export default function Auth() {
   const handleLogin = async (e) => {
     e.preventDefault()
     clearMessages()
+    if (!email.trim() || !password) {
+      setError('Lütfen e-posta adresinizi ve şifrenizi girin.')
+      return
+    }
     setLoading(true)
-    const { data, error: err } = await supabase.auth.signInWithPassword({ email, password })
-    setLoading(false)
-    if (err) {
-      setError(translateAuthError(err.message))
-      return
-    }
-    // Başarılı giriş sonrası yönlendirme
-    if (redirectTarget) {
-      navigate(redirectTarget)
-      return
-    }
-    const isUserAdmin = await checkIsAdmin(data?.user)
-    if (isUserAdmin) {
-      navigate('/admin')
-    } else {
-      navigate('/')
+    try {
+      const { data, error: err } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
+      setLoading(false)
+      if (err) {
+        setError(translateAuthError(err.message))
+        return
+      }
+      // Başarılı giriş sonrası yönlendirme
+      if (redirectTarget) {
+        navigate(redirectTarget)
+        return
+      }
+      const isUserAdmin = await checkIsAdmin(data?.user)
+      if (isUserAdmin) {
+        navigate('/admin')
+      } else {
+        navigate('/')
+      }
+    } catch (err) {
+      setLoading(false)
+      setError(translateAuthError(err?.message || ''))
     }
   }
 
   const handleRegister = async (e) => {
     e.preventDefault()
     clearMessages()
+    if (!email.trim()) {
+      setError('Lütfen geçerli bir e-posta adresi girin.')
+      return
+    }
     if (password !== passConfirm) {
       setError('Şifreler birbiriyle eşleşmiyor.')
       return
@@ -58,13 +71,21 @@ export default function Auth() {
       return
     }
     setLoading(true)
-    const { error: err } = await supabase.auth.signUp({ email, password })
-    setLoading(false)
-    if (err) {
-      setError(translateAuthError(err.message))
-      return
+    try {
+      const { error: err } = await supabase.auth.signUp({ email: email.trim(), password })
+      setLoading(false)
+      if (err) {
+        setError(translateAuthError(err.message))
+        return
+      }
+      setSuccess('Kayıt başarıyla oluşturuldu! Aramıza hoş geldin mektubuna yönlendiriliyorsun… 💌')
+      setTimeout(() => {
+        navigate('/?welcome=true')
+      }, 1000)
+    } catch (err) {
+      setLoading(false)
+      setError(translateAuthError(err?.message || ''))
     }
-    setSuccess('Kayıt başarıyla oluşturuldu! E-posta kutunu kontrol ederek hesabını doğrulayabilirsin.')
   }
 
   const handleForgot = async (e) => {
@@ -99,6 +120,44 @@ export default function Auth() {
         {/* BİRİNCİ YARI: FORM ALANI (KAYIT OL veya GİRİŞ YAP) */}
         <div className="auth-form-side">
           <div className="auth-form-inner">
+            
+            {/* Mobilde Üstte Kompakt ve Şık Marka Başlığı & Sekmeler */}
+            <div className="auth-mobile-header" aria-hidden="true">
+              <div className="auth-mobile-brand">
+                <img
+                  src="/icons/cilek-vintage.png"
+                  alt="Çilek Dergisi"
+                  className="auth-mobile-logo"
+                />
+                <span className="auth-mobile-brand-title">Çilek Dergisi</span>
+              </div>
+            </div>
+
+            {/* Giriş Yap / Kayıt Ol Hızlı Sekme Geçişi */}
+            {mode !== 'forgot' && (
+              <div className="auth-segmented-switch" role="tablist" aria-label="Giriş veya Kayıt Seçimi">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={mode === 'login'}
+                  className={`auth-segment-btn ${mode === 'login' ? 'active' : ''}`}
+                  onClick={() => { setMode('login'); clearMessages(); }}
+                  id="tab-mode-login"
+                >
+                  Giriş Yap
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={mode === 'register'}
+                  className={`auth-segment-btn ${mode === 'register' ? 'active' : ''}`}
+                  onClick={() => { setMode('register'); clearMessages(); }}
+                  id="tab-mode-register"
+                >
+                  Kayıt Ol
+                </button>
+              </div>
+            )}
             
             {reason === 'pdf' && (
               <div className="auth-reason-banner">

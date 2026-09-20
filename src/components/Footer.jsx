@@ -1,26 +1,43 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-export default function Footer() {
+const TICKER_TEXT = '✦ Sayı 06 yayında · Şimdi oku ✦ Her ay yeni bir sayı ✦ Bağımsız Gençlik ✦ Çilek Dergisi ✦ Sayı 06 yayında · Şimdi oku ✦ Her ay yeni bir sayı ✦ Bağımsız Gençlik ✦ Çilek Dergisi ✦ '
+
+export default function Footer({ showTicker = false }) {
   return (
-    <footer className="site-footer" role="contentinfo">
-      <div className="site-footer-inner">
-        <div className="footer-left">
-          <Link to="/" className="footer-brand" aria-label="Çilek Dergi Ana Sayfa">
-            <span className="footer-brand-title">Çilek</span>
-            <span className="footer-brand-sub">DERGİ</span>
+    <footer className="site-footer-v2" role="contentinfo">
+
+      {/* ── Kayan Şerit (Footer Üstü) ────────────────────────────────── */}
+      <div className="footer-ticker-band" aria-hidden="true">
+        <div className="footer-ticker-track">
+          <span className="footer-ticker-text">{TICKER_TEXT}</span>
+          <span className="footer-ticker-text">{TICKER_TEXT}</span>
+        </div>
+      </div>
+
+      {/* ── Footer Ana İçerik ────────────────────────────────────────── */}
+      <div className="footer-v2-inner">
+
+        {/* Sol: Marka + Açıklama + Sosyal */}
+        <div className="footer-v2-brand">
+          <Link to="/" className="footer-v2-logo" aria-label="Çilek Dergi Ana Sayfa">
+            <span className="footer-v2-logo-title">Çilek</span>
+            <span className="footer-v2-logo-sub">DERGİ</span>
           </Link>
 
-          <p className="footer-description">
-            Kendi sesini özgürce duyurduğun, seninle büyüyen ve parıldayan bir alan.
+          <p className="footer-v2-desc">
+            Kendi sesini özgürce duyurduğun,<br />
+            seninle büyüyen ve parıldayan bir alan.
           </p>
 
-          <div className="footer-socials" aria-label="Sosyal Medya Bağlantıları">
+          {/* Sosyal Medya İkonları */}
+          <div className="footer-v2-socials" aria-label="Sosyal Medya Bağlantıları">
+            {/* Instagram */}
             <a
               href="https://instagram.com/cilekdergisi"
               target="_blank"
               rel="noopener noreferrer"
-              className="footer-social-link"
+              className="footer-v2-social-link"
               aria-label="Instagram"
               id="footer-instagram"
             >
@@ -31,11 +48,12 @@ export default function Footer() {
               </svg>
             </a>
 
+            {/* TikTok */}
             <a
               href="https://tiktok.com/@cilekdergisi"
               target="_blank"
               rel="noopener noreferrer"
-              className="footer-social-link"
+              className="footer-v2-social-link"
               aria-label="TikTok"
               id="footer-tiktok"
             >
@@ -44,9 +62,10 @@ export default function Footer() {
               </svg>
             </a>
 
+            {/* E-posta */}
             <a
               href="mailto:hello@cilekdergisi.com"
-              className="footer-social-link"
+              className="footer-v2-social-link"
               aria-label="E-posta"
               id="footer-mail"
             >
@@ -58,19 +77,25 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="footer-links-group">
-          <span className="flg-title">Sayfalar</span>
-          <nav className="flg-nav">
+        {/* Orta: Sayfa Linkleri */}
+        <div className="footer-v2-links-group">
+          <span className="footer-v2-group-title">Sayfalar</span>
+          <nav className="footer-v2-nav" aria-label="Alt menü">
             <Link to="/dergiler">Dergiler</Link>
             <Link to="/hakkimizda">Hakkımızda</Link>
             <Link to="/ekibimiz">Ekibimiz</Link>
             <Link to="/iletisim">Yazı Gönderin</Link>
+            <Link to="/auth">Giriş Yap</Link>
           </nav>
         </div>
 
-        <div className="footer-right">
-          <p>© 2026 Çilek Dergi</p>
-          <p>Tüm hakları saklıdır.</p>
+        {/* Sağ: Copyright + Manifesto */}
+        <div className="footer-v2-right">
+          <p className="footer-v2-manifesto">
+            "Her gencin anlatacak sahici,<br />kırılgan ve özgün bir hikâyesi vardır."
+          </p>
+          <p className="footer-v2-copy">© 2026 Çilek Dergi</p>
+          <p className="footer-v2-copy">Tüm hakları saklıdır.</p>
         </div>
       </div>
     </footer>
