@@ -35,8 +35,8 @@ export default function Dergiler({ user, isAdmin }) {
           </div>
         </header>
 
-        {/* ── Dergi Izgarası ────────────────────────────────────────── */}
-        <section className="dergiler-grid-section container" aria-label="Tüm Sayılar">
+        {/* ── Dergi Izgarası (Boydan Boya Dijital Kitaplık) ────────── */}
+        <section className="dergiler-grid-section" aria-label="Tüm Sayılar">
           <MagazineGrid user={user} />
         </section>
 

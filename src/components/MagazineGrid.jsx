@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useSiteContent } from '../lib/siteContent'
 import MagazineModal from './MagazineModal'
@@ -23,10 +23,8 @@ const COVER_BG = [
   'linear-gradient(145deg, var(--color-primary) 0%, var(--color-leaf) 100%)',
 ]
 
-// Her rafa kaç kapak sığsın
-const PER_SHELF = 4
-
 export default function MagazineGrid({ user, onFirstLoaded }) {
+  const navigate = useNavigate()
   const { settings } = useSiteContent()
   const [magazines, setMagazines] = useState(ALL_MAGAZINES_FALLBACK)
   const [selectedMag, setSelectedMag] = useState(null)
@@ -55,36 +53,60 @@ export default function MagazineGrid({ user, onFirstLoaded }) {
 
   useEffect(() => { fetchMagazines() }, [fetchMagazines])
 
-  // Dergileri raflara böl (PER_SHELF'er adet)
-  const shelves = []
-  for (let i = 0; i < magazines.length; i += PER_SHELF) {
-    shelves.push(magazines.slice(i, i + PER_SHELF))
-  }
+  // Boydan boya 4 raf oluştur
+  const shelfConfig = [
+    {
+      id: 'shelf-1',
+      title: 'I. RAF · GÜNCEL SAYILAR',
+      mags: magazines.slice(0, 2),
+    },
+    {
+      id: 'shelf-2',
+      title: 'II. RAF · BAHAR KOLEKSİYONU',
+      mags: magazines.slice(2, 4),
+    },
+    {
+      id: 'shelf-3',
+      title: 'III. RAF · ARŞİV & İLK SAYILAR',
+      mags: magazines.slice(4, 6),
+    },
+    {
+      id: 'shelf-4',
+      title: 'IV. RAF · GELECEK SAYILAR & ATÖLYE',
+      mags: magazines.slice(6, 8),
+      isSpecialShelf: magazines.length <= 6
+    },
+  ]
 
   return (
     <div className="draf-wrapper">
 
-      {/* ── Sayfa Başlığı ────────────────────────────────────── */}
-      <div className="draf-page-header">
-        <div className="draf-header-inner">
-          <span className="draf-eyebrow">{settings.magazines_eyebrow || '✦ Çilek Dergisi'}</span>
-          <h1 className="draf-heading">{settings.magazines_title || 'Dijital Rafımız'}</h1>
-          <p className="draf-subheading">
-            {settings.magazines_subtitle || 'Her sayı, bir düşüncenin izinde. Raftan bir dergi seç, sayfaları çevir.'}
-          </p>
+      {/* ── Boydan Boya 4 Katlı Dijital Kitaplık ───────────────────── */}
+      <div className="draf-bookcase" role="region" aria-label="Çilek Dergisi Dijital Kitaplığı">
+        
+        {/* Kitaplık Üst Taç Başlığı */}
+        <div className="draf-bookcase-crown">
+          <span className="draf-crown-line" />
+          <span className="draf-crown-title">✦ ÇİLEK DERGİSİ DİJİTAL KİTAPLIĞI ✦</span>
+          <span className="draf-crown-line" />
         </div>
-      </div>
 
-      {/* ── Dijital Raf (Kapak Görünümü) ─────────────────────── */}
-      <div className="draf-bookcase" role="region" aria-label="Çilek Dergisi Dijital Rafı">
+        {shelfConfig.map((shelf, sIdx) => (
+          <div key={shelf.id} className="draf-shelf">
 
-        {shelves.map((shelfMags, sIdx) => (
-          <div key={sIdx} className="draf-shelf">
+            {/* Raf Pirinç İsim Levhası */}
+            <div className="draf-shelf-header">
+              <div className="draf-brass-plaque">
+                <span className="draf-plaque-rivet left" />
+                <span className="draf-plaque-text">{shelf.title}</span>
+                <span className="draf-plaque-rivet right" />
+              </div>
+            </div>
 
-            {/* Raf üstü boşluk + dergiler */}
+            {/* Kapaklar */}
             <div className="draf-shelf-books">
-              {shelfMags.map((mag, mIdx) => {
-                const globalIdx = sIdx * PER_SHELF + mIdx
+              {shelf.mags.map((mag, mIdx) => {
+                const globalIdx = sIdx * 2 + mIdx
                 const isNewest = globalIdx === 0
                 const coverBg = COVER_BG[globalIdx % COVER_BG.length]
 
@@ -107,7 +129,6 @@ export default function MagazineGrid({ user, onFirstLoaded }) {
                           className="draf-cover-img"
                         />
                       ) : (
-                        /* Kapak görseli yoksa planlı fallback tasarımı */
                         <div className="draf-cover-fallback">
                           <img
                             src="/icons/cilek-vintage.png"
@@ -150,16 +171,72 @@ export default function MagazineGrid({ user, onFirstLoaded }) {
                       <span className="draf-label-num">
                         Sayı {String(mag.issue_number || globalIdx + 1).padStart(2, '0')}
                       </span>
-                      <span className="draf-label-title">
+                      <strong className="draf-label-title">
                         {mag.title?.split('—')[1]?.trim() || mag.title}
-                      </span>
+                      </strong>
                     </div>
                   </button>
                 )
               })}
+
+              {/* 4. Raf Özel Kartları (Henüz 7-8. sayılar eklenmemişse görünür) */}
+              {shelf.isSpecialShelf && shelf.mags.length === 0 && (
+                <>
+                  {/* Gelecek Sayı Teaserı */}
+                  <div className="draf-cover-slot draf-slot-upcoming">
+                    <div className="draf-cover draf-cover-upcoming">
+                      <div className="draf-cover-fallback">
+                        <span style={{ fontSize: '2.4rem' }}>🍓</span>
+                        <div className="draf-fallback-meta">
+                          <span className="draf-fallback-brand">ÇİLEK</span>
+                          <span className="draf-fallback-brand">DERGİSİ</span>
+                        </div>
+                        <div className="draf-fallback-divider" />
+                        <span className="draf-fallback-issue">Sayı 07</span>
+                        <span className="draf-fallback-month">Güz 2024 · Hazırlanıyor</span>
+                      </div>
+                      <div className="draf-badge-upcoming">
+                        PEK YAKINDA
+                      </div>
+                    </div>
+                    <div className="draf-cover-label">
+                      <span className="draf-label-num">Sayı 07</span>
+                      <strong className="draf-label-title">Baskı Hazırlığında</strong>
+                    </div>
+                  </div>
+
+                  {/* Açık Başvuru Kartı */}
+                  <button
+                    type="button"
+                    className="draf-cover-slot draf-slot-submission"
+                    onClick={() => navigate('/yazi-gonderi')}
+                    aria-label="Yazını bize gönder"
+                  >
+                    <div className="draf-cover draf-cover-submission">
+                      <div className="draf-cover-fallback">
+                        <span style={{ fontSize: '2.4rem' }}>✍️</span>
+                        <div className="draf-fallback-meta">
+                          <span className="draf-fallback-brand">SEN DE KATIL</span>
+                          <span className="draf-fallback-brand">ÇİLEK YAZARI OL</span>
+                        </div>
+                        <div className="draf-fallback-divider" />
+                        <span className="draf-fallback-issue">Açık Çağrı</span>
+                        <span className="draf-fallback-month">15-25 Yaş Bağımsız Sesler</span>
+                      </div>
+                      <div className="draf-cover-overlay" aria-hidden="true">
+                        <span className="draf-overlay-label">BAŞVUR ↗</span>
+                      </div>
+                    </div>
+                    <div className="draf-cover-label">
+                      <span className="draf-label-num">Eserini Gönder</span>
+                      <strong className="draf-label-title">Sayfada Yer Al</strong>
+                    </div>
+                  </button>
+                </>
+              )}
             </div>
 
-            {/* Raf Çizgisi */}
+            {/* Ahşap Raf Çizgisi */}
             <div className="draf-shelf-ledge" aria-hidden="true">
               <div className="draf-ledge-top" />
               <div className="draf-ledge-face" />

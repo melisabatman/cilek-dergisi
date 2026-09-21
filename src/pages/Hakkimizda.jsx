@@ -118,7 +118,7 @@ export default function Hakkimizda({ user, isAdmin }) {
               <div className="about-v2-founder-polaroid">
                 <div className="about-v2-founder-photo">
                   <img
-                    src={mediaData.founder_photo || '/icons/cilek-vintage.png'}
+                    src={settings.about_founder_photo_url || settings.home_founder_photo_url || '/icons/cilek-vintage.png'}
                     alt="Kurucu"
                     style={{ width: '60%' }}
                   />
@@ -135,11 +135,11 @@ export default function Hakkimizda({ user, isAdmin }) {
               </h2>
 
               <blockquote className="about-v2-founder-quote">
-                {siteData.about_founder_quote || '"Yazmak isteyip nereye göndereceğini bilemeyen bir genci düşündüm. Tam da onun için bu alanı açtım — çünkü ben de bir zamanlar o gençtim."'}
+                {settings.about_founder_quote || '"Yazmak isteyip nereye göndereceğini bilemeyen bir genci düşündüm. Tam da onun için bu alanı açtım — çünkü ben de bir zamanlar o gençtim."'}
               </blockquote>
 
               <p className="about-v2-para">
-                {siteData.about_founder_bio || 'Çilek Dergisi, bir gece ansızın gelen bir fikrin, incelikle örülmüş bir planın ve ekibin inanılmaz emeğinin ürünü. Her sayıda bu sevgi hissediliyor.'}
+                {settings.about_founder_bio || 'Çilek Dergisi, bir gece ansızın gelen bir fikrin, incelikle örülmüş bir planın ve ekibin inanılmaz emeğinin ürünü. Her sayıda bu sevgi hissediliyor.'}
               </p>
 
               <Link to="/ekibimiz" className="btn-cilek-link" id="btn-about-meet-team">
