@@ -27,9 +27,7 @@ const MISSION_ITEMS = [
 ]
 
 export default function Hakkimizda({ user, isAdmin }) {
-  const { content } = useSiteContent()
-  const siteData = content?.site || DEFAULT_SITE_CONTENT.site
-  const mediaData = content?.media || DEFAULT_SITE_CONTENT.media
+  const { settings } = useSiteContent()
 
   return (
     <Layout user={user} isAdmin={isAdmin}>
@@ -44,9 +42,9 @@ export default function Hakkimizda({ user, isAdmin }) {
             </div>
 
             <div className="about-v2-hero-text">
-              <span className="eyebrow-cilek"><span className="eyebrow-star">✦</span> Biz Kimiz?</span>
+              <span className="eyebrow-cilek"><span className="eyebrow-star">✦</span> {settings.about_title || 'Biz Kimiz?'}</span>
               <h1 className="about-v2-opening">
-                {siteData.about_opening_quote || 'Her gencin anlatacak sahici, kırılgan ve özgün bir hikâyesi vardır.'}
+                {settings.about_opening_quote || 'Her gencin anlatacak sahici, kırılgan ve özgün bir hikâyesi vardır.'}
               </h1>
             </div>
 
@@ -65,24 +63,24 @@ export default function Hakkimizda({ user, isAdmin }) {
             <div className="about-v2-story-text">
               <span className="eyebrow-cilek"><span className="eyebrow-star">✦</span> Hikâyemiz</span>
               <h2 className="heading-cilek">
-                {siteData.about_story_title || "Çilek Dergisi'nin Doğuşu"}
+                {settings.about_story_title || "Çilek Dergisi'nin Doğuşu"}
               </h2>
 
               <p className="about-v2-para">
-                {siteData.about_story_p1}
+                {settings.about_paragraph_1}
               </p>
 
               <p className="about-v2-para">
-                {siteData.about_story_p2}
+                {settings.about_paragraph_2}
               </p>
 
               <p className="about-v2-para">
-                {siteData.about_story_p3}
+                {settings.about_paragraph_3}
               </p>
 
-              {siteData.about_manifesto_quote && (
+              {settings.about_manifesto_quote && (
                 <blockquote className="about-v2-quote">
-                  {siteData.about_manifesto_quote}
+                  {settings.about_manifesto_quote}
                 </blockquote>
               )}
             </div>
@@ -91,13 +89,13 @@ export default function Hakkimizda({ user, isAdmin }) {
             <div className="about-v2-story-visual" aria-hidden="true">
               <div className="about-v2-polaroid about-v2-polaroid-1">
                 <div className="about-v2-polaroid-img">
-                  <img src={mediaData.about_photo_1 || '/icons/icon4.png'} alt="" style={{ width: '60%' }} />
+                  <img src={settings.about_photo_1_url || '/icons/icon4.png'} alt="" style={{ width: '60%' }} />
                 </div>
                 <span className="about-v2-polaroid-caption">Her sayı bir macera ✦</span>
               </div>
               <div className="about-v2-polaroid about-v2-polaroid-2">
                 <div className="about-v2-polaroid-img">
-                  <img src={mediaData.about_photo_2 || '/icons/icon1.png'} alt="" style={{ width: '55%' }} />
+                  <img src={settings.about_photo_2_url || '/icons/icon1.png'} alt="" style={{ width: '55%' }} />
                 </div>
                 <span className="about-v2-polaroid-caption">Bağımsız sesler 🍓</span>
               </div>

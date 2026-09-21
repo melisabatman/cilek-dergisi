@@ -1,9 +1,12 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { useSiteContent } from '../lib/siteContent'
 
 const TICKER_TEXT = '✦ Sayı 06 yayında · Şimdi oku ✦ Her ay yeni bir sayı ✦ Bağımsız Gençlik ✦ Çilek Dergisi ✦ Sayı 06 yayında · Şimdi oku ✦ Her ay yeni bir sayı ✦ Bağımsız Gençlik ✦ Çilek Dergisi ✦ '
 
 export default function Footer({ showTicker = false }) {
+  const { settings } = useSiteContent()
+
   return (
     <footer className="site-footer-v2" role="contentinfo">
 
@@ -26,15 +29,14 @@ export default function Footer({ showTicker = false }) {
           </Link>
 
           <p className="footer-v2-desc">
-            Kendi sesini özgürce duyurduğun,<br />
-            seninle büyüyen ve parıldayan bir alan.
+            {settings.footer_text || 'Kendi sesini özgürce duyurduğun, seninle büyüyen ve parıldayan bir alan.'}
           </p>
 
           {/* Sosyal Medya İkonları */}
           <div className="footer-v2-socials" aria-label="Sosyal Medya Bağlantıları">
             {/* Instagram */}
             <a
-              href="https://instagram.com/cilekdergisi"
+              href={settings.social_instagram_url || 'https://instagram.com/cilekdergisi'}
               target="_blank"
               rel="noopener noreferrer"
               className="footer-v2-social-link"
@@ -50,7 +52,7 @@ export default function Footer({ showTicker = false }) {
 
             {/* TikTok */}
             <a
-              href="https://tiktok.com/@cilekdergisi"
+              href={settings.social_tiktok_url || 'https://tiktok.com/@cilekdergisi'}
               target="_blank"
               rel="noopener noreferrer"
               className="footer-v2-social-link"
@@ -64,7 +66,7 @@ export default function Footer({ showTicker = false }) {
 
             {/* E-posta */}
             <a
-              href="mailto:hello@cilekdergisi.com"
+              href={`mailto:${settings.contact_email || 'hello@cilekdergisi.com'}`}
               className="footer-v2-social-link"
               aria-label="E-posta"
               id="footer-mail"
@@ -92,9 +94,9 @@ export default function Footer({ showTicker = false }) {
         {/* Sağ: Copyright + Manifesto */}
         <div className="footer-v2-right">
           <p className="footer-v2-manifesto">
-            "Her gencin anlatacak sahici,<br />kırılgan ve özgün bir hikâyesi vardır."
+            {settings.footer_manifesto || '"Her gencin anlatacak sahici, kırılgan ve özgün bir hikâyesi vardır."'}
           </p>
-          <p className="footer-v2-copy">© 2026 Çilek Dergi</p>
+          <p className="footer-v2-copy">{settings.footer_copyright || '© 2026 Çilek Dergi'}</p>
           <p className="footer-v2-copy">Tüm hakları saklıdır.</p>
         </div>
       </div>

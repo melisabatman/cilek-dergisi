@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import Layout from '../components/Layout'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useSiteContent } from '../lib/siteContent'
 
 const TEAM_FALLBACK = [
   { id: 't-1', name: 'Genel Yayın Yönetmeni', role: 'Kreatif Direktör & Kurucu', bio: 'Derginin editoryal kimliğini, bağımsız tonunu ve görsel ruhunu şekillendiriyor. Her sayıda okurlarıyla buluşmak için özenle çalışıyor.', photo_url: null, order_index: 1 },
@@ -12,8 +13,34 @@ const TEAM_FALLBACK = [
   { id: 't-6', name: 'Yazar Koordinatörü', role: 'Topluluk & Başvurular', bio: '15-25 yaş genç yazar başvurularını karşılıyor, yeni yetenekleri keşfedip cesaretlendiriyor.', photo_url: null, order_index: 6 },
 ]
 
+// Fallback için avatar gradient paleti (çilek meyvesi paletinde)
+const AVATAR_GRADIENTS = [
+  'linear-gradient(160deg, var(--color-primary) 0%, var(--color-text) 100%)',
+  'linear-gradient(160deg, var(--color-text) 0%, var(--color-primary) 100%)',
+  'linear-gradient(160deg, var(--color-primary) 0%, #1A0A0E 100%)',
+  'linear-gradient(160deg, var(--color-primary) 0%, var(--color-seed) 100%)',
+  'linear-gradient(160deg, var(--color-primary) 0%, var(--color-leaf) 100%)',
+  'linear-gradient(160deg, var(--color-primary) 0%, var(--color-accent) 100%)',
+]
+
+// Avatar baş harfi
+function initials(name) {
+  return name
+    ?.split(' ')
+    .map(w => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase() || '?'
+}
+
 export default function Ekibimiz({ user, isAdmin }) {
+  const { settings } = useSiteContent()
   const [team, setTeam] = useState(TEAM_FALLBACK)
+  const [activeIdx, setActiveIdx] = useState(null)
+  const sliderRef = useRef(null)
+  const isDragging = useRef(false)
+  const dragStart = useRef(0)
+  const scrollStart = useRef(0)
 
   useEffect(() => {
     supabase
@@ -25,114 +52,200 @@ export default function Ekibimiz({ user, isAdmin }) {
       })
   }, [])
 
-  const founder = team[0]
-  const restOfTeam = team.slice(1)
+  // ── Slider ok butonları ─────────────────────────────────────
+  const scroll = useCallback((dir) => {
+    const el = sliderRef.current
+    if (!el) return
+    const amount = el.clientWidth * 0.72
+    el.scrollBy({ left: dir === 'right' ? amount : -amount, behavior: 'smooth' })
+  }, [])
+
+  // ── Mouse sürükleme ile kaydırma ────────────────────────────
+  const handleMouseDown = (e) => {
+    isDragging.current = true
+    dragStart.current = e.pageX
+    scrollStart.current = sliderRef.current?.scrollLeft || 0
+    sliderRef.current?.classList.add('is-dragging')
+  }
+  const handleMouseMove = (e) => {
+    if (!isDragging.current) return
+    const dx = e.pageX - dragStart.current
+    if (sliderRef.current) sliderRef.current.scrollLeft = scrollStart.current - dx
+  }
+  const handleMouseUp = () => {
+    isDragging.current = false
+    sliderRef.current?.classList.remove('is-dragging')
+  }
+
+  // ── Klavye erişilebilirliği ─────────────────────────────────
+  const handleCardKey = (e, idx) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      setActiveIdx(idx === activeIdx ? null : idx)
+    }
+    if (e.key === 'Escape') setActiveIdx(null)
+  }
+
+  // Dışarı tıklayınca aktif kartı kapat
+  useEffect(() => {
+    const close = (e) => {
+      if (!e.target.closest('.stv-card')) setActiveIdx(null)
+    }
+    document.addEventListener('click', close)
+    return () => document.removeEventListener('click', close)
+  }, [])
 
   return (
     <Layout user={user} isAdmin={isAdmin}>
-      <div className="team-v2-page">
+      <div className="stv-page">
 
-        {/* ── Sayfa Başlığı ─────────────────────────────────────────── */}
-        <header className="team-v2-header">
-          <div className="container team-v2-header-inner">
-            <span className="eyebrow-cilek"><span className="eyebrow-star">✦</span> Sahne Arkasındakiler</span>
-            <h1 className="team-v2-page-title">
-              Ekibimiz
-            </h1>
-            <p className="team-v2-page-sub">
-              Çilek Dergisi'ni sevgiyle, titizlikle ve bağımsız bir heyecanla
-              hayata geçiren yaratıcı kadro.
+        {/* ── Sayfa Başlığı ─────────────────────────────────── */}
+        <header className="stv-header">
+          <div className="container">
+            <span className="stv-eyebrow">
+              <span className="eyebrow-star">✦</span> {settings.team_page_eyebrow || 'Sahne Arkasındakiler'}
+            </span>
+            <h1 className="stv-page-title">{settings.team_page_title || 'Ekibimiz'}</h1>
+            <p className="stv-page-sub">
+              {settings.team_page_description || "Çilek Dergisi'ni sevgiyle, titizlikle ve bağımsız bir heyecanla hayata geçiren yaratıcı kadro."}
             </p>
           </div>
         </header>
 
-        {/* ── Kurucu / Featured Kart ────────────────────────────────── */}
-        {founder && (
-          <section className="team-v2-founder-section" aria-label="Kurucu">
-            <div className="container">
-              <div className="team-v2-founder-card">
-                {/* Fotoğraf */}
-                <div className="team-v2-founder-photo">
-                  {founder.photo_url ? (
-                    <img src={founder.photo_url} alt={founder.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  ) : (
-                    <div className="team-v2-founder-photo-fallback">
-                      <img src="/icons/cilek-vintage.png" alt="" style={{ width: '55%' }} />
-                    </div>
-                  )}
-                </div>
+        {/* ── Slider Alanı ──────────────────────────────────── */}
+        <section className="stv-slider-section" aria-label="Ekip üyeleri">
+          <div className="stv-slider-outer">
 
-                {/* Metin */}
-                <div className="team-v2-founder-info">
-                  <span className="eyebrow-cilek"><span className="eyebrow-star">✦</span> Kurucu & Genel Yayın Yönetmeni</span>
-                  <h2 className="team-v2-founder-name">{founder.name}</h2>
-                  <span className="team-v2-founder-role">{founder.role}</span>
-                  {founder.bio && <p className="team-v2-founder-bio">{founder.bio}</p>}
+            {/* Sol ok */}
+            <button
+              type="button"
+              className="stv-arrow stv-arrow--left"
+              onClick={() => scroll('left')}
+              aria-label="Sola kaydır"
+              id="btn-team-prev"
+            >
+              ‹
+            </button>
 
-                  <blockquote className="team-v2-founder-quote">
-                    "Her sayı, bir topluluk çabası — ve ben bu topluluğun parçası olmaktan
-                    her geçen gün daha fazla gurur duyuyorum."
-                  </blockquote>
+            {/* Kaydırılabilir ray */}
+            <div
+              className="stv-rail"
+              ref={sliderRef}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+            >
+              {team.map((member, idx) => {
+                const isFounder = idx === 0
+                const isActive = activeIdx === idx
+                const gradBg = AVATAR_GRADIENTS[idx % AVATAR_GRADIENTS.length]
 
-                  <Link to="/yazi-gonderi" className="btn-cilek-primary" id="btn-team-founder-cta">
-                    Sen de Katkı Sun
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* ── Ekip Kartları Izgarası ────────────────────────────────── */}
-        {restOfTeam.length > 0 && (
-          <section className="team-v2-grid-section" aria-label="Ekip Üyeleri">
-            <div className="container">
-              <div className="team-v2-section-head">
-                <span className="eyebrow-cilek"><span className="eyebrow-star">✦</span> Ekibimiz</span>
-                <h2 className="heading-cilek">
-                  Masanın<span className="italic"> Arkasındakiler</span>
-                </h2>
-              </div>
-
-              <div className="team-v2-grid">
-                {restOfTeam.map((member, idx) => (
-                  <article key={member.id || idx} className="team-v2-card">
-                    {/* Avatar */}
-                    <div className="team-v2-avatar">
+                return (
+                  <div
+                    key={member.id || idx}
+                    className={[
+                      'stv-card',
+                      isFounder ? 'stv-card--hero' : '',
+                      isActive   ? 'stv-card--active' : '',
+                      activeIdx !== null && !isActive ? 'stv-card--dimmed' : '',
+                    ].filter(Boolean).join(' ')}
+                    onClick={() => setActiveIdx(idx === activeIdx ? null : idx)}
+                    onKeyDown={(e) => handleCardKey(e, idx)}
+                    tabIndex={0}
+                    role="button"
+                    aria-pressed={isActive}
+                    aria-label={`${member.name} — ${member.role}`}
+                    id={`stv-card-${member.id || idx}`}
+                  >
+                    {/* ── Poster / Fotoğraf ───────────────── */}
+                    <div className="stv-poster">
                       {member.photo_url ? (
-                        <img src={member.photo_url} alt={member.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
-                      ) : (
                         <img
-                          src={`/icons/icon${((member.order_index || idx + 2) % 6) + 1}.png`}
-                          alt=""
-                          style={{ width: '55%', height: 'auto' }}
+                          src={member.photo_url}
+                          alt={member.name}
+                          className="stv-poster-img"
+                          draggable="false"
                         />
+                      ) : (
+                        <div
+                          className="stv-poster-fallback"
+                          style={{ background: gradBg }}
+                        >
+                          <img
+                            src="/icons/cilek-vintage.png"
+                            alt=""
+                            className="stv-fallback-logo"
+                            draggable="false"
+                          />
+                          <span className="stv-fallback-initials">
+                            {initials(member.name)}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Daima görünen alt gradient + isim/rol */}
+                      <div className="stv-poster-base-overlay">
+                        <span className="stv-base-role">{member.role}</span>
+                        <h2 className="stv-base-name">{member.name}</h2>
+                      </div>
+
+                      {/* Hover / Active: Bio kartı ──────────── */}
+                      <div className="stv-hover-info" aria-hidden={!isActive}>
+                        <span className="stv-hover-role">{member.role}</span>
+                        <h2 className="stv-hover-name">{member.name}</h2>
+                        {member.bio && (
+                          <p className="stv-hover-bio">{member.bio}</p>
+                        )}
+                        {isFounder && (
+                          <blockquote className="stv-hover-quote">
+                            "Her sayı, bir topluluk çabası."
+                          </blockquote>
+                        )}
+                      </div>
+
+                      {/* Kurucu rozeti */}
+                      {isFounder && (
+                        <div className="stv-founder-badge" aria-label="Kurucu">
+                          ✦ Kurucu
+                        </div>
                       )}
                     </div>
-
-                    {/* İçerik */}
-                    <h3 className="team-v2-name">{member.name}</h3>
-                    <span className="team-v2-role">{member.role}</span>
-                    {member.bio && <p className="team-v2-bio">{member.bio}</p>}
-
-                    {/* Dekoratif alt çizgi */}
-                    <div className="team-v2-card-bar" />
-                  </article>
-                ))}
-              </div>
+                  </div>
+                )
+              })}
             </div>
-          </section>
-        )}
 
-        {/* ── Katılım CTA ───────────────────────────────────────────── */}
-        <section className="team-v2-join" aria-label="Ekibe Katıl">
+            {/* Sağ ok */}
+            <button
+              type="button"
+              className="stv-arrow stv-arrow--right"
+              onClick={() => scroll('right')}
+              aria-label="Sağa kaydır"
+              id="btn-team-next"
+            >
+              ›
+            </button>
+          </div>
+
+          {/* Dot navigasyon (mobil için görünür) */}
+          <div className="stv-dots" aria-hidden="true">
+            {team.map((_, i) => (
+              <span
+                key={i}
+                className={`stv-dot ${activeIdx === i ? 'stv-dot--active' : ''}`}
+              />
+            ))}
+          </div>
+        </section>
+
+        {/* ── Katılım CTA ───────────────────────────────────── */}
+        <section className="stv-join-section" aria-label="Ekibe Katıl">
           <div className="container">
-            <div className="team-v2-join-card">
-              <div className="team-v2-join-icon">🍓</div>
-              <h2 className="team-v2-join-title">
-                Sen de Ekibin Bir Parçası Ol
-              </h2>
-              <p className="team-v2-join-desc">
+            <div className="stv-join-card">
+              <span className="stv-join-icon">🍓</span>
+              <h2 className="stv-join-title">Sen de Ekibin Bir Parçası Ol</h2>
+              <p className="stv-join-desc">
                 Editör, yazar, illüstratör veya sosyal medya koordinatörü olarak
                 Çilek Dergisi'ne katkı sunmak istiyorsan bize ulaş.
               </p>

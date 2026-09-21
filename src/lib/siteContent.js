@@ -1,177 +1,362 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from './supabase'
 
-const STORAGE_KEY = 'cilek_site_content_v2'
-const UPDATE_EVENT_NAME = 'cilek_site_content_updated'
+const STORAGE_KEY = 'cilek_site_settings_v3'
+const UPDATE_EVENT_NAME = 'cilek_site_settings_updated'
 
+/**
+ * SİTE İÇERİĞİ VARSAYILANLARI (TÜM STATİK METİN VE GÖRSELLER İÇİN TEK KAYNAK)
+ */
+export const DEFAULT_SITE_SETTINGS = {
+  // ── GENEL, FOOTER & SOSYAL MEDYA ──────────────────────────
+  brand_name: 'Çilek Dergisi',
+  brand_sub: 'DERGİ',
+  footer_text: 'Kendi sesini özgürce duyurduğun, seninle büyüyen ve parıldayan bir alan.',
+  footer_manifesto: '“Her gencin anlatacak sahici, kırılgan ve özgün bir hikâyesi vardır.”',
+  footer_copyright: '© 2026 Çilek Dergi. Tüm hakları saklıdır.',
+  social_instagram_url: 'https://instagram.com/cilekdergisi',
+  social_tiktok_url: 'https://tiktok.com/@cilekdergisi',
+  contact_email: 'hello@cilekdergisi.com',
+  contact_phone: '+90 555 000 00 00',
+  contact_address: 'Kadıköy, İstanbul',
+
+  // ── 1. ANA SAYFA HERO & MANŞET ────────────────────────────
+  hero_eyebrow: 'Çilek Dergisi',
+  hero_title_line1: 'Kendi sesini',
+  hero_title_italic: 'özgürce',
+  hero_title_script: 'duyurduğun alan.',
+  hero_subtitle: '15–25 yaş arası bağımsız yaratıcılar için özenle kürate edilmiş editoryal alan; her sayıda keşfedilmeyi bekleyen yeni anlatılar, şiirler, görsel seriler ve koleksiyonluk bir dergi deneyimi.',
+  hero_cta_text: 'Son Sayıyı Oku ✦',
+  hero_cta_archive: 'Arşivi İncele',
+  hero_marquee: '✦ Sayı 06 yayında · Şimdi oku ✦ Her ay yeni bir sayı ✦ Bağımsız Gençlik ✦ Çilek Dergisi ✦ ',
+
+  // ── 2. ANA SAYFA - TELLİ PANO (BU SAYIDA SENİ NELER BEKLİYOR) ──
+  home_toc_tag: 'Sayı Seçkisi',
+  home_toc_card_1_title: 'Güneşin Gölgesinde Kalanlar',
+  home_toc_card_1_desc: 'Yaz mevsiminin yakıcı sıcağında, gölgede kalan içsel monologlar ve büyüme sancıları.',
+  home_toc_card_2_title: 'Bir Yaz Öğledensonrası Notları',
+  home_toc_card_2_desc: 'Zamanın yavaşladığı bir ikindi vaktinde tutulan kırılgan notlar ve çocukluk hatıraları.',
+  home_toc_card_3_title: 'Deniz Kenarında Bağımsız Edebiyat',
+  home_toc_card_3_desc: 'Dalgaların ritminde yazılan serbest dizeler, genç şairlerin denize bıraktığı kelimeler.',
+  home_toc_card_4_title: 'Mevsim Değişirken İç Dünyamız',
+  home_toc_card_4_desc: 'Mevsimlerin geçişiyle iç dünyamızda değişen renkler, vedalar ve yeni filizlenen umutlar.',
+
+  // ── 3. ANA SAYFA - HER SAYIDA SENİ BEKLEYENLER (5 TEMEL İÇERİK) ──
+  features_title: 'Her Sayıda Seni Bekleyenler',
+  features_subtitle: "Çilek Dergisi'nin her sayısında bulacağın beş temel içerik türü:",
+  feature_1_title: 'Bir Yazı',
+  feature_1_desc: 'Duyguların en yalın haliyle kaleme alınmış, özgün bir deneme ya da kısa kurgu.',
+  feature_2_title: 'Bir Röportaj',
+  feature_2_desc: 'İlham veren genç bir yaratıcıyla dürüst ve derinlikli bir söyleşi.',
+  feature_3_title: 'Bir Görsel',
+  feature_3_desc: 'Fotoğraf serisi, illüstrasyon veya kolaj; sayfayı aydınlatan özgün bir eser.',
+  feature_4_title: 'Bir Öneri',
+  feature_4_desc: 'Bir kitap, müzik, film ya da küçük bir günlük ritüel önerisi.',
+  feature_5_title: 'Bir Düşünce',
+  feature_5_desc: 'Kafana takılan bir soru, bir kavram veya bir hayat notu.',
+
+  // ── 4. ANA SAYFA - EDİTORYAL DERGİ SAYFASI ─────────────────
+  editorial_tag: 'EDITORIAL FEATURE | ÇİLEK DERGİSİ',
+  editorial_sub: 'EDEBİYAT • SANAT • GENÇLİK & ÇOK SESLİ ANLATILAR',
+  editorial_headline: 'Senin sesin çağırdı.',
+  editorial_headline_italic: 'Çilek sayfalarını istiyor!',
+  editorial_lead: '15-25 yaş bağımsız yaratıcılar için özenle kürate edilmiş editoryal alan; her sayıda keşfedilmeyi bekleyen yeni anlatılar, şiirler, görsel seriler ve koleksiyonluk bir dergi deneyimi.',
+  editorial_badge_1_val: 'Sayı 06',
+  editorial_badge_1_label: 'GÜNCEL SAYI',
+  editorial_badge_1_sub: '(YAZ 2024)',
+  editorial_badge_2_val: '15-25',
+  editorial_badge_2_label: 'YAŞ ALANI',
+  editorial_badge_2_sub: 'ÖZGÜN SES',
+  editorial_badge_3_val: '%100',
+  editorial_badge_3_label: 'BAĞIMSIZ',
+  editorial_badge_3_sub: 'DİJİTAL YAYIN',
+  editorial_button_text: 'DERGİYİ KEŞFET',
+  editorial_photo_url: '',
+
+  // ── 5. ANA SAYFA - EKİBİMİZLE TANIŞIN BÖLÜMÜ ───────────────
+  home_team_eyebrow: 'Ekip',
+  home_team_title: 'Ekibimizle Tanışın',
+  home_team_cta: 'Tümünü Gör →',
+
+  // ── 6. KURUCU KÖŞESİ (ANA SAYFA & HAKKIMIZDA) ───────────────
+  about_founder_quote: '“Her gencin anlatacak sahici, kırılgan ve özgün bir hikâyesi vardır. Çilek Dergisi bunun için burada.”',
+  about_founder_bio: 'Derginin editoryal kimliğini, bağımsız tonunu ve görsel ruhunu şekillendiriyor. Her sayıda okurlarıyla buluşmak için özenle çalışıyor.',
+  about_founder_name: 'Kurucu & Genel Yayın Yönetmeni',
+  about_founder_photo_url: '',
+
+  // ── 7. KATILIM ÇAĞRISI / BANNER ────────────────────────────
+  home_cta_title: 'Sayfalarda Yerini Al',
+  home_cta_desc: 'Şiir, öykü, illüstrasyon veya fotoğraf... Çilek\'in yeni sayısında senin de izin olsun.',
+  home_cta_button: 'Bize Yaz / İletişim',
+
+  // ── 8. HAKKIMIZDA SAYFASI ──────────────────────────────────
+  about_title: 'Biz Kimiz?',
+  about_opening_quote: 'Her gencin anlatacak sahici, kırılgan ve özgün bir hikâyesi vardır.',
+  about_story_title: "Çilek Dergisi'nin Doğuşu",
+  about_paragraph_1: "Çilek Dergisi, dijital çağın aceleci ve yüzeysel tüketimine inat; basılı bir derginin sevgisiyle, her sayfasında özenle işlenmiş kelimeler, dikiş izleri ve özgür düşler barındırmak için 2024'te doğdu.",
+  about_paragraph_2: 'Sanat, edebiyat, kişisel deneyimler, şiir ve bağımsız görsel kültür… Burası kalıplara sığmak zorunda hissetmeyenlerin, ilk dizelerini veya illüstrasyonlarını korkmadan paylaşabileceği sıcak, estetik ve kapsayıcı bir sığınaktır.',
+  about_paragraph_3: 'Her ay yayımlanan bir sayı; yazarların, fotoğrafçıların, şairlerin ve meraklı okurların ortak evi. Ne kadar büyük ya da küçük olursa olsun her ses burada yankı bulur, her his burada yeşerir.',
+  about_manifesto_quote: '“İyi bir dergi, sadece yazanların değil — birlikte düşünen, hisseden ve birbirine omuz veren herkesin ortak evidir.”',
+  about_photo_1_url: '/icons/icon4.png',
+  about_photo_2_url: '/icons/icon2.png',
+
+  // ── 9. DERGİLER SAYFASI ────────────────────────────────────
+  magazines_eyebrow: '✦ Çilek Dergisi',
+  magazines_title: 'Dijital Rafımız',
+  magazines_subtitle: 'Her sayı, bir düşüncenin izinde. Raftan bir dergi seç, sayfaları çevir.',
+
+  // ── 10. EKİBİMİZ SAYFASI ───────────────────────────────────
+  team_page_eyebrow: '✦ Editoryal Masa',
+  team_page_title: 'Ekibimiz',
+  team_page_description: 'Derginin mutfağında, kelimelerin ve renklerin peşinde koşan bağımsız kolektif.',
+
+  // ── 11. İLETİŞİM SAYFASI ───────────────────────────────────
+  contact_eyebrow: '✦ Açık Başvuru',
+  contact_title: 'Bize Yazın',
+  contact_subtitle: 'Çilek Dergisi, 15–25 yaş bağımsız üreticilere kapılarını açık tutuyor. Yazın, illüstrasyonun veya fotoğraf serinle sayfalarımızda yer al.',
+  contact_steps_title: 'Başvuru Süreci',
+  contact_form_title: 'Çalışmanı Gönder',
+
+  // ── 12. HOŞ GELDİN MEKTUBU (LETTER MODAL) ──────────────────
+  letter_badge: 'ÖZEL ÇİLEK MEKTUBU',
+  letter_title: 'THANK YOU SO MUCH!',
+  letter_subtitle: 'Çilek Ailesine Aramıza Hoş Geldin Sevgili {name} 🍓',
+  letter_lead_quote: '“Kendine ait bir oda, kendine ait bir ses...”',
+  letter_body_paragraph: "Çilek Dergisi'nin bağımsız sayfalarına katıldığın için içtenlikle teşekkür ederiz. 15-25 yaşın o dur durak bilmeyen yaratıcı enerjisini, özgür hayallerini ve taze bakış açılarını birlikte paylaşacağımız sıcacık bir topluluktasın.",
+  letter_perks_title: 'Aramıza Katılarak Neler Kazandın?',
+  letter_signoff_quote: 'Sayfalarımızın arasında kendi rengini bulman dileğiyle,',
+  letter_signoff_signature: 'Sevgiyle, Çilek Dergi Ekibi ♥',
+  letter_envelope_sender: 'Çilek Dergisi Editoryal Masası',
+  letter_envelope_sub: 'Bağımsız Dijital Gençlik Yayını',
+  letter_button_open: 'Mektubu Aç ve Oku ✂️',
+  letter_button_explore: 'Dergileri Keşfetmeye Başla',
+}
+
+// Geriye dönük uyumluluk için alias
 export const DEFAULT_SITE_CONTENT = {
   letter: {
-    badge: 'ÖZEL ÇİLEK MEKTUBU',
-    title: 'THANK YOU SO MUCH!',
-    subtitle: 'Çilek Ailesine Aramıza Hoş Geldin Sevgili {name} 🍓',
-    lead_quote: '“Kendine ait bir oda, kendine ait bir ses...”',
-    body_paragraph: "Çilek Dergisi'nin bağımsız sayfalarına katıldığın için içtenlikle teşekkür ederiz. 15-25 yaşın o dur durak bilmeyen yaratıcı enerjisini, özgür hayallerini ve taze bakış açılarını birlikte paylaşacağımız sıcacık bir topluluktasın.",
-    perks_title: 'Aramıza Katılarak Neler Kazandın?',
+    badge: DEFAULT_SITE_SETTINGS.letter_badge,
+    title: DEFAULT_SITE_SETTINGS.letter_title,
+    subtitle: DEFAULT_SITE_SETTINGS.letter_subtitle,
+    lead_quote: DEFAULT_SITE_SETTINGS.letter_lead_quote,
+    body_paragraph: DEFAULT_SITE_SETTINGS.letter_body_paragraph,
+    perks_title: DEFAULT_SITE_SETTINGS.letter_perks_title,
     perks: [
       '📖 **Tüm Sayılara Sınırsız Erişim:** Sayfaları gerçek bir kitap gibi çevirip okuyabilirsin.',
       '💬 **Sayfa Notları & Yorumlar:** Beğendiğin sayfaların kenarına düşüncelerini iliştirebilirsin.',
       '✍️ **Yazı Gönderme Ayrıcalığı:** Kaleme aldığın yazı, şiir veya fotoğrafları bize göndererek yeni sayılarda yer alabilirsin.',
       '🔒 **Çevrimdışı İndirme:** Tüm sayıların yüksek kaliteli PDF arşivini tek tıkla cihazına indirebilirsin.'
     ],
-    signoff_quote: 'Sayfalarımızın arasında kendi rengini bulman dileğiyle,',
-    signoff_signature: 'Sevgiyle, Çilek Dergi Ekibi ♥',
-    envelope_sender: 'Çilek Dergisi Editoryal Masası',
-    envelope_sub: 'Bağımsız Dijital Gençlik Yayını',
-    button_open: 'Mektubu Aç ve Oku ✂️',
-    button_explore: 'Dergileri Keşfetmeye Başla'
+    signoff_quote: DEFAULT_SITE_SETTINGS.letter_signoff_quote,
+    signoff_signature: DEFAULT_SITE_SETTINGS.letter_signoff_signature,
+    envelope_sender: DEFAULT_SITE_SETTINGS.letter_envelope_sender,
+    envelope_sub: DEFAULT_SITE_SETTINGS.letter_envelope_sub,
+    button_open: DEFAULT_SITE_SETTINGS.letter_button_open,
+    button_explore: DEFAULT_SITE_SETTINGS.letter_button_explore,
   },
   site: {
-    hero_eyebrow: 'Çilek Dergisi',
-    hero_title_line1: 'Kendi sesini',
-    hero_title_italic: 'özgürce',
-    hero_title_script: 'duyurduğun alan.',
-    hero_copy: '15–25 yaş arası bağımsız yaratıcılar için özenle kürate edilmiş editoryal alan; her sayıda keşfedilmeyi bekleyen yeni anlatılar, şiirler, görsel seriler ve koleksiyonluk bir dergi deneyimi.',
-    hero_marquee: '✦ Sayı 06 yayında · Şimdi oku ✦ Her ay yeni bir sayı ✦ Bağımsız Gençlik ✦ Çilek Dergisi ✦ ',
-    about_opening_quote: 'Her gencin anlatacak sahici, kırılgan ve özgün bir hikâyesi vardır.',
-    about_story_title: "Çilek Dergisi'nin Doğuşu",
-    about_story_p1: "Çilek Dergisi, dijital çağın aceleci ve yüzeysel tüketimine inat; basılı bir derginin sevgisiyle, her sayfasında özenle işlenmiş kelimeler, dikiş izleri ve özgür düşler barındırmak için 2024'te doğdu.",
-    about_story_p2: 'Sanat, edebiyat, kişisel deneyimler, şiir ve bağımsız görsel kültür… Burası kalıplara sığmak zorunda hissetmeyenlerin, ilk dizelerini veya illüstrasyonlarını korkmadan paylaşabileceği sıcak, estetik ve kapsayıcı bir sığınaktır.',
-    about_story_p3: 'Her ay yayımlanan bir sayı; yazarların, fotoğrafçıların, şairlerin ve meraklı okurların ortak evi. Ne kadar büyük ya da küçük olursa olsun her ses burada yankı bulur, her his burada yeşerir.',
-    about_manifesto_quote: '"İyi bir dergi, sadece yazanların değil — birlikte düşünen, hisseden ve birbirine omuz veren herkesin ortak evidir."',
-    about_founder_quote: '"Her gencin anlatacak sahici, kırılgan ve özgün bir hikâyesi vardır. Çilek Dergisi bunun için burada."',
-    about_founder_bio: 'Derginin editoryal kimliğini, bağımsız tonunu ve görsel ruhunu şekillendiriyor. Her sayıda okurlarıyla buluşmak için özenle çalışıyor.',
-    magazines_title: 'Tüm Sayılar',
-    magazines_subtitle: '15-25 yaşın bağımsız edebiyat, sanat ve kültür serüveni. Geçmişten bugüne yayımlanan tüm sayılarımızı inceleyin, çevrimiçi okuyun veya koleksiyonunuza indirin.'
+    hero_eyebrow: DEFAULT_SITE_SETTINGS.hero_eyebrow,
+    hero_title_line1: DEFAULT_SITE_SETTINGS.hero_title_line1,
+    hero_title_italic: DEFAULT_SITE_SETTINGS.hero_title_italic,
+    hero_title_script: DEFAULT_SITE_SETTINGS.hero_title_script,
+    hero_copy: DEFAULT_SITE_SETTINGS.hero_subtitle,
+    hero_marquee: DEFAULT_SITE_SETTINGS.hero_marquee,
+    about_opening_quote: DEFAULT_SITE_SETTINGS.about_opening_quote,
+    about_story_title: DEFAULT_SITE_SETTINGS.about_story_title,
+    about_story_p1: DEFAULT_SITE_SETTINGS.about_paragraph_1,
+    about_story_p2: DEFAULT_SITE_SETTINGS.about_paragraph_2,
+    about_story_p3: DEFAULT_SITE_SETTINGS.about_paragraph_3,
+    about_manifesto_quote: DEFAULT_SITE_SETTINGS.about_manifesto_quote,
+    about_founder_quote: DEFAULT_SITE_SETTINGS.about_founder_quote,
+    about_founder_bio: DEFAULT_SITE_SETTINGS.about_founder_bio,
+    magazines_title: DEFAULT_SITE_SETTINGS.magazines_title,
+    magazines_subtitle: DEFAULT_SITE_SETTINGS.magazines_subtitle,
   },
   media: {
-    founder_photo: '',
-    about_photo_1: '/icons/icon4.png',
-    about_photo_2: '/icons/icon2.png',
-    gallery: [
-      { id: 'm-1', name: 'Çilek Vintage Damga', url: '/icons/cilek-vintage.png', date: '2024-01-01' },
-      { id: 'm-2', name: 'Çilek İkon 1', url: '/icons/icon1.png', date: '2024-01-01' },
-      { id: 'm-3', name: 'Çilek İkon 2', url: '/icons/icon2.png', date: '2024-01-01' },
-      { id: 'm-4', name: 'Çilek İkon 3', url: '/icons/icon3.png', date: '2024-01-01' },
-      { id: 'm-5', name: 'Çilek İkon 4', url: '/icons/icon4.png', date: '2024-01-01' },
-      { id: 'm-6', name: 'Çilek İkon 5', url: '/icons/icon5.png', date: '2024-01-01' },
-      { id: 'm-7', name: 'Çilek İkon 6', url: '/icons/icon6.png', date: '2024-01-01' }
-    ]
+    founder_photo: DEFAULT_SITE_SETTINGS.about_founder_photo_url,
+    about_photo_1: DEFAULT_SITE_SETTINGS.about_photo_1_url,
+    about_photo_2: DEFAULT_SITE_SETTINGS.about_photo_2_url,
+    gallery: []
   }
 }
 
 /**
- * Derin obje birleştirme (Deep merge)
+ * Yerel depolamadan güncel ayarları oku
  */
-function deepMerge(target, source) {
-  if (!source) return target
-  const output = { ...target }
-  for (const key of Object.keys(source)) {
-    if (source[key] instanceof Object && !Array.isArray(source[key])) {
-      if (key in target) {
-        output[key] = deepMerge(target[key], source[key])
-      } else {
-        output[key] = source[key]
-      }
-    } else {
-      output[key] = source[key]
-    }
-  }
-  return output
-}
-
-/**
- * Yerel depolamadan veya varsayılan değerlerden içeriği oku
- */
-export function getLocalSiteContent() {
+export function getLocalSiteSettings() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       const parsed = JSON.parse(raw)
-      return deepMerge(DEFAULT_SITE_CONTENT, parsed)
+      return { ...DEFAULT_SITE_SETTINGS, ...parsed }
     }
   } catch (err) {
-    console.warn('[getLocalSiteContent error]:', err)
+    console.warn('[getLocalSiteSettings error]:', err)
   }
-  return DEFAULT_SITE_CONTENT
+  return { ...DEFAULT_SITE_SETTINGS }
 }
 
 /**
- * Supabase ve localStorage'dan içeriği çekip birleştirir
+ * Supabase'den site_settings tablosundaki TÜM kayıtları çekip birleştirir
  */
-export async function fetchSiteContent() {
-  const localData = getLocalSiteContent()
+export async function fetchSiteSettings() {
+  const localData = getLocalSiteSettings()
 
   try {
     const { data, error } = await supabase
       .from('site_settings')
-      .select('value')
-      .eq('key', 'main_content')
-      .maybeSingle()
+      .select('key, value')
 
-    if (!error && data?.value) {
-      const merged = deepMerge(DEFAULT_SITE_CONTENT, data.value)
+    if (!error && Array.isArray(data) && data.length > 0) {
+      const dbSettings = {}
+
+      data.forEach((row) => {
+        if (!row || !row.key) return
+        if (row.key === 'main_content' || row.key === 'all_settings') {
+          // Toplu JSON nesnesi
+          if (row.value && typeof row.value === 'object') {
+            Object.assign(dbSettings, row.value)
+            // Eğer eski formatta site altındaysa
+            if (row.value.site) Object.assign(dbSettings, row.value.site)
+            if (row.value.media?.founder_photo) dbSettings.about_founder_photo_url = row.value.media.founder_photo
+            if (row.value.media?.about_photo_1) dbSettings.about_photo_1_url = row.value.media.about_photo_1
+            if (row.value.media?.about_photo_2) dbSettings.about_photo_2_url = row.value.media.about_photo_2
+          }
+        } else {
+          // Bireysel anahtar-değer
+          let val = row.value
+          if (val && typeof val === 'object' && 'val' in val) {
+            val = val.val
+          } else if (typeof val === 'string') {
+            try {
+              const unquoted = JSON.parse(val)
+              if (typeof unquoted === 'string') val = unquoted
+            } catch (_) {}
+          }
+          dbSettings[row.key] = val
+        }
+      })
+
+      const merged = { ...DEFAULT_SITE_SETTINGS, ...localData, ...dbSettings }
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(merged))
       } catch (_) {}
       return merged
     }
   } catch (err) {
-    // Supabase tablosu henüz yoksa veya bağlantı hatası varsa localData ile devam et
-    console.info('[fetchSiteContent info]: Supabase site_settings okunmadı, yerel veriler kullanılıyor.')
+    console.info('[fetchSiteSettings info]: Supabase site_settings okunamadı, yerel veriler kullanılıyor.')
   }
 
   return localData
 }
 
 /**
- * İçeriği hem yerel belleğe hem de Supabase'e kaydeder
+ * Ayarları hem yerel belleğe hem de Supabase site_settings tablosuna kaydeder
  */
-export async function saveSiteContent(newContent) {
-  const merged = deepMerge(DEFAULT_SITE_CONTENT, newContent)
+export async function saveSiteSettings(newSettings) {
+  const merged = { ...DEFAULT_SITE_SETTINGS, ...getLocalSiteSettings(), ...newSettings }
 
   // 1. Önce anında yerel belleğe kaydet (kullanıcı bekletilmez)
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(merged))
   } catch (err) {
-    console.warn('[saveSiteContent local storage error]:', err)
+    console.warn('[saveSiteSettings local storage error]:', err)
   }
 
   // 2. Sayfa içi tüm dinleyicilere anlık bildirim fırlat
   window.dispatchEvent(new CustomEvent(UPDATE_EVENT_NAME, { detail: merged }))
 
-  // 3. Supabase'e kalıcı olarak kaydetmeye çalış
+  // 3. Supabase'e kalıcı olarak kaydet
   let dbSuccess = false
   try {
-    const { error } = await supabase
-      .from('site_settings')
-      .upsert({
+    // Hem 'all_settings' toplu kaydı hem de tek tek anahtar kayıtları oluştur
+    const rows = [
+      {
+        key: 'all_settings',
+        value: merged,
+        updated_at: new Date().toISOString()
+      },
+      {
         key: 'main_content',
         value: merged,
         updated_at: new Date().toISOString()
-      }, { onConflict: 'key' })
+      }
+    ]
+
+    // İstenen anahtarları tek tek de ekle (bireysel sorgulamalar için)
+    for (const [k, v] of Object.entries(merged)) {
+      rows.push({
+        key: k,
+        value: typeof v === 'object' ? v : { val: v },
+        updated_at: new Date().toISOString()
+      })
+    }
+
+    const { error } = await supabase
+      .from('site_settings')
+      .upsert(rows, { onConflict: 'key' })
 
     if (!error) {
       dbSuccess = true
     } else {
-      console.warn('[saveSiteContent supabase warn]:', error.message)
+      console.warn('[saveSiteSettings supabase warn]:', error.message)
     }
   } catch (err) {
-    console.warn('[saveSiteContent supabase error]:', err)
+    console.warn('[saveSiteSettings supabase error]:', err)
   }
 
   return { success: true, dbSaved: dbSuccess, data: merged }
 }
 
 /**
- * React Hook: Bileşenlerde güncel site içeriğini dinler ve sağlar
+ * Geriye dönük uyumluluk aliasları
+ */
+export const getLocalSiteContent = () => {
+  const s = getLocalSiteSettings()
+  return {
+    settings: s,
+    site: s,
+    letter: DEFAULT_SITE_CONTENT.letter,
+    media: {
+      founder_photo: s.about_founder_photo_url,
+      about_photo_1: s.about_photo_1_url,
+      about_photo_2: s.about_photo_2_url,
+      gallery: []
+    }
+  }
+}
+
+export const fetchSiteContent = async () => {
+  const s = await fetchSiteSettings()
+  return {
+    settings: s,
+    site: s,
+    letter: DEFAULT_SITE_CONTENT.letter,
+    media: {
+      founder_photo: s.about_founder_photo_url,
+      about_photo_1: s.about_photo_1_url,
+      about_photo_2: s.about_photo_2_url,
+      gallery: []
+    }
+  }
+}
+
+export const saveSiteContent = async (newContent) => {
+  if (newContent?.settings) return saveSiteSettings(newContent.settings)
+  if (newContent?.site) return saveSiteSettings(newContent.site)
+  return saveSiteSettings(newContent)
+}
+
+/**
+ * React Hook: Bileşenlerde dinamik CMS site içeriğini dinler ve sağlar
  */
 export function useSiteContent() {
-  const [content, setContent] = useState(() => getLocalSiteContent())
+  const [settings, setSettings] = useState(() => getLocalSiteSettings())
   const [loading, setLoading] = useState(true)
 
   const reload = useCallback(async () => {
-    const latest = await fetchSiteContent()
-    setContent(latest)
+    const latest = await fetchSiteSettings()
+    setSettings(latest)
     setLoading(false)
   }, [])
 
@@ -180,7 +365,7 @@ export function useSiteContent() {
 
     const handleUpdate = (e) => {
       if (e.detail) {
-        setContent(e.detail)
+        setSettings(e.detail)
       }
     }
 
@@ -190,12 +375,32 @@ export function useSiteContent() {
     }
   }, [reload])
 
-  const update = useCallback(async (partialContent) => {
-    const next = deepMerge(content, partialContent)
-    const res = await saveSiteContent(next)
-    setContent(next)
+  const update = useCallback(async (partialSettings) => {
+    const next = { ...settings, ...partialSettings }
+    const res = await saveSiteSettings(next)
+    setSettings(next)
     return res
-  }, [content])
+  }, [settings])
 
-  return { content, updateContent: update, refreshContent: reload, loading }
+  // Hem düz { settings }, hem de eski { content } formatında nesne döndür
+  const content = {
+    settings,
+    site: settings,
+    letter: DEFAULT_SITE_CONTENT.letter,
+    media: {
+      founder_photo: settings.about_founder_photo_url,
+      about_photo_1: settings.about_photo_1_url,
+      about_photo_2: settings.about_photo_2_url,
+      gallery: []
+    }
+  }
+
+  return {
+    settings,
+    content,
+    updateSettings: update,
+    updateContent: update,
+    refreshContent: reload,
+    loading
+  }
 }

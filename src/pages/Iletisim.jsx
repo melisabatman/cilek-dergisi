@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import Layout from '../components/Layout'
 import { supabase } from '../lib/supabase'
+import { useSiteContent } from '../lib/siteContent'
 
 const CATEGORIES = [
   { value: 'deneme', label: '📖 Deneme & Anlatı', desc: '15-25 yaş deneyimleri, büyüme sancıları, şehir gözlemleri.' },
@@ -19,6 +20,7 @@ const STEPS = [
 const INITIAL_FORM = { name: '', email: '', age: '', category: 'deneme', title: '', content: '', link: '', bio: '' }
 
 export default function Iletisim({ user, isAdmin }) {
+  const { settings } = useSiteContent()
   const [form, setForm] = useState(INITIAL_FORM)
   const [sent, setSent] = useState(false)
   const [sending, setSending] = useState(false)
@@ -74,13 +76,12 @@ export default function Iletisim({ user, isAdmin }) {
         {/* ── Sayfa Başlığı ─────────────────────────────────────────── */}
         <header className="submit-v2-header">
           <div className="container submit-v2-header-inner">
-            <span className="eyebrow-cilek"><span className="eyebrow-star">✦</span> Açık Başvuru</span>
+            <span className="eyebrow-cilek"><span className="eyebrow-star">✦</span> {settings.contact_eyebrow || 'Açık Başvuru'}</span>
             <h1 className="submit-v2-title">
-              Bize<span className="submit-v2-title-italic"> Yazın</span>
+              {settings.contact_title || 'Bize Yazın'}
             </h1>
             <p className="submit-v2-subtitle">
-              Çilek Dergisi, 15–25 yaş bağımsız üreticilere kapılarını açık tutuyor.
-              Yazın, illüstrasyonun veya fotoğraf serinle sayfalarımızda yer al.
+              {settings.contact_subtitle || 'Çilek Dergisi, 15–25 yaş bağımsız üreticilere kapılarını açık tutuyor. Yazın, illüstrasyonun veya fotoğraf serinle sayfalarımızda yer al.'}
             </p>
           </div>
         </header>
@@ -125,7 +126,19 @@ export default function Iletisim({ user, isAdmin }) {
 
                 <div className="submit-v2-guide-mail">
                   <span>Doğrudan e-posta:</span>
-                  <a href="mailto:yazi@cilekdergisi.com">yazi@cilekdergisi.com</a>
+                  <a href={`mailto:${settings.contact_email || 'yazi@cilekdergisi.com'}`}>
+                    {settings.contact_email || 'yazi@cilekdergisi.com'}
+                  </a>
+                  {settings.contact_phone && (
+                    <div style={{ marginTop: '0.4rem', fontSize: '0.85rem' }}>
+                      <span>Telefon: </span><strong>{settings.contact_phone}</strong>
+                    </div>
+                  )}
+                  {settings.contact_address && (
+                    <div style={{ marginTop: '0.3rem', fontSize: '0.85rem' }}>
+                      <span>Adres: </span><span>{settings.contact_address}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </aside>

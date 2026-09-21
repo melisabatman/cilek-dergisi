@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { supabase, checkIsAdmin } from '../lib/supabase'
+import { useSiteContent } from '../lib/siteContent'
 
 const NAV_LINKS = [
   { to: '/dergiler',     label: 'DERGİLER'     },
@@ -10,6 +11,7 @@ const NAV_LINKS = [
 ]
 
 export default function Navbar({ user, isAdmin: propIsAdmin, onOpenWelcomeLetter, onToggleMoodboard, hideTopBar = false }) {
+  const { settings } = useSiteContent()
   const location = useLocation()
   const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -49,7 +51,7 @@ export default function Navbar({ user, isAdmin: propIsAdmin, onOpenWelcomeLetter
         <div className="top-announcement-bar" role="region" aria-label="Duyuru Çubuğu">
           <div className="announcement-socials">
             <a
-              href="https://instagram.com/cilekdergisi"
+              href={settings.social_instagram_url || 'https://instagram.com/cilekdergisi'}
               target="_blank"
               rel="noopener noreferrer"
               className="announcement-social-link"
@@ -62,7 +64,7 @@ export default function Navbar({ user, isAdmin: propIsAdmin, onOpenWelcomeLetter
               </svg>
             </a>
             <a
-              href="https://tiktok.com/@cilekdergisi"
+              href={settings.social_tiktok_url || 'https://tiktok.com/@cilekdergisi'}
               target="_blank"
               rel="noopener noreferrer"
               className="announcement-social-link"

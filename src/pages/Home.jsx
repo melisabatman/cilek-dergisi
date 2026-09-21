@@ -5,7 +5,7 @@ import Footer from '../components/Footer'
 import MagazineModal from '../components/MagazineModal'
 import WelcomePostcardModal from '../components/WelcomePostcardModal'
 import { supabase } from '../lib/supabase'
-import { useSiteContent, DEFAULT_SITE_CONTENT } from '../lib/siteContent'
+import { useSiteContent } from '../lib/siteContent'
 
 // ─── Fallback dergi verisi ────────────────────────────────────────────────────
 const FEATURED_FALLBACKS = [
@@ -30,13 +30,13 @@ const TEAM_FALLBACK = [
 // ─── Kayan marquee metni ──────────────────────────────────────────────────────
 const MARQUEE_TEXT = '✦ Sayı 06 yayında · Şimdi oku ✦ Her ay yeni bir sayı ✦ Bağımsız Gençlik ✦ Çilek Dergisi ✦ '
 
-// ─── "Her Sayıda Seni Bekleyenler" sabit içerik ───────────────────────────────
+// ─── "Her Sayıda Seni Bekleyenler" retro takvim içeriği ─────────────────────
 const CONTENT_PICKS = [
-  { icon: '🖊', label: 'Bir Yazı', desc: 'Duyguların en yalın haliyle kaleme alınmış, özgün bir deneme ya da kısa kurgu.' },
-  { icon: '🎤', label: 'Bir Röportaj', desc: 'İlham veren genç bir yaratıcıyla dürüst ve derinlikli bir söyleşi.' },
-  { icon: '🎨', label: 'Bir Görsel', desc: 'Fotoğraf serisi, illüstrasyon veya kolaj; sayfayı aydınlatan özgün bir eser.' },
-  { icon: '💡', label: 'Bir Öneri', desc: 'Bir kitap, müzik, film ya da küçük bir günlük ritual önerisi.' },
-  { icon: '💭', label: 'Bir Düşünce', desc: 'Kafana takılan bir soru, bir kavram veya bir hayat notu.' },
+  { num: '01', tag: 'YAZI', icon: '🖊', label: 'Bir Yazı', desc: 'Duyguların en yalın haliyle kaleme alınmış, özgün bir deneme ya da kısa kurgu.', time: 'Her Sayıda · Deneme' },
+  { num: '02', tag: 'SÖYLEŞİ', icon: '🎤', label: 'Bir Röportaj', desc: 'İlham veren genç bir yaratıcıyla dürüst ve derinlikli bir söyleşi.', time: 'Özel Seri · Söyleşi' },
+  { num: '03', tag: 'GÖRSEL', icon: '🎨', label: 'Bir Görsel', desc: 'Fotoğraf serisi, illüstrasyon veya kolaj; sayfayı aydınlatan özgün bir eser.', time: 'Sanat & Tasarım' },
+  { num: '04', tag: 'ÖNERİ', icon: '💡', label: 'Bir Öneri', desc: 'Bir kitap, müzik, film ya da küçük bir günlük ritual önerisi.', time: 'Kültür & Yaşam' },
+  { num: '05', tag: 'FİKİR', icon: '💭', label: 'Bir Düşünce', desc: 'Kafana takılan bir soru, bir kavram veya bir hayat notu.', time: 'Serbest Alan' },
 ]
 
 // ─── TOC kart açıklamaları (varsa kullan, yoksa genel) ───────────────────────
@@ -53,10 +53,21 @@ export default function Home({ user, isAdmin }) {
   const [latestMag, setLatestMag] = useState(null)
   const [teamMembers, setTeamMembers] = useState(TEAM_FALLBACK)
   const [founder, setFounder] = useState(null)
+  const [newsletterEmail, setNewsletterEmail] = useState('')
+  const [newsletterDone, setNewsletterDone] = useState(false)
 
-  const { content } = useSiteContent()
-  const siteData = content?.site || DEFAULT_SITE_CONTENT.site
-  const mediaData = content?.media || DEFAULT_SITE_CONTENT.media
+  const handleNewsletterSubmit = (e) => {
+    e.preventDefault()
+    if (newsletterEmail.trim()) {
+      setNewsletterDone(true)
+      setNewsletterEmail('')
+      setTimeout(() => setNewsletterDone(false), 4000)
+    }
+  }
+
+  const { settings } = useSiteContent()
+  const siteData = settings
+  const mediaData = { founder_photo: settings.about_founder_photo_url }
 
   useEffect(() => {
     if (searchParams.get('welcome') === 'true') setIsWelcomeModalOpen(true)
@@ -147,14 +158,14 @@ export default function Home({ user, isAdmin }) {
                 <span className="home-hero-title-script">{siteData.hero_title_script || 'duyurduğun alan.'}</span>
               </h1>
               <p className="home-hero-copy">
-                {siteData.hero_copy}
+                {settings.hero_subtitle || siteData.hero_copy}
               </p>
               <div className="home-hero-actions">
                 <button type="button" className="home-btn-primary" onClick={handleReadIssue} id="btn-hero-read-issue">
-                  SAYIYI OKU
+                  {settings.hero_cta_text || 'SAYIYI OKU'}
                 </button>
                 <Link to="/dergiler" className="home-btn-secondary" id="btn-hero-all-issues">
-                  Tüm Sayılar
+                  {settings.hero_cta_archive || 'Tüm Sayılar'}
                 </Link>
               </div>
               <p className="home-hero-note">
@@ -221,7 +232,7 @@ export default function Home({ user, isAdmin }) {
           </div>
         </section>
 
-        {/* ── 4. BU SAYIDA SENİ NELER BEKLİYOR (TOC KART FORMAT) ─────── */}
+        {/* ── 4. BU SAYIDA SENİ NELER BEKLİYOR (TELLİ PANO FORMAT) ─────── */}
         {parseToc(featuredMag?.toc).length > 0 && (
           <section className="home-toc-section" aria-label="Bu Sayıda Neler Var">
             <div className="container">
@@ -235,65 +246,157 @@ export default function Home({ user, isAdmin }) {
                 </p>
               </div>
 
-              <div className="home-toc-grid">
-                {parseToc(featuredMag.toc).map((item, idx) => (
-                  <div key={idx} className="home-toc-card">
-                    <div className="home-toc-card-num-wrap">
-                      <span className="home-toc-card-num">{String(idx + 1).padStart(2, '0')}</span>
+              {/* Telli Pano (Wire Mesh Moodboard) */}
+              <div className="home-wireboard">
+                {/* Duvar Askı Vidaları */}
+                <div className="home-wireboard-mount home-mount-left" aria-hidden="true">
+                  <span className="home-mount-screw" />
+                </div>
+                <div className="home-wireboard-mount home-mount-right" aria-hidden="true">
+                  <span className="home-mount-screw" />
+                </div>
+
+                {/* Pano Üzerindeki Dekoratif Not Rozeti */}
+                <div className="home-wireboard-tag" aria-hidden="true">
+                  <span className="home-wireboard-tag-icon">📌</span>
+                  <span className="home-wireboard-tag-text">{settings.home_toc_tag || `Sayı ${featuredMag.issue_number || '06'} Seçkisi`}</span>
+                </div>
+
+                <div className="home-toc-grid">
+                  {parseToc(featuredMag.toc).map((item, idx) => (
+                    <div key={idx} className="home-toc-card">
+                      {/* Telli Panoya Tutturulan Mandal / Klips */}
+                      <div className="home-wire-clip" aria-hidden="true">
+                        <svg width="32" height="34" viewBox="0 0 32 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M11 14V8C11 5.2 13.2 3 16 3C18.8 3 21 5.2 21 8V14" stroke="var(--color-primary)" strokeWidth="2.4" strokeLinecap="round" />
+                          <path d="M12 14V8C12 5.8 13.8 4 16 4C18.2 4 20 5.8 20 8V14" stroke="var(--color-accent)" strokeWidth="1" strokeLinecap="round" />
+                          <rect x="6" y="13" width="20" height="11" rx="2.5" fill="var(--color-primary)" stroke="var(--color-text)" strokeWidth="1.2" />
+                          <rect x="8" y="15" width="16" height="2" rx="1" fill="var(--color-accent)" opacity="0.8" />
+                          <rect x="7" y="21" width="18" height="3" rx="1" fill="var(--color-text)" />
+                        </svg>
+                      </div>
+
+                      <div className="home-toc-card-num-wrap">
+                        <span className="home-toc-card-num">{String(idx + 1).padStart(2, '0')}</span>
+                        <span className="home-toc-card-star">✦</span>
+                      </div>
+                      <div className="home-toc-card-body">
+                        <p className="home-toc-card-title">{settings[`home_toc_card_${idx + 1}_title`] || item}</p>
+                        <p className="home-toc-card-desc">{settings[`home_toc_card_${idx + 1}_desc`] || TOC_DESC_MAP[item] || TOC_DESC_MAP.default}</p>
+                      </div>
+                      <div className="home-toc-card-footer">
+                        <span>Çilek Dergi</span>
+                        <span>Sayfa #{idx + 1}</span>
+                      </div>
                     </div>
-                    <div className="home-toc-card-body">
-                      <p className="home-toc-card-title">{item}</p>
-                      <p className="home-toc-card-desc">{TOC_DESC_MAP[item] || TOC_DESC_MAP.default}</p>
-                    </div>
-                    <div className="home-toc-card-line" />
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
           </section>
         )}
 
-        {/* ── 5. HER SAYIDA SENİ BEKLEYENLERgigantic(DEKORATİF, email yok) ── */}
-        <section className="home-picks-section" aria-label="Her Sayıda Seni Bekleyenler">
+        {/* ── 5. HER SAYIDA SENİ BEKLEYENLER (RETRO SPIRAL TAKVİM / BLOKNOT FORMATI) ── */}
+        <section className="home-calendar-section" aria-label="Her Sayıda Seni Bekleyenler">
           <div className="container">
-            <div className="home-picks-header">
-              <div>
-                <span className="home-sec-eyebrow"><span className="eyebrow-star">✦</span> Her Sayıda</span>
-                <h2 className="home-sec-title">
-                  Her Sayıda Seni<span className="home-sec-title-italic"> Bekleyenler</span>
-                </h2>
+            {/* Spiral Delikli Takvim Yaprağı (Calendar / Tear-off Notepad Sheet) */}
+            <div className="home-calendar-sheet">
+              {/* Spiral Cilt Halkaları (Spiral Perforated Edge) */}
+              <div className="calendar-spiral-binding" aria-hidden="true">
+                {Array.from({ length: 22 }).map((_, i) => (
+                  <div key={i} className="calendar-spiral-hole">
+                    <span className="calendar-spiral-loop" />
+                  </div>
+                ))}
               </div>
-              <p className="home-picks-tagline">
-                Çilek Dergisi'nin her sayısında bulacağın beş temel içerik türü:
-              </p>
+
+              {/* Takvim Üst Başlık */}
+              <div className="home-calendar-header">
+                <span className="home-calendar-eyebrow">ÇİLEK DERGİSİ ✦ HER SAYIDA</span>
+                <h2 className="home-calendar-title">{settings.features_title || 'HER SAYIDA SENİ BEKLEYENLER'}</h2>
+                <p className="home-calendar-sub">
+                  {settings.features_subtitle || "Çilek Dergisi'nin her sayısında bulacağın beş temel içerik türü:"}
+                </p>
+              </div>
+
+              {/* 5 Sütunlu Takvim Çizelgesi (Calendar Grid) */}
+              <div className="home-calendar-grid">
+                {CONTENT_PICKS.map((pick, idx) => {
+                  const num = idx + 1
+                  const title = settings[`feature_${num}_title`] || pick.label
+                  const desc = settings[`feature_${num}_desc`] || pick.desc
+                  return (
+                    <div
+                      key={idx}
+                      className="calendar-col"
+                      tabIndex={0}
+                      role="article"
+                      aria-label={`${pick.num} ${title}`}
+                    >
+                      <div className="calendar-col-header">
+                        <span className="calendar-col-num">{pick.num}</span>
+                        <span className="calendar-col-tag">({pick.tag})</span>
+                      </div>
+                      <div className="calendar-col-body">
+                        <div className="calendar-col-icon-wrap">
+                          <span className="calendar-col-icon">{pick.icon}</span>
+                        </div>
+                        <h3 className="calendar-col-title">{title}</h3>
+                        <p className="calendar-col-desc">{desc}</p>
+                        <span className="calendar-col-time">{pick.time}</span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* Takvim İçi Aksiyon Butonu (FIND US TODAY tarzı) */}
+              <div className="home-calendar-actions">
+                <Link to="/dergiler" className="calendar-sheet-btn" id="btn-calendar-discover">
+                  SAYILARI KEŞFET ✦
+                </Link>
+              </div>
             </div>
 
-            <div className="home-picks-grid">
-              {CONTENT_PICKS.map((pick, idx) => (
-                <div key={idx} className="home-pick-card">
-                  <div className="home-pick-icon-wrap">
-                    <span className="home-pick-icon">{pick.icon}</span>
-                  </div>
-                  <span className="home-pick-num">{String(idx + 1).padStart(2, '0')}</span>
-                  <strong className="home-pick-label">{pick.label}</strong>
-                  <p className="home-pick-desc">{pick.desc}</p>
-                </div>
-              ))}
+            {/* Alt Mor / Lavanta Bülten Şeridi (Periwinkle Newsletter Pill Bar) */}
+            <div className="home-calendar-banner">
+              <span className="calendar-banner-text">
+                {newsletterDone
+                  ? '✦ KAYDINIZ ALINDI! ÇİLEK DÜNYASINA HOŞ GELDİNİZ 🍓'
+                  : 'PSST! YENİ SAYILARI VE EDİTORYAL SEÇKİLERİ KAÇIRMA!'}
+              </span>
+              <form className="calendar-banner-form" onSubmit={handleNewsletterSubmit}>
+                <input
+                  type="email"
+                  className="calendar-banner-input"
+                  placeholder="E-posta adresin..."
+                  value={newsletterEmail}
+                  onChange={(e) => setNewsletterEmail(e.target.value)}
+                  required
+                  aria-label="E-posta ile bültene kaydol"
+                />
+                <button type="submit" className="calendar-banner-btn" id="btn-calendar-newsletter">
+                  KAYIT OL
+                </button>
+              </form>
             </div>
           </div>
+
+          {/* Alt Kısım: Pembe ve Bordo Çizgili Tente / Şerit (Awning Bar) */}
+          <div className="home-calendar-awning" aria-hidden="true" />
         </section>
 
         {/* ── 6. KAYAN EKİP ŞERİDİ ────────────────────────────────────── */}
         <section className="home-team-marquee-section" aria-label="Ekibimizle Tanışın">
           <div className="home-team-marquee-header container">
             <div>
-              <span className="home-sec-eyebrow"><span className="eyebrow-star">✦</span> Ekip</span>
+              <span className="home-sec-eyebrow"><span className="eyebrow-star">✦</span> {settings.home_team_eyebrow || 'Ekip'}</span>
               <h2 className="home-sec-title">
-                Ekibimizle<span style={{ color: 'var(--c-pink)', fontStyle: 'italic' }}> Tanışın</span>
+                {settings.home_team_title || 'Ekibimizle Tanışın'}
               </h2>
             </div>
             <Link to="/ekibimiz" className="home-btn-secondary" id="btn-team-marquee-all">
-              Tümünü Gör →
+              {settings.home_team_cta || 'Tümünü Gör →'}
             </Link>
           </div>
 
@@ -341,7 +444,7 @@ export default function Home({ user, isAdmin }) {
               <div className="home-founder-content">
                 <span className="home-sec-eyebrow"><span className="eyebrow-star">✦</span> Kurucuyla Tanış</span>
                 <h2 className="home-sec-title">
-                  {founder?.name || 'Merhaba,'}
+                  {settings.about_founder_name || founder?.name || 'Merhaba,'}
                   <span className="home-sec-title-italic"> — {founder?.role || 'Kurucu & Editör'}</span>
                 </h2>
                 <blockquote className="home-founder-quote">
@@ -401,7 +504,7 @@ export default function Home({ user, isAdmin }) {
           </div>
         </section>
 
-        {/* ── 9. ARŞİV BÖLÜMÜ ─────────────────────────────────────────── */}
+        {/* ── 9. ARŞİV BÖLÜMÜ (DİJİTAL RAF KONSEPTİ) ─────────────────── */}
         <section className="home-archive-section" aria-label="Dergiler Arşivi" id="cilek-arsiv">
           <div className="container">
             <div className="home-archive-header">
@@ -412,35 +515,79 @@ export default function Home({ user, isAdmin }) {
                 </h2>
               </div>
               <Link to="/dergiler" className="home-btn-secondary" id="btn-archive-all">
-                Tümünü Gör →
+                Kitaplığın Tamamı ({allMagazines.length}+) →
               </Link>
             </div>
 
-            <div className="home-archive-grid">
-              {allMagazines.slice(0, 4).map((mag, idx) => (
-                <article
-                  key={mag.id}
-                  className={`home-archive-card ${idx % 2 === 0 ? 'tilt-left' : 'tilt-right'}`}
-                  onClick={() => setSelectedMag(mag)}
-                  onKeyDown={(e) => e.key === 'Enter' && setSelectedMag(mag)}
-                  tabIndex={0}
-                  role="button"
-                  aria-label={`${mag.title} — detay`}
-                >
-                  <div className="home-archive-media">
-                    {mag.cover_image_url ? (
-                      <img src={mag.cover_image_url} alt={mag.title} className="home-archive-img" />
-                    ) : (
-                      <div className="home-archive-fallback">
-                        <img src="/icons/cilek-vintage.png" alt="" style={{ width: '55%' }} />
+            {/* Dijital Ahşap Raf (Showcase Digital Shelf) */}
+            <div className="home-digital-shelf-wrap">
+              <div className="home-shelf-wood">
+                {/* Raftaki Dergiler */}
+                <div className="home-shelf-books">
+                  {allMagazines.slice(0, 4).map((mag, idx) => {
+                    const tilt = [-1.4, 1.2, -0.8, 1.5][idx % 4]
+                    return (
+                      <div
+                        key={mag.id}
+                        className="home-shelf-slot"
+                        style={{ '--book-tilt': `${tilt}deg` }}
+                      >
+                        <div
+                          className="shelf-book-stand"
+                          onClick={() => setSelectedMag(mag)}
+                          tabIndex={0}
+                          role="button"
+                          onKeyDown={(e) => e.key === 'Enter' && setSelectedMag(mag)}
+                          aria-label={`${mag.title} incele`}
+                        >
+                          <div className="shelf-book-floor-shadow" />
+                          <div className="shelf-book">
+                            <div className="shelf-book-spine" />
+                            <div className="shelf-book-cover">
+                              {mag.cover_image_url ? (
+                                <img src={mag.cover_image_url} alt={mag.title} className="shelf-cover-img" />
+                              ) : (
+                                <div className="shelf-cover-fallback">
+                                  <img src="/icons/cilek-vintage.png" alt="" className="shelf-fallback-icon" />
+                                  <strong className="shelf-fallback-brand">ÇİLEK</strong>
+                                  <span className="shelf-fallback-issue">Sayı #{mag.issue_number}</span>
+                                </div>
+                              )}
+                              <div className="shelf-book-sheen" />
+                              {idx === 0 && (
+                                <div className="shelf-book-ribbon">
+                                  <span>YENİ</span>
+                                </div>
+                              )}
+                            </div>
+                            <div className="shelf-hover-actions">
+                              <span className="shelf-btn-read">İNCELE ✦</span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    )}
+                    )
+                  })}
+                </div>
+
+                {/* Ahşap Raf Ön Pervazı ve Pirinç Etiketlikler */}
+                <div className="bookcase-ledge">
+                  <div className="bookcase-ledge-top" />
+                  <div className="bookcase-ledge-front home-shelf-front">
+                    {allMagazines.slice(0, 4).map((mag, idx) => (
+                      <div key={idx} className="bookcase-brass-plate" aria-hidden="true">
+                        <span className="brass-rivet rivet-left" />
+                        <div className="brass-plate-inner">
+                          <span className="brass-plate-text">
+                            SAYI {String(mag.issue_number || idx + 1).padStart(2, '0')} · {mag.month_name || 'ÇİLEK'}
+                          </span>
+                        </div>
+                        <span className="brass-rivet rivet-right" />
+                      </div>
+                    ))}
                   </div>
-                  <span className="home-archive-label">
-                    {mag.month_name} · Sayı {mag.issue_number}
-                  </span>
-                </article>
-              ))}
+                </div>
+              </div>
             </div>
           </div>
         </section>

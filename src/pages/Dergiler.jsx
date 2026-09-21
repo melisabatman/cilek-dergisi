@@ -4,8 +4,7 @@ import MagazineGrid from '../components/MagazineGrid'
 import { useSiteContent, DEFAULT_SITE_CONTENT } from '../lib/siteContent'
 
 export default function Dergiler({ user, isAdmin }) {
-  const { content } = useSiteContent()
-  const siteData = content?.site || DEFAULT_SITE_CONTENT.site
+  const { settings } = useSiteContent()
 
   return (
     <Layout user={user} isAdmin={isAdmin}>
@@ -18,12 +17,12 @@ export default function Dergiler({ user, isAdmin }) {
               <img src="/icons/cilek-vintage.png" alt="" className="dergiler-header-icon" />
             </div>
             <div className="dergiler-header-text">
-              <span className="eyebrow-cilek"><span className="eyebrow-star">✦</span> Çilek Dergisi Arşivi</span>
+              <span className="eyebrow-cilek"><span className="eyebrow-star">✦</span> {settings.magazines_eyebrow || 'Çilek Dergisi Arşivi'}</span>
               <h1 className="dergiler-page-title">
-                {siteData.magazines_title || 'Tüm Sayılar'}
+                {settings.magazines_title || 'Tüm Sayılar'}
               </h1>
               <p className="dergiler-page-sub">
-                {siteData.magazines_subtitle || 'EST. 2024 · Her sayı, 15–25 yaş bağımsız yaratıcıların sesiyle şekillenen, özenle kürate edilmiş bir editoryal deneyimdir.'}
+                {settings.magazines_subtitle || 'EST. 2024 · Her sayı, 15–25 yaş bağımsız yaratıcıların sesiyle şekillenen, özenle kürate edilmiş bir editoryal deneyimdir.'}
               </p>
             </div>
           </div>
