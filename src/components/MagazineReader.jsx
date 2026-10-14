@@ -77,8 +77,8 @@ export default function MagazineReader({ magazine, user, isAdmin }) {
   const [isBookReady, setIsBookReady] = useState(false)
   const [activePdfTitle, setActivePdfTitle] = useState(null)
   
-  // PDF Doğal En-Boy Oranı (varsayılan A4 1 : 1.414)
-  const [pdfMeta, setPdfMeta] = useState({ width: 480, height: 679, aspect: 480 / 679 })
+  // PDF Doğal En-Boy Oranı (varsayılan ISO A4 210 × 297 mm, 1 : 1.414)
+  const [pdfMeta, setPdfMeta] = useState({ width: 210, height: 297, aspect: 210 / 297 })
 
   // Ses Efekti
   const [soundEnabled, setSoundEnabled] = useState(() => {
@@ -246,7 +246,7 @@ export default function MagazineReader({ magazine, user, isAdmin }) {
 
     // Ekrana ve dosyanın gerçek en-boy oranına göre dinamik boyutlandırma
     const isMobile = window.innerWidth < 768
-    const aspect = pdfMeta.aspect || (480 / 679)
+    const aspect = pdfMeta.aspect || (210 / 297)
 
     // Sahne alanı ölçüleri (tam ekran veya ekran boyutuna göre sığdırma)
     const stageEl = bookStageRef.current
@@ -734,15 +734,15 @@ export default function MagazineReader({ magazine, user, isAdmin }) {
                     {/* Manşetler */}
                     <div className="cover-headlines-list">
                       <div className="cover-headline-item">
-                        <span className="bullet">✦</span>
+                        <span className="bullet">•</span>
                         <p><strong>Güneşin Gölgesinde:</strong> Genç yazarların büyüme ve arayış notları</p>
                       </div>
                       <div className="cover-headline-item">
-                        <span className="bullet">✦</span>
+                        <span className="bullet">•</span>
                         <p><strong>Bağımsız Edebiyat:</strong> 15-25 yaş üreticilerinin kolektif belleği</p>
                       </div>
                       <div className="cover-headline-item">
-                        <span className="bullet">✦</span>
+                        <span className="bullet">•</span>
                         <p><strong>Özgür Sanat Alanı:</strong> Şiirler, analog seriler ve stüdyo günlükleri</p>
                       </div>
                     </div>
@@ -1002,9 +1002,9 @@ export default function MagazineReader({ magazine, user, isAdmin }) {
                   </p>
 
                   <div className="back-cover-features">
-                    <span>✦ 15-25 Yaş Bağımsız Yayın</span>
-                    <span>✦ Koleksiyonluk Sanat &amp; Edebiyat</span>
-                    <span>✦ Sahici Genç Anlatılar</span>
+                    <span>15-25 Yaş Bağımsız Yayın</span>
+                    <span>Koleksiyonluk Sanat &amp; Edebiyat</span>
+                    <span>Sahici Genç Anlatılar</span>
                   </div>
 
                   <div className="back-cover-barcode-box">

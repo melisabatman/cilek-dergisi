@@ -11,8 +11,8 @@ export const DEFAULT_SITE_SETTINGS = {
   // ── GENEL, FOOTER & SOSYAL MEDYA ──────────────────────────
   brand_name: 'Çilek Dergisi',
   brand_sub: 'DERGİ',
-  footer_text: 'Kendi sesini özgürce duyurduğun, seninle büyüyen ve parıldayan bir alan.',
-  footer_manifesto: '“Her gencin anlatacak sahici, kırılgan ve özgün bir hikâyesi vardır.”',
+  footer_text: 'Kendi sesini özgürce duyurduğun, gençliğin cesur ritmiyle parıldayan bağımsız kültür durağı!',
+  footer_manifesto: '“Gençliğin anlatacak güçlü, sahici ve kıvılcım dolu bir hikâyesi var!”',
   footer_copyright: '© 2026 Çilek Dergi. Tüm hakları saklıdır.',
   social_instagram_url: 'https://instagram.com/cilekdergisi',
   social_tiktok_url: 'https://tiktok.com/@cilekdergisi',
@@ -24,11 +24,11 @@ export const DEFAULT_SITE_SETTINGS = {
   hero_eyebrow: 'Çilek Dergisi',
   hero_title_line1: 'Kendi sesini',
   hero_title_italic: 'özgürce',
-  hero_title_script: 'duyurduğun alan.',
-  hero_subtitle: '15–25 yaş arası bağımsız yaratıcılar için özenle kürate edilmiş editoryal alan; her sayıda keşfedilmeyi bekleyen yeni anlatılar, şiirler, görsel seriler ve koleksiyonluk bir dergi deneyimi.',
-  hero_cta_text: 'Son Sayıyı Oku ✦',
+  hero_title_script: 'haykırdığın alan!',
+  hero_subtitle: '15–25 yaş arası bağımsız yaratıcılar için sınırları kaldıran editoryal sahne! Her sayıda keşfedilmeyi bekleyen yepyeni anlatılar, şiirler, görsel seriler ve koleksiyonluk dijital zine ruhu.',
+  hero_cta_text: 'Son Sayıyı Oku →',
   hero_cta_archive: 'Arşivi İncele',
-  hero_marquee: '✦ Sayı 06 yayında · Şimdi oku ✦ Her ay yeni bir sayı ✦ Bağımsız Gençlik ✦ Çilek Dergisi ✦ ',
+  hero_marquee: 'Sayı 06 Yayında · Şimdi Oku · Her Ay Yepyeni Bir Macera · Genç, Özgür, Bağımsız! · Çilek Dergisi · ',
 
   // ── 2. ANA SAYFA - TELLİ PANO (BU SAYIDA SENİ NELER BEKLİYOR) ──
   home_toc_tag: 'Sayı Seçkisi',
@@ -43,24 +43,24 @@ export const DEFAULT_SITE_SETTINGS = {
 
   // ── 3. ANA SAYFA - HER SAYIDA SENİ BEKLEYENLER (5 TEMEL İÇERİK) ──
   features_title: 'Her Sayıda Seni Bekleyenler',
-  features_subtitle: "Çilek Dergisi'nin her sayısında bulacağın beş temel içerik türü:",
+  features_subtitle: "Çilek Dergisi'nin her sayısında nabzını tutacağın beş temel yaratıcı alan:",
   feature_1_title: 'Bir Yazı',
-  feature_1_desc: 'Duyguların en yalın haliyle kaleme alınmış, özgün bir deneme ya da kısa kurgu.',
+  feature_1_desc: 'Duyguların en yalın ve vurucu haliyle kaleme alınmış özgün bir deneme ya da kısa öykü.',
   feature_2_title: 'Bir Röportaj',
-  feature_2_desc: 'İlham veren genç bir yaratıcıyla dürüst ve derinlikli bir söyleşi.',
+  feature_2_desc: 'İlham veren genç bir yaratıcıyla samimi, dürüst ve derinlikli bir söyleşi.',
   feature_3_title: 'Bir Görsel',
-  feature_3_desc: 'Fotoğraf serisi, illüstrasyon veya kolaj; sayfayı aydınlatan özgün bir eser.',
+  feature_3_desc: 'Fotoğraf serisi, illüstrasyon veya kolaj; sayfayı aydınlatan rengârenk bir eser.',
   feature_4_title: 'Bir Öneri',
-  feature_4_desc: 'Bir kitap, müzik, film ya da küçük bir günlük ritüel önerisi.',
+  feature_4_desc: 'Ruhuna iyi gelecek bir kitap, müzik, film ya da taptaze bir ilham önerisi.',
   feature_5_title: 'Bir Düşünce',
-  feature_5_desc: 'Kafana takılan bir soru, bir kavram veya bir hayat notu.',
+  feature_5_desc: 'Kafana takılan bir soru, yepyeni bir kavram veya zihnini açacak bir hayat notu.',
 
   // ── 4. ANA SAYFA - EDİTORYAL DERGİ SAYFASI ─────────────────
   editorial_tag: 'EDITORIAL FEATURE | ÇİLEK DERGİSİ',
-  editorial_sub: 'EDEBİYAT • SANAT • GENÇLİK & ÇOK SESLİ ANLATILAR',
+  editorial_sub: 'EDEBİYAT • SANAT • GENÇLİK & DİNAMİK ANLATILAR',
   editorial_headline: 'Senin sesin çağırdı.',
-  editorial_headline_italic: 'Çilek sayfalarını istiyor!',
-  editorial_lead: '15-25 yaş bağımsız yaratıcılar için özenle kürate edilmiş editoryal alan; her sayıda keşfedilmeyi bekleyen yeni anlatılar, şiirler, görsel seriler ve koleksiyonluk bir dergi deneyimi.',
+  editorial_headline_italic: 'Çilek sayfaları seni bekliyor!',
+  editorial_lead: '15-25 yaş arası genç yaratıcılar için sınırları kaldıran editoryal alan! Yeni anlatılar, şiirler, cesur görsel seriler ve koleksiyonluk dergi deneyimi seni bekliyor.',
   editorial_badge_1_val: 'Sayı 06',
   editorial_badge_1_label: 'GÜNCEL SAYI',
   editorial_badge_1_sub: '(YAZ 2024)',
@@ -70,66 +70,71 @@ export const DEFAULT_SITE_SETTINGS = {
   editorial_badge_3_val: '%100',
   editorial_badge_3_label: 'BAĞIMSIZ',
   editorial_badge_3_sub: 'DİJİTAL YAYIN',
-  editorial_button_text: 'DERGİYİ KEŞFET',
+  editorial_button_text: 'DERGİYİ KEŞFET →',
   editorial_photo_url: '',
 
   // ── 5. ANA SAYFA - EKİBİMİZLE TANIŞIN BÖLÜMÜ ───────────────
-  home_team_eyebrow: 'Ekip',
-  home_team_title: 'Ekibimizle Tanışın',
+  home_team_eyebrow: 'Ekibimiz',
+  home_team_title: 'Yaratıcı Ekibimizle Tanışın',
   home_team_cta: 'Tümünü Gör →',
 
-  // ── 6. KURUCU KÖŞESİ (ANA SAYFA & HAKKIMIZDA) ───────────────
-  about_founder_quote: '“Her gencin anlatacak sahici, kırılgan ve özgün bir hikâyesi vardır. Çilek Dergisi bunun için burada.”',
-  about_founder_bio: 'Derginin editoryal kimliğini, bağımsız tonunu ve görsel ruhunu şekillendiriyor. Her sayıda okurlarıyla buluşmak için özenle çalışıyor.',
-  about_founder_name: 'Kurucu & Genel Yayın Yönetmeni',
+  // ── 6. KURUCULAR KÖŞESİ (ANA SAYFA & HAKKIMIZDA) ───────────────
+  about_founder_quote: '“Gençliğin enerjisi, tutkusu ve anlatacak cesur hikâyeleri kalıplara sığmaz! Çilek Dergisi bu bağımsız kıvılcımı birlikte parlatmak için var!”',
+  about_founder_bio: 'İki kurucu ortak olarak derginin editoryal kimliğini, dinamik görsel ruhunu ve bağımsız vizyonunu el ele büyütüyoruz. Her sayıda okurlarımızla ve genç yeteneklerle buluşmanın heyecanını yaşıyoruz!',
+  about_founder_name: 'Kurucu Ortaklar',
+  about_founder_1_name: 'Genel Yayın Yönetmeni',
+  about_founder_1_role: 'Kreatif Direktör & Kurucu Ortak',
+  about_founder_2_name: 'Art Director',
+  about_founder_2_role: 'Görsel Tasarım & Kurucu Ortak',
   about_founder_photo_url: '',
+  about_founder_2_photo_url: '',
 
   // ── 7. KATILIM ÇAĞRISI / BANNER ────────────────────────────
-  home_cta_title: 'Sayfalarda Yerini Al',
-  home_cta_desc: 'Şiir, öykü, illüstrasyon veya fotoğraf... Çilek\'in yeni sayısında senin de izin olsun.',
-  home_cta_button: 'Bize Yaz / İletişim',
+  home_cta_title: 'Sayfalarda Yerini Al!',
+  home_cta_desc: 'Şiir, öykü, illüstrasyon veya fotoğraf... Çilek\'in yeni sayısında senin de izin, senin de güçlü sesin olsun!',
+  home_cta_button: 'Bize Yaz / İletişim →',
 
   // ── 8. HAKKIMIZDA SAYFASI ──────────────────────────────────
   about_title: 'Biz Kimiz?',
-  about_opening_quote: 'Her gencin anlatacak sahici, kırılgan ve özgün bir hikâyesi vardır.',
+  about_opening_quote: 'Gençliğin hayalleri, cesareti ve üretme tutkusu dünyayı değiştirecek güçte!',
   about_story_title: "Çilek Dergisi'nin Doğuşu",
-  about_paragraph_1: "Çilek Dergisi, dijital çağın aceleci ve yüzeysel tüketimine inat; basılı bir derginin sevgisiyle, her sayfasında özenle işlenmiş kelimeler, dikiş izleri ve özgür düşler barındırmak için 2024'te doğdu.",
-  about_paragraph_2: 'Sanat, edebiyat, kişisel deneyimler, şiir ve bağımsız görsel kültür… Burası kalıplara sığmak zorunda hissetmeyenlerin, ilk dizelerini veya illüstrasyonlarını korkmadan paylaşabileceği sıcak, estetik ve kapsayıcı bir sığınaktır.',
-  about_paragraph_3: 'Her ay yayımlanan bir sayı; yazarların, fotoğrafçıların, şairlerin ve meraklı okurların ortak evi. Ne kadar büyük ya da küçük olursa olsun her ses burada yankı bulur, her his burada yeşerir.',
-  about_manifesto_quote: '“İyi bir dergi, sadece yazanların değil — birlikte düşünen, hisseden ve birbirine omuz veren herkesin ortak evidir.”',
+  about_paragraph_1: "Çilek Dergisi, dijital çağın aceleci ve yüzeysel tüketimine meydan okuyarak doğdu! İki kurucu olarak, basılı bir fanzinin samimiyetini dijitalin sınırsız enerjisiyle buluşturmak için yola çıktık.",
+  about_paragraph_2: 'Sanat, edebiyat, kişisel deneyimler, şiir ve bağımsız görsel kültür… Burası kalıplara sığmayan, sesini korkusuzca duyurmak isteyen her gencin kendi rengini ortaya koyabileceği dinamik, ilham verici bir üretim yuvası!',
+  about_paragraph_3: 'Her ay yayımlanan her yeni sayı; genç yazarların, illüstratörlerin, fotoğrafçıların ve meraklı okurların ortak coşkusudur. Burada hiçbir hayal küçük değil, her ses güçlü ve değerli!',
+  about_manifesto_quote: '“İyi bir dergi, yalnızca yazanların değil; birlikte düşleyen, üreten ve birbirine güç veren tüm gençlerin ortak hareketidir!”',
   about_photo_1_url: '/icons/icon4.png',
   about_photo_2_url: '/icons/icon2.png',
 
   // ── 9. DERGİLER SAYFASI ────────────────────────────────────
-  magazines_eyebrow: '✦ Çilek Dergisi',
+  magazines_eyebrow: 'Çilek Dergisi',
   magazines_title: 'Dijital Rafımız',
-  magazines_subtitle: 'Her sayı, bir düşüncenin izinde. Raftan bir dergi seç, sayfaları çevir.',
+  magazines_subtitle: 'Her sayı bambaşka bir enerji, yepyeni bir macera. Raftan bir dergi seç, sayfaları hemen çevir!',
 
   // ── 10. EKİBİMİZ SAYFASI ───────────────────────────────────
-  team_page_eyebrow: '✦ Editoryal Masa',
+  team_page_eyebrow: 'Editoryal Masa',
   team_page_title: 'Ekibimiz',
-  team_page_description: 'Derginin mutfağında, kelimelerin ve renklerin peşinde koşan bağımsız kolektif.',
+  team_page_description: 'Derginin mutfağında, kelimelerin ve renklerin peşinde tutkuyla koşan bağımsız kolektif.',
 
   // ── 11. İLETİŞİM SAYFASI ───────────────────────────────────
-  contact_eyebrow: '✦ Açık Başvuru',
-  contact_title: 'Bize Yazın',
-  contact_subtitle: 'Çilek Dergisi, 15–25 yaş bağımsız üreticilere kapılarını açık tutuyor. Yazın, illüstrasyonun veya fotoğraf serinle sayfalarımızda yer al.',
+  contact_eyebrow: 'Açık Başvuru',
+  contact_title: 'Bize Yazın!',
+  contact_subtitle: 'Çilek Dergisi, 15–25 yaş arası tüm bağımsız üreticilere kapılarını sonuna kadar açıyor! Kaleme aldığın yazınla, illüstrasyonunla veya fotoğraflarınla aramıza katıl!',
   contact_steps_title: 'Başvuru Süreci',
   contact_form_title: 'Çalışmanı Gönder',
 
   // ── 12. HOŞ GELDİN MEKTUBU (LETTER MODAL) ──────────────────
   letter_badge: 'ÖZEL ÇİLEK MEKTUBU',
   letter_title: 'THANK YOU SO MUCH!',
-  letter_subtitle: 'Çilek Ailesine Aramıza Hoş Geldin Sevgili {name} 🍓',
-  letter_lead_quote: '“Kendine ait bir oda, kendine ait bir ses...”',
-  letter_body_paragraph: "Çilek Dergisi'nin bağımsız sayfalarına katıldığın için içtenlikle teşekkür ederiz. 15-25 yaşın o dur durak bilmeyen yaratıcı enerjisini, özgür hayallerini ve taze bakış açılarını birlikte paylaşacağımız sıcacık bir topluluktasın.",
+  letter_subtitle: 'Çilek Ailesine Aramıza Hoş Geldin Sevgili {name}! 🍓',
+  letter_lead_quote: '“Kendine ait bir alan kur, kendi sesini özgürce duyur!”',
+  letter_body_paragraph: "Çilek Dergisi'nin dinamik ve bağımsız sayfalarına katıldığın için çok heyecanlıyız! 15-25 yaşın o dur durak bilmeyen yaratıcı enerjisini, özgür hayallerini ve taze bakış açılarını birlikte kutlayacağımız sıcacık bir topluluktasın.",
   letter_perks_title: 'Aramıza Katılarak Neler Kazandın?',
-  letter_signoff_quote: 'Sayfalarımızın arasında kendi rengini bulman dileğiyle,',
-  letter_signoff_signature: 'Sevgiyle, Çilek Dergi Ekibi ♥',
+  letter_signoff_quote: 'Sayfalarımızın arasında kendi parıltını ve ritmini bulman dileğiyle,',
+  letter_signoff_signature: 'Sevgi ve Heyecanla, Çilek Dergi Kurucuları & Ekibi ♥',
   letter_envelope_sender: 'Çilek Dergisi Editoryal Masası',
   letter_envelope_sub: 'Bağımsız Dijital Gençlik Yayını',
   letter_button_open: 'Mektubu Aç ve Oku ✂️',
-  letter_button_explore: 'Dergileri Keşfetmeye Başla',
+  letter_button_explore: 'Dergileri Keşfetmeye Başla →',
 }
 
 // Geriye dönük uyumluluk için alias
@@ -174,6 +179,7 @@ export const DEFAULT_SITE_CONTENT = {
   },
   media: {
     founder_photo: DEFAULT_SITE_SETTINGS.about_founder_photo_url,
+    founder_2_photo: DEFAULT_SITE_SETTINGS.about_founder_2_photo_url,
     about_photo_1: DEFAULT_SITE_SETTINGS.about_photo_1_url,
     about_photo_2: DEFAULT_SITE_SETTINGS.about_photo_2_url,
     gallery: []
@@ -219,6 +225,7 @@ export async function fetchSiteSettings() {
             // Eğer eski formatta site altındaysa
             if (row.value.site) Object.assign(dbSettings, row.value.site)
             if (row.value.media?.founder_photo) dbSettings.about_founder_photo_url = row.value.media.founder_photo
+            if (row.value.media?.founder_2_photo) dbSettings.about_founder_2_photo_url = row.value.media.founder_2_photo
             if (row.value.media?.about_photo_1) dbSettings.about_photo_1_url = row.value.media.about_photo_1
             if (row.value.media?.about_photo_2) dbSettings.about_photo_2_url = row.value.media.about_photo_2
           }
@@ -319,6 +326,7 @@ export const getLocalSiteContent = () => {
     letter: DEFAULT_SITE_CONTENT.letter,
     media: {
       founder_photo: s.about_founder_photo_url,
+      founder_2_photo: s.about_founder_2_photo_url,
       about_photo_1: s.about_photo_1_url,
       about_photo_2: s.about_photo_2_url,
       gallery: []
@@ -334,6 +342,7 @@ export const fetchSiteContent = async () => {
     letter: DEFAULT_SITE_CONTENT.letter,
     media: {
       founder_photo: s.about_founder_photo_url,
+      founder_2_photo: s.about_founder_2_photo_url,
       about_photo_1: s.about_photo_1_url,
       about_photo_2: s.about_photo_2_url,
       gallery: []
@@ -389,6 +398,7 @@ export function useSiteContent() {
     letter: DEFAULT_SITE_CONTENT.letter,
     media: {
       founder_photo: settings.about_founder_photo_url,
+      founder_2_photo: settings.about_founder_2_photo_url,
       about_photo_1: settings.about_photo_1_url,
       about_photo_2: settings.about_photo_2_url,
       gallery: []

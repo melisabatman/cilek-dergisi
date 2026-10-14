@@ -1987,13 +1987,19 @@ button {
   background-color: var(--color-accent);
   position: relative;
   border-right: 1px solid var(--border-color);
-  min-height: 320px;
+  min-height: 340px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.modal-cover-col img {
+.modal-cover-col img,
+.modal-cover-image {
   width: 100%;
   height: 100%;
+  aspect-ratio: 210 / 297;
   object-fit: cover;
+  object-position: center;
 }
 
 .modal-close {
@@ -3078,24 +3084,53 @@ button {
 }
 
 .admin-toast.success {
-  background: var(--color-leaf);
-  color: var(--color-leaf);
-  border: 1.5px solid rgba(107, 155, 124, 0.3);
+  background: #1B4D3E;
+  color: #FFFFFF !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 12px 32px rgba(27, 77, 62, 0.35);
+}
+
+.admin-toast.success span {
+  color: #FFFFFF !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .admin-toast.error {
-  background: var(--color-accent);
-  color: var(--color-primary);
-  border: 1.5px solid rgba(190, 38, 37, 0.3);
+  background: var(--color-primary);
+  color: #FFFFFF !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 12px 32px rgba(190, 38, 37, 0.35);
+}
+
+.admin-toast.error span {
+  color: #FFFFFF !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .admin-toast button {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.2);
   border: none;
-  font-size: 1.1rem;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
   cursor: pointer;
-  color: inherit;
-  opacity: 0.7;
+  color: #FFFFFF !important;
+  opacity: 0.9;
+  transition: opacity 0.2s, background 0.2s;
+  flex-shrink: 0;
+}
+
+.admin-toast button:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.35);
 }
 
 /* Ana İçerik Konteyneri */
@@ -3559,7 +3594,8 @@ button {
 
 .admin-item-cover {
   width: 54px;
-  height: 72px;
+  aspect-ratio: 210 / 297;
+  height: auto;
   border-radius: 8px;
   overflow: hidden;
   background: var(--bg-card);
@@ -7794,6 +7830,12 @@ button {
   flex: 1;
 }
 
+.announcement-socials-spacer {
+  width: 44px;
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .announcement-moodboard-btn {
   background: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.25);
@@ -9697,6 +9739,10 @@ button {
     padding: 0 0.4rem !important;
   }
 
+  .announcement-socials-spacer {
+    display: none !important;
+  }
+
   .announcement-moodboard-btn {
     font-size: 0.72rem !important;
     padding: 2px 8px !important;
@@ -10152,7 +10198,9 @@ button {
   top: 24px;
   right: 24px;
   width: 376px;
-  height: 548px;
+  aspect-ratio: 210 / 297;
+  height: auto;
+  max-height: 548px;
   background: var(--c-cream);
   border: 2px solid var(--c-text);
   border-radius: 20px;
@@ -11519,15 +11567,47 @@ button {
 
 .home-founder-layout {
   display: grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: minmax(320px, 360px) 1fr;
   gap: 72px;
   align-items: center;
 }
 
-/* Polaroid kart */
+/* Polaroid kart & İkili Kurucu Desteği */
 .home-founder-photo-wrap {
   display: flex;
   justify-content: center;
+}
+
+.home-founders-dual-wrap {
+  position: relative;
+  width: 330px;
+  height: 380px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-founders-dual-wrap .home-founder-polaroid.polaroid-1 {
+  position: absolute;
+  left: 0;
+  top: 10px;
+  transform: rotate(-6deg);
+  z-index: 2;
+  width: 210px;
+}
+
+.home-founders-dual-wrap .home-founder-polaroid.polaroid-2 {
+  position: absolute;
+  right: 0;
+  top: 40px;
+  transform: rotate(5deg);
+  z-index: 3;
+  width: 210px;
+}
+
+.home-founders-dual-wrap .home-founder-polaroid:hover {
+  transform: rotate(0deg) scale(1.05);
+  z-index: 10;
 }
 
 .home-founder-polaroid {
@@ -11990,7 +12070,7 @@ button {
 
 /* Kapak */
 .shelf-book-cover {
-  aspect-ratio: 3/4;
+  aspect-ratio: 210 / 297;
   border-radius: 6px;
   overflow: hidden;
   background: var(--color-bg);
@@ -12473,7 +12553,7 @@ button {
   flex-wrap: wrap;
 }
 
-/* Tek Kapak Yuvası */
+/* Tek Kapak Yuvası (A4 Boyutlu Raf Standı) */
 .draf-cover-slot {
   display: flex;
   flex-direction: column;
@@ -12484,20 +12564,20 @@ button {
   border: none;
   padding: 0;
   outline: none;
-  width: min(100%, 280px);
-  max-width: 290px;
+  width: min(100%, 260px);
+  max-width: 270px;
   transition: transform 0.25s ease;
 }
 
-/* Kapak Kutusu (A4 / Dergi Oranı) */
+/* Kapak Kutusu (Standart ISO A4 Oranı 210 x 297 mm) */
 .draf-cover {
   position: relative;
   width: 100%;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 210 / 297;
   border-radius: 4px 10px 10px 4px;
   overflow: hidden;
   box-shadow:
-    -5px 8px 20px rgba(61, 39, 48, 0.24),
+    -6px 12px 28px rgba(61, 39, 48, 0.28),
     -1px 0 0 rgba(0, 0, 0, 0.25);
   transform-origin: bottom center;
   transition:
@@ -12516,7 +12596,9 @@ button {
 .draf-cover-img {
   width: 100%;
   height: 100%;
+  aspect-ratio: 210 / 297;
   object-fit: cover;
+  object-position: center;
   display: block;
 }
 
@@ -12720,7 +12802,7 @@ button {
     padding: 16px 8px 0;
   }
   .draf-cover-slot {
-    width: min(100%, 200px);
+    width: min(100%, 185px);
   }
 }
 
@@ -13124,7 +13206,7 @@ button {
 
 .about-v2-founder-inner {
   display: grid;
-  grid-template-columns: 300px 1fr;
+  grid-template-columns: minmax(300px, 350px) 1fr;
   gap: 72px;
   align-items: center;
 }
@@ -13132,6 +13214,40 @@ button {
 .about-v2-founder-photo-wrap {
   display: flex;
   justify-content: center;
+}
+
+.about-v2-founders-dual-polaroids {
+  position: relative;
+  width: 320px;
+  height: 360px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.about-v2-founders-dual-polaroids .about-v2-founder-polaroid.polaroid-founder-1 {
+  position: absolute;
+  left: 0;
+  top: 10px;
+  transform: rotate(-6deg);
+  z-index: 2;
+  width: 200px;
+  padding: 12px 12px 42px;
+}
+
+.about-v2-founders-dual-polaroids .about-v2-founder-polaroid.polaroid-founder-2 {
+  position: absolute;
+  right: 0;
+  top: 40px;
+  transform: rotate(5deg);
+  z-index: 3;
+  width: 200px;
+  padding: 12px 12px 42px;
+}
+
+.about-v2-founders-dual-polaroids .about-v2-founder-polaroid:hover {
+  transform: rotate(0deg) scale(1.05);
+  z-index: 10;
 }
 
 .about-v2-founder-polaroid {
@@ -14553,3 +14669,398 @@ p, .home-sec-desc, .about-v2-para, .submit-v2-subtitle, .draf-subheading, .stv-p
 .admin-subtab-btn { padding: 10px 18px; border-radius: 10px; border: 1.5px solid transparent; background: transparent; color: var(--color-text); font-family: var(--font-sans); font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; }
 .admin-subtab-btn:hover { background: var(--color-accent); color: var(--color-primary); }
 .admin-subtab-btn.active { background: var(--color-primary); color: #FFFFFF; border-color: #1A0A0E; box-shadow: 2px 2px 0px #1A0A0E; }
+
+/* ── Admin A4 Kapak Yükleme & Canlı Önizleme Sistemi ─────────── */
+.admin-a4-upload-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-a4-guide-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(190, 38, 37, 0.05);
+  border: 1px dashed rgba(190, 38, 37, 0.28);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  color: var(--color-text);
+  line-height: 1.45;
+  margin-bottom: 4px;
+}
+
+.admin-a4-guide-box strong {
+  color: var(--color-primary);
+}
+
+.admin-a4-preview-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 12px;
+  background: linear-gradient(180deg, rgba(246, 237, 227, 0.5) 0%, rgba(255, 255, 255, 0.85) 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(190, 38, 37, 0.14);
+  width: 100%;
+}
+
+.admin-a4-book-frame {
+  position: relative;
+  width: 170px;
+  aspect-ratio: 210 / 297;
+  border-radius: 3px 8px 8px 3px;
+  overflow: hidden;
+  box-shadow:
+    -6px 12px 26px rgba(61, 39, 48, 0.32),
+    -1px 0 0 rgba(0, 0, 0, 0.25);
+  background: var(--color-primary);
+  transform-origin: bottom center;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.admin-a4-book-frame:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: -7px 18px 34px rgba(61, 39, 48, 0.4);
+}
+
+.admin-a4-book-img {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 210 / 297;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.admin-a4-book-spine {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 10px;
+  background: linear-gradient(90deg, rgba(0,0,0,0.32) 0%, rgba(255,255,255,0.2) 40%, rgba(0,0,0,0.15) 100%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.admin-a4-book-sheen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 100%);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.admin-a4-book-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(43, 27, 36, 0.88);
+  color: #FFFFFF;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 3px 6px;
+  border-radius: 4px;
+  backdrop-filter: blur(4px);
+  z-index: 4;
+}
+
+.admin-a4-meta-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  align-items: center;
+}
+
+.admin-a4-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.73rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.admin-a4-pill--ratio-good {
+  background: rgba(107, 155, 124, 0.15);
+  color: #2F6F44;
+  border: 1px solid rgba(107, 155, 124, 0.35);
+}
+
+.admin-a4-pill--ratio-opt {
+  background: rgba(232, 181, 77, 0.18);
+  color: #8C6212;
+  border: 1px solid rgba(232, 181, 77, 0.4);
+}
+
+.admin-a4-pill--size {
+  background: rgba(190, 38, 37, 0.08);
+  color: var(--color-primary);
+  border: 1px solid rgba(190, 38, 37, 0.2);
+}
+
+.admin-a4-pill--dims {
+  background: rgba(43, 27, 36, 0.07);
+  color: var(--color-text);
+  border: 1px solid rgba(43, 27, 36, 0.15);
+}
+
+.admin-a4-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.btn-a4-opt {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: linear-gradient(135deg, var(--color-primary) 0%, #A81E1D 100%);
+  color: #FFFFFF;
+  border: none;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(190, 38, 37, 0.25);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-a4-opt:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(190, 38, 37, 0.35);
+}
+
+.btn-a4-opt:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.admin-a4-mode-btn {
+  background: #FFFFFF;
+  border: 1px solid var(--border-color);
+  color: var(--color-text);
+  padding: 4px 9px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.admin-a4-mode-btn.active {
+  background: var(--color-primary);
+  color: #FFFFFF;
+  border-color: var(--color-primary);
+}
+
+.admin-pdf-meta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  background: rgba(107, 155, 124, 0.14);
+  color: #2F6F44;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin-left: 8px;
+}
+
+/* ================================================================
+   26. KRİSTAL CAM RAF & ŞEFFAF VİTRİN SİSTEMİ (ÇİLEK DERGİSİ)
+   ================================================================ */
+
+/* Dergiler Sayfası Cam Raf Vitrini */
+.draf-glass-showcase {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 240, 244, 0.45) 50%, rgba(255, 255, 255, 0.8) 100%) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 2px solid rgba(255, 255, 255, 0.9) !important;
+  border-radius: 28px !important;
+  box-shadow:
+    0 24px 64px rgba(61, 39, 48, 0.08),
+    0 2px 6px rgba(255, 255, 255, 0.95) inset,
+    0 -2px 10px rgba(190, 38, 37, 0.03) inset !important;
+  padding: 44px 28px 0 !important;
+  max-width: 860px !important;
+  margin: 0 auto !important;
+  position: relative !important;
+  overflow: visible !important;
+}
+
+.draf-glass-shelf {
+  padding-bottom: 28px;
+}
+
+.draf-glass-shelf-books {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: flex-end !important;
+  padding: 32px 20px 18px !important;
+  min-height: 440px !important;
+  position: relative;
+  gap: 0 !important;
+}
+
+.draf-cover-slot--single {
+  width: min(100%, 300px) !important;
+  max-width: 320px !important;
+  position: relative;
+  z-index: 5;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), filter 0.35s ease;
+}
+
+.draf-cover-slot--single:hover {
+  transform: translateY(-10px) scale(1.02) !important;
+}
+
+/* Cam Yüzeyindeki Hafif Yansıma İzi */
+.draf-glass-book-reflection {
+  position: absolute;
+  bottom: -22px;
+  left: 8%;
+  right: 8%;
+  height: 22px;
+  background: radial-gradient(ellipse at center, rgba(190, 38, 37, 0.22) 0%, rgba(255, 255, 255, 0.5) 45%, transparent 75%);
+  filter: blur(5px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Kristal Cam Raf Pervazı (Glass Ledge) */
+.draf-glass-ledge {
+  position: relative;
+  margin-top: 16px !important;
+  width: 100%;
+  z-index: 10;
+}
+
+/* Üst Kenar Işık Pırıltısı */
+.draf-glass-shine {
+  position: absolute;
+  top: -1px;
+  left: 4%;
+  right: 4%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.95) 20%, #FFFFFF 50%, rgba(255, 255, 255, 0.95) 80%, transparent);
+  z-index: 6;
+  pointer-events: none;
+  border-radius: 999px;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
+}
+
+/* Cam Raf Üst Tabla Yüzeyi */
+.draf-glass-ledge-top {
+  height: 18px !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(230, 250, 248, 0.55) 60%, rgba(190, 240, 235, 0.65) 100%) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-top: 2px solid rgba(255, 255, 255, 0.98) !important;
+  border-left: 1.5px solid rgba(255, 255, 255, 0.8) !important;
+  border-right: 1.5px solid rgba(255, 255, 255, 0.8) !important;
+  border-radius: 6px 6px 0 0 !important;
+  box-shadow:
+    inset 0 1.5px 3px rgba(255, 255, 255, 0.95),
+    inset 0 -1.5px 3px rgba(110, 190, 180, 0.35) !important;
+}
+
+/* Cam Raf Kesit Ön Kenarı (Zümrüt/Akuamarin Saydam Cam Kenar Kalınlığı) */
+.draf-glass-ledge-face {
+  height: 22px !important;
+  background: linear-gradient(180deg, rgba(165, 228, 220, 0.8) 0%, rgba(115, 200, 190, 0.9) 60%, rgba(70, 160, 150, 0.95) 100%) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.85) !important;
+  border-bottom: 2.5px solid rgba(45, 125, 115, 0.95) !important;
+  border-left: 1.5px solid rgba(130, 210, 200, 0.85) !important;
+  border-right: 1.5px solid rgba(130, 210, 200, 0.85) !important;
+  box-shadow:
+    0 8px 24px rgba(35, 95, 90, 0.24),
+    inset 0 1px 2px rgba(255, 255, 255, 0.8),
+    inset 0 -1px 3px rgba(20, 65, 60, 0.45) !important;
+}
+
+/* Camın Altına Düşen Yumuşak Işık Kırılması Gölgesi */
+.draf-glass-ledge-shadow {
+  height: 26px !important;
+  background: radial-gradient(ellipse at top center, rgba(60, 150, 140, 0.22) 0%, rgba(61, 39, 48, 0.08) 45%, transparent 75%) !important;
+}
+
+/* ── Anasayfa Cam Raf Uyarlaması ──────────────────────────────── */
+.home-shelf-glass {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 240, 244, 0.45) 50%, rgba(255, 255, 255, 0.8) 100%) !important;
+  backdrop-filter: blur(16px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(160%) !important;
+  border: 2px solid rgba(255, 255, 255, 0.9) !important;
+  border-radius: 28px !important;
+  box-shadow:
+    0 24px 60px rgba(61, 39, 48, 0.08),
+    0 2px 6px rgba(255, 255, 255, 0.9) inset !important;
+  max-width: 640px !important;
+  margin: 0 auto !important;
+}
+
+.home-shelf-books--single {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: flex-end !important;
+  padding: 44px 24px 18px !important;
+  min-height: 400px !important;
+}
+
+.home-shelf-books--single .home-shelf-slot {
+  max-width: 280px !important;
+  width: min(100%, 280px) !important;
+}
+
+.bookcase-glass-top {
+  height: 18px !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(230, 250, 248, 0.6) 100%) !important;
+  border-top: 2px solid rgba(255, 255, 255, 0.98) !important;
+  box-shadow:
+    inset 0 1.5px 3px rgba(255, 255, 255, 0.95),
+    inset 0 -1px 2px rgba(110, 190, 180, 0.35) !important;
+}
+
+.home-glass-shelf-front {
+  height: 22px !important;
+  min-height: 22px !important;
+  padding: 0 !important;
+  display: block !important;
+  background: linear-gradient(180deg, rgba(165, 228, 220, 0.8) 0%, rgba(115, 200, 190, 0.9) 60%, rgba(70, 160, 150, 0.95) 100%) !important;
+  border-bottom: 2.5px solid rgba(45, 125, 115, 0.95) !important;
+  box-shadow: 0 8px 24px rgba(35, 95, 90, 0.22) !important;
+}
+
+@media (max-width: 768px) {
+  .draf-glass-showcase {
+    padding: 28px 14px 0 !important;
+    border-radius: 20px !important;
+  }
+  .draf-glass-shelf-books {
+    min-height: 330px !important;
+    padding: 20px 10px 14px !important;
+  }
+  .draf-cover-slot--single {
+    width: min(100%, 230px) !important;
+  }
+  .home-shelf-books--single {
+    min-height: 330px !important;
+    padding: 24px 14px 14px !important;
+  }
+}
+

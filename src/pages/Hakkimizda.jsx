@@ -6,23 +6,23 @@ import { useSiteContent, DEFAULT_SITE_CONTENT } from '../lib/siteContent'
 const MISSION_ITEMS = [
   {
     icon: '✍️',
-    title: 'Özgün Sesler',
-    desc: 'Kalıpların dışına çıkma cesaretini bulanların, ilk kelimelerini güvenle yazabileceği bir alan.'
+    title: 'Özgür Sesler',
+    desc: 'Kalıpların dışına çıkma cesaretini bulanların, kendi sesini özgürce ve gururla duyurabileceği dinamik bir alan!'
   },
   {
-    icon: '🌿',
-    title: 'Özenli Editoryal',
-    desc: 'Her metin titizlikle okunur, her görsel özenle seçilir. Hız değil, derinlik önce gelir.'
+    icon: '⚡',
+    title: 'İlham Veren Editoryal',
+    desc: 'Her kelimeye özen, her görsele tutku! Gençliğin hızını ve ritmini yakalayan heyecan verici editoryal dokunuşlar.'
   },
   {
     icon: '🍓',
     title: 'Topluluk & Dayanışma',
-    desc: '15–25 yaş okurların ve yazarların birbirini büyüttüğü, sıcak ve kapsayıcı bir ekosistem.'
+    desc: '15–25 yaş arası yaratıcı zihinlerin birbirine güç verdiği, birlikte parıldayan sıcacık bir ekosistem!'
   },
   {
     icon: '📖',
-    title: 'Basılı Dergi Hissi',
-    desc: 'Her sayfada elle tutulabilir bir duygu; saklanan, not düşülen, tekrar tekrar okunan içerikler.'
+    title: 'Koleksiyonluk Dergi Hissi',
+    desc: 'Her sayfasında elle tutulur bir duygu; saklanan, paylaşılan ve kalpleri ısıtan bir dergi deneyimi!'
   }
 ]
 
@@ -42,9 +42,9 @@ export default function Hakkimizda({ user, isAdmin }) {
             </div>
 
             <div className="about-v2-hero-text">
-              <span className="eyebrow-cilek"><span className="eyebrow-star">✦</span> {settings.about_title || 'Biz Kimiz?'}</span>
+              <span className="eyebrow-cilek">{settings.about_title || 'Biz Kimiz?'}</span>
               <h1 className="about-v2-opening">
-                {settings.about_opening_quote || 'Her gencin anlatacak sahici, kırılgan ve özgün bir hikâyesi vardır.'}
+                {settings.about_opening_quote || 'Gençliğin hayalleri, cesareti ve üretme tutkusu dünyayı değiştirecek güçte!'}
               </h1>
             </div>
 
@@ -61,7 +61,7 @@ export default function Hakkimizda({ user, isAdmin }) {
 
             {/* Sol: metin */}
             <div className="about-v2-story-text">
-              <span className="eyebrow-cilek"><span className="eyebrow-star">✦</span> Hikâyemiz</span>
+              <span className="eyebrow-cilek">Hikâyemiz</span>
               <h2 className="heading-cilek">
                 {settings.about_story_title || "Çilek Dergisi'nin Doğuşu"}
               </h2>
@@ -91,7 +91,7 @@ export default function Hakkimizda({ user, isAdmin }) {
                 <div className="about-v2-polaroid-img">
                   <img src={settings.about_photo_1_url || '/icons/icon4.png'} alt="" style={{ width: '60%' }} />
                 </div>
-                <span className="about-v2-polaroid-caption">Her sayı bir macera ✦</span>
+                <span className="about-v2-polaroid-caption">Her sayı bir macera!</span>
               </div>
               <div className="about-v2-polaroid about-v2-polaroid-2">
                 <div className="about-v2-polaroid-img">
@@ -109,37 +109,49 @@ export default function Hakkimizda({ user, isAdmin }) {
           </div>
         </section>
 
-        {/* ── 3. Kurucu / Editör Bölümü ──────────────────────────────── */}
-        <section className="about-v2-founder" aria-label="Kurucu ile Tanışın">
+        {/* ── 3. Kurucular Bölümü (İki Kurucu Ortak) ──────────────────── */}
+        <section className="about-v2-founder" aria-label="Kurucularımız ile Tanışın">
           <div className="container about-v2-founder-inner">
 
-            {/* Polaroid kart */}
+            {/* Polaroid kartlar - İki Kurucu */}
             <div className="about-v2-founder-photo-wrap">
-              <div className="about-v2-founder-polaroid">
-                <div className="about-v2-founder-photo">
-                  <img
-                    src={settings.about_founder_photo_url || settings.home_founder_photo_url || '/icons/cilek-vintage.png'}
-                    alt="Kurucu"
-                    style={{ width: '60%' }}
-                  />
+              <div className="about-v2-founders-dual-polaroids">
+                <div className="about-v2-founder-polaroid polaroid-founder-1">
+                  <div className="about-v2-founder-photo">
+                    <img
+                      src={settings.about_founder_photo_url || settings.home_founder_photo_url || '/icons/cilek-vintage.png'}
+                      alt={settings.about_founder_1_name || 'Kurucu Ortak'}
+                      style={{ width: '65%' }}
+                    />
+                  </div>
+                  <span className="about-v2-founder-photo-caption">{settings.about_founder_1_name || 'Genel Yayın Yönetmeni'}</span>
                 </div>
-                <span className="about-v2-founder-photo-caption">Genel Yayın Yönetmeni ✦</span>
+                <div className="about-v2-founder-polaroid polaroid-founder-2">
+                  <div className="about-v2-founder-photo">
+                    <img
+                      src={settings.about_founder_2_photo_url || '/icons/icon2.png'}
+                      alt={settings.about_founder_2_name || 'Kurucu Ortak'}
+                      style={{ width: '65%' }}
+                    />
+                  </div>
+                  <span className="about-v2-founder-photo-caption">{settings.about_founder_2_name || 'Art Director'}</span>
+                </div>
               </div>
             </div>
 
             {/* Metin */}
             <div className="about-v2-founder-text">
-              <span className="eyebrow-cilek"><span className="eyebrow-star">✦</span> Kurucuyla Tanışın</span>
+              <span className="eyebrow-cilek">Kurucularımızla Tanışın</span>
               <h2 className="heading-cilek">
-                Neden<span className="italic"> Çilek'i kurdum?</span>
+                Neden<span className="italic"> Çilek'i kurduk?</span>
               </h2>
 
               <blockquote className="about-v2-founder-quote">
-                {settings.about_founder_quote || '"Yazmak isteyip nereye göndereceğini bilemeyen bir genci düşündüm. Tam da onun için bu alanı açtım — çünkü ben de bir zamanlar o gençtim."'}
+                {settings.about_founder_quote || '“Gençliğin enerjisi, tutkusu ve anlatacak cesur hikâyeleri kalıplara sığmaz! Çilek Dergisi bu bağımsız kıvılcımı birlikte parlatmak için var!”'}
               </blockquote>
 
               <p className="about-v2-para">
-                {settings.about_founder_bio || 'Çilek Dergisi, bir gece ansızın gelen bir fikrin, incelikle örülmüş bir planın ve ekibin inanılmaz emeğinin ürünü. Her sayıda bu sevgi hissediliyor.'}
+                {settings.about_founder_bio || 'Çilek Dergisi; iki yol arkadaşının ortak hayalinden, bağımsız gençlik kültürünü cesurca yansıtma arzusundan doğdu. Her sayıda bu ortak tutkuyu ve gençliğin saf enerjisini hissettirmek için birlikte üretiyoruz.'}
               </p>
 
               <Link to="/ekibimiz" className="btn-cilek-link" id="btn-about-meet-team">
@@ -153,7 +165,7 @@ export default function Hakkimizda({ user, isAdmin }) {
         <section className="about-v2-mission" aria-label="Değerlerimiz">
           <div className="container">
             <div className="about-v2-mission-header">
-              <span className="eyebrow-cilek"><span className="eyebrow-star">✦</span> Ne için buradayız?</span>
+              <span className="eyebrow-cilek">Ne için buradayız?</span>
               <h2 className="heading-cilek">
                 Dergimizin<span className="italic"> Değerleri</span>
               </h2>
@@ -172,10 +184,10 @@ export default function Hakkimizda({ user, isAdmin }) {
             {/* CTA */}
             <div className="about-v2-cta">
               <p className="about-v2-cta-text">
-                Seninle sayfalar doldurmak için sabırsızlanıyoruz.
+                Senin de enerjinle sayfalarımızı doldurmak için sabırsızlanıyoruz! Aramıza katıl, sesini duyur!
               </p>
               <Link to="/yazi-gonderi" className="btn-cilek-primary" id="btn-about-submit">
-                Yazını Bize Gönder
+                Yazını Hemen Gönder →
               </Link>
             </div>
           </div>

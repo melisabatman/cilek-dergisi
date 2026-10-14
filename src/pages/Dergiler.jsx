@@ -17,12 +17,12 @@ export default function Dergiler({ user, isAdmin }) {
               <img src="/icons/cilek-vintage.png" alt="" className="dergiler-header-icon" />
             </div>
             <div className="dergiler-header-text">
-              <span className="eyebrow-cilek"><span className="eyebrow-star">✦</span> {settings.magazines_eyebrow || 'Çilek Dergisi Arşivi'}</span>
+              <span className="eyebrow-cilek">{settings.magazines_eyebrow || 'Çilek Dergisi Arşivi'}</span>
               <h1 className="dergiler-page-title">
                 {settings.magazines_title || 'Tüm Sayılar'}
               </h1>
               <p className="dergiler-page-sub">
-                {settings.magazines_subtitle || 'EST. 2024 · Her sayı, 15–25 yaş bağımsız yaratıcıların sesiyle şekillenen, özenle kürate edilmiş bir editoryal deneyimdir.'}
+                {settings.magazines_subtitle || 'EST. 2024 · Gençliğin ilham dolu dünyasına adım at! Raftan dilediğin sayıyı seç, sayfaları hemen çevir ve özgür sesleri keşfet!'}
               </p>
             </div>
           </div>

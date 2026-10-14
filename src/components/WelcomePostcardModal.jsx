@@ -197,7 +197,7 @@ export default function WelcomePostcardModal({ isOpen, onClose, user }) {
                               .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                           }} />
                         ) : (
-                          <>✦ {perk}</>
+                          <>🍓 {perk}</>
                         )}
                       </li>
                     ))}

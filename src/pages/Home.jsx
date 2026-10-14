@@ -19,8 +19,8 @@ const FEATURED_FALLBACKS = [
 
 // ─── Fallback ekip verisi ──────────────────────────────────────────────────────
 const TEAM_FALLBACK = [
-  { id: 't-1', name: 'Genel Yayın Yönetmeni', role: 'Kreatif Direktör & Kurucu', photo_url: null, order_index: 1 },
-  { id: 't-2', name: 'Art Director', role: 'Tasarım & Görsel Dil', photo_url: null, order_index: 2 },
+  { id: 't-1', name: 'Genel Yayın Yönetmeni', role: 'Kreatif Direktör & Kurucu Ortak', photo_url: null, order_index: 1 },
+  { id: 't-2', name: 'Art Director', role: 'Görsel Tasarım & Kurucu Ortak', photo_url: null, order_index: 2 },
   { id: 't-3', name: 'İçerik Editörü', role: 'Edebiyat & Yazı İşleri', photo_url: null, order_index: 3 },
   { id: 't-4', name: 'Görsel Sanat Editörü', role: 'Fotoğraf & Sanat', photo_url: null, order_index: 4 },
   { id: 't-5', name: 'Dijital Koordinatör', role: 'Sosyal Medya & Web', photo_url: null, order_index: 5 },
@@ -28,15 +28,15 @@ const TEAM_FALLBACK = [
 ]
 
 // ─── Kayan marquee metni ──────────────────────────────────────────────────────
-const MARQUEE_TEXT = '✦ Sayı 06 yayında · Şimdi oku ✦ Her ay yeni bir sayı ✦ Bağımsız Gençlik ✦ Çilek Dergisi ✦ '
+const MARQUEE_TEXT = 'Sayı 06 Yayında · Şimdi Oku · Her Ay Yepyeni Bir Macera · Genç, Özgür, Bağımsız! · Çilek Dergisi · '
 
 // ─── "Her Sayıda Seni Bekleyenler" retro takvim içeriği ─────────────────────
 const CONTENT_PICKS = [
-  { num: '01', tag: 'YAZI', icon: '🖊', label: 'Bir Yazı', desc: 'Duyguların en yalın haliyle kaleme alınmış, özgün bir deneme ya da kısa kurgu.', time: 'Her Sayıda · Deneme' },
-  { num: '02', tag: 'SÖYLEŞİ', icon: '🎤', label: 'Bir Röportaj', desc: 'İlham veren genç bir yaratıcıyla dürüst ve derinlikli bir söyleşi.', time: 'Özel Seri · Söyleşi' },
-  { num: '03', tag: 'GÖRSEL', icon: '🎨', label: 'Bir Görsel', desc: 'Fotoğraf serisi, illüstrasyon veya kolaj; sayfayı aydınlatan özgün bir eser.', time: 'Sanat & Tasarım' },
-  { num: '04', tag: 'ÖNERİ', icon: '💡', label: 'Bir Öneri', desc: 'Bir kitap, müzik, film ya da küçük bir günlük ritual önerisi.', time: 'Kültür & Yaşam' },
-  { num: '05', tag: 'FİKİR', icon: '💭', label: 'Bir Düşünce', desc: 'Kafana takılan bir soru, bir kavram veya bir hayat notu.', time: 'Serbest Alan' },
+  { num: '01', tag: 'YAZI', icon: '🖊', label: 'Bir Yazı', desc: 'Duyguların en yalın ve vurucu haliyle kaleme alınmış özgün bir deneme ya da kısa öykü.', time: 'Her Sayıda · Deneme' },
+  { num: '02', tag: 'SÖYLEŞİ', icon: '🎤', label: 'Bir Röportaj', desc: 'İlham veren genç bir yaratıcıyla samimi, dürüst ve derinlikli bir söyleşi.', time: 'Özel Seri · Söyleşi' },
+  { num: '03', tag: 'GÖRSEL', icon: '🎨', label: 'Bir Görsel', desc: 'Fotoğraf serisi, illüstrasyon veya kolaj; sayfayı aydınlatan rengârenk bir eser.', time: 'Sanat & Tasarım' },
+  { num: '04', tag: 'ÖNERİ', icon: '💡', label: 'Bir Öneri', desc: 'Ruhuna iyi gelecek bir kitap, müzik, film ya da taptaze bir ilham önerisi.', time: 'Kültür & Yaşam' },
+  { num: '05', tag: 'FİKİR', icon: '💭', label: 'Bir Düşünce', desc: 'Kafana takılan bir soru, yepyeni bir kavram veya zihnini açacak bir hayat notu.', time: 'Serbest Alan' },
 ]
 
 // ─── TOC kart açıklamaları (varsa kullan, yoksa genel) ───────────────────────
@@ -52,7 +52,7 @@ export default function Home({ user, isAdmin }) {
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false)
   const [latestMag, setLatestMag] = useState(null)
   const [teamMembers, setTeamMembers] = useState(TEAM_FALLBACK)
-  const [founder, setFounder] = useState(null)
+  const [founders, setFounders] = useState(TEAM_FALLBACK.slice(0, 2))
   const [newsletterEmail, setNewsletterEmail] = useState('')
   const [newsletterDone, setNewsletterDone] = useState(false)
 
@@ -67,7 +67,10 @@ export default function Home({ user, isAdmin }) {
 
   const { settings } = useSiteContent()
   const siteData = settings
-  const mediaData = { founder_photo: settings.about_founder_photo_url }
+  const mediaData = {
+    founder_photo: settings.about_founder_photo_url,
+    founder_2_photo: settings.about_founder_2_photo_url,
+  }
 
   useEffect(() => {
     if (searchParams.get('welcome') === 'true') setIsWelcomeModalOpen(true)
@@ -94,13 +97,21 @@ export default function Home({ user, isAdmin }) {
       .then(({ data, error }) => {
         if (!error && data && data.length > 0) {
           setTeamMembers(data)
-          // Kurucu: role içinde 'kurucu' veya 'founder' geçen ya da order_index = 1
-          const found = data.find(m =>
+          // İki kurucu: rolünde 'kurucu' geçenler veya ilk 2 üye
+          const kurucular = data.filter(m =>
             m.role?.toLowerCase().includes('kurucu') ||
-            m.role?.toLowerCase().includes('founder') ||
-            m.order_index === 1
+            m.role?.toLowerCase().includes('founder')
           )
-          setFounder(found || data[0])
+          const fList = kurucular.length >= 2
+            ? kurucular.slice(0, 2)
+            : (kurucular.length === 1
+                ? [kurucular[0], data.find(m => m.id !== kurucular[0].id) || data[1]].filter(Boolean)
+                : data.slice(0, 2))
+          setFounders(fList)
+          setFounder(fList[0] || data[0])
+        } else {
+          setFounders(TEAM_FALLBACK.slice(0, 2))
+          setFounder(TEAM_FALLBACK[0])
         }
       })
   }, [])
@@ -149,20 +160,19 @@ export default function Home({ user, isAdmin }) {
             {/* Sol: Metin */}
             <div className="home-hero-text">
               <div className="home-hero-eyebrow">
-                <span className="home-hero-eyebrow-star">✦</span>
                 {siteData.hero_eyebrow || 'Çilek Dergisi'}
               </div>
               <h1 className="home-hero-title">
                 {siteData.hero_title_line1 || 'Kendi sesini'}<br />
                 <span className="home-hero-title-italic">{siteData.hero_title_italic || 'özgürce'} </span>
-                <span className="home-hero-title-script">{siteData.hero_title_script || 'duyurduğun alan.'}</span>
+                <span className="home-hero-title-script">{siteData.hero_title_script || 'haykırdığın alan!'}</span>
               </h1>
               <p className="home-hero-copy">
                 {settings.hero_subtitle || siteData.hero_copy}
               </p>
               <div className="home-hero-actions">
                 <button type="button" className="home-btn-primary" onClick={handleReadIssue} id="btn-hero-read-issue">
-                  {settings.hero_cta_text || 'SAYIYI OKU'}
+                  {settings.hero_cta_text || 'SAYIYI OKU →'}
                 </button>
                 <Link to="/dergiler" className="home-btn-secondary" id="btn-hero-all-issues">
                   {settings.hero_cta_archive || 'Tüm Sayılar'}
@@ -170,9 +180,9 @@ export default function Home({ user, isAdmin }) {
               </div>
               <p className="home-hero-note">
                 <strong className="home-hero-note-strong">
-                  Sayı {featuredMag?.issue_number || '06'} yayında
+                  Sayı {featuredMag?.issue_number || '06'} yayında!
                 </strong>
-                {' '}· PDF indirmek için giriş yapmanız gerekmektedir.
+                {' '}· Hemen keşfet, sayfaları çevir ve ilhamı yakala!
               </p>
             </div>
 
@@ -190,7 +200,7 @@ export default function Home({ user, isAdmin }) {
                     </div>
                   )}
                 </div>
-                <div className="home-cover-sticker home-sticker-1">Yayında ✦</div>
+                <div className="home-cover-sticker home-sticker-1">Yayında!</div>
                 <div className="home-cover-sticker home-sticker-2">Son Sayı</div>
               </div>
             </div>
@@ -214,7 +224,7 @@ export default function Home({ user, isAdmin }) {
                 </div>
               </div>
               <div className="home-issue-info">
-                <span className="home-sec-eyebrow"><span className="eyebrow-star">✦</span> Son Sayı</span>
+                <span className="home-sec-eyebrow">Son Sayı</span>
                 <h2 className="home-issue-title">{featuredMag?.title || 'Sayı 06 — Yaz Dönemi'}</h2>
                 <p className="home-issue-date">
                   {featuredMag?.published_date
@@ -225,7 +235,7 @@ export default function Home({ user, isAdmin }) {
                   {featuredMag?.description || 'Yaz mevsiminin hafifliği ve sonsuzluk hissi. Uzak yollar, sıcak sokaklar, yeni başlangıçlar.'}
                 </p>
                 <button type="button" className="home-btn-primary" onClick={handleReadIssue} id="btn-issue-band-read">
-                  SAYIYI OKU
+                  SAYIYI OKU →
                 </button>
               </div>
             </div>
@@ -237,7 +247,7 @@ export default function Home({ user, isAdmin }) {
           <section className="home-toc-section" aria-label="Bu Sayıda Neler Var">
             <div className="container">
               <div className="home-toc-header">
-                <span className="home-sec-eyebrow"><span className="eyebrow-star">✦</span> İçindekiler</span>
+                <span className="home-sec-eyebrow">İçindekiler</span>
                 <h2 className="home-sec-title">
                   Bu Sayıda Seni<span className="home-sec-title-italic"> Neler Bekliyor?</span>
                 </h2>
@@ -278,7 +288,6 @@ export default function Home({ user, isAdmin }) {
 
                       <div className="home-toc-card-num-wrap">
                         <span className="home-toc-card-num">{String(idx + 1).padStart(2, '0')}</span>
-                        <span className="home-toc-card-star">✦</span>
                       </div>
                       <div className="home-toc-card-body">
                         <p className="home-toc-card-title">{settings[`home_toc_card_${idx + 1}_title`] || item}</p>
@@ -312,7 +321,7 @@ export default function Home({ user, isAdmin }) {
 
               {/* Takvim Üst Başlık */}
               <div className="home-calendar-header">
-                <span className="home-calendar-eyebrow">ÇİLEK DERGİSİ ✦ HER SAYIDA</span>
+                <span className="home-calendar-eyebrow">ÇİLEK DERGİSİ · HER SAYIDA</span>
                 <h2 className="home-calendar-title">{settings.features_title || 'HER SAYIDA SENİ BEKLEYENLER'}</h2>
                 <p className="home-calendar-sub">
                   {settings.features_subtitle || "Çilek Dergisi'nin her sayısında bulacağın beş temel içerik türü:"}
@@ -353,7 +362,7 @@ export default function Home({ user, isAdmin }) {
               {/* Takvim İçi Aksiyon Butonu (FIND US TODAY tarzı) */}
               <div className="home-calendar-actions">
                 <Link to="/dergiler" className="calendar-sheet-btn" id="btn-calendar-discover">
-                  SAYILARI KEŞFET ✦
+                  SAYILARI KEŞFET →
                 </Link>
               </div>
             </div>
@@ -362,7 +371,7 @@ export default function Home({ user, isAdmin }) {
             <div className="home-calendar-banner">
               <span className="calendar-banner-text">
                 {newsletterDone
-                  ? '✦ KAYDINIZ ALINDI! ÇİLEK DÜNYASINA HOŞ GELDİNİZ 🍓'
+                  ? 'KAYDINIZ ALINDI! ÇİLEK DÜNYASINA HOŞ GELDİNİZ 🍓'
                   : 'PSST! YENİ SAYILARI VE EDİTORYAL SEÇKİLERİ KAÇIRMA!'}
               </span>
               <form className="calendar-banner-form" onSubmit={handleNewsletterSubmit}>
@@ -390,9 +399,9 @@ export default function Home({ user, isAdmin }) {
         <section className="home-team-marquee-section" aria-label="Ekibimizle Tanışın">
           <div className="home-team-marquee-header container">
             <div>
-              <span className="home-sec-eyebrow"><span className="eyebrow-star">✦</span> {settings.home_team_eyebrow || 'Ekip'}</span>
+              <span className="home-sec-eyebrow">{settings.home_team_eyebrow || 'Ekibimiz'}</span>
               <h2 className="home-sec-title">
-                {settings.home_team_title || 'Ekibimizle Tanışın'}
+                {settings.home_team_title || 'Yaratıcı Ekibimizle Tanışın'}
               </h2>
             </div>
             <Link to="/ekibimiz" className="home-btn-secondary" id="btn-team-marquee-all">
@@ -420,41 +429,58 @@ export default function Home({ user, isAdmin }) {
           </div>
         </section>
 
-        {/* ── 7. KURUCUYLA TANIŞ ──────────────────────────────────────── */}
-        <section className="home-founder-section" aria-label="Kurucuyla Tanış">
+        {/* ── 7. KURUCULARLA TANIŞ ─────────────────────────────────────── */}
+        <section className="home-founder-section" aria-label="Kurucularımızla Tanış">
           <div className="container">
             <div className="home-founder-layout">
-              {/* Sol: Polaroid foto */}
+              {/* Sol: Polaroid fotoğraflar (İki Kurucu) */}
               <div className="home-founder-photo-wrap" aria-hidden="true">
-                <div className="home-founder-polaroid">
-                  {(mediaData.founder_photo || founder?.photo_url) ? (
-                    <img src={mediaData.founder_photo || founder?.photo_url} alt={founder?.name || 'Kurucu'} className="home-founder-img" />
-                  ) : (
-                    <div className="home-founder-img-fallback">
-                      <img src="/icons/cilek-vintage.png" alt="" style={{ width: '55%' }} />
-                    </div>
-                  )}
-                  <span className="home-founder-polaroid-label">
-                    {founder?.name || 'Çilek Ekibi'} ✦
-                  </span>
+                <div className="home-founders-dual-wrap">
+                  {/* Kurucu 1 */}
+                  <div className="home-founder-polaroid polaroid-1">
+                    {(mediaData.founder_photo || founders[0]?.photo_url) ? (
+                      <img src={mediaData.founder_photo || founders[0]?.photo_url} alt={founders[0]?.name || 'Kurucu Ortak'} className="home-founder-img" />
+                    ) : (
+                      <div className="home-founder-img-fallback">
+                        <img src="/icons/cilek-vintage.png" alt="" style={{ width: '55%' }} />
+                      </div>
+                    )}
+                    <span className="home-founder-polaroid-label">
+                      {founders[0]?.name || settings.about_founder_1_name || 'Genel Yayın Yönetmeni'}
+                    </span>
+                  </div>
+
+                  {/* Kurucu 2 */}
+                  <div className="home-founder-polaroid polaroid-2">
+                    {(mediaData.founder_2_photo || settings.about_founder_2_photo_url || founders[1]?.photo_url) ? (
+                      <img src={mediaData.founder_2_photo || settings.about_founder_2_photo_url || founders[1]?.photo_url} alt={founders[1]?.name || 'Kurucu Ortak'} className="home-founder-img" />
+                    ) : (
+                      <div className="home-founder-img-fallback">
+                        <img src="/icons/icon2.png" alt="" style={{ width: '55%' }} />
+                      </div>
+                    )}
+                    <span className="home-founder-polaroid-label">
+                      {founders[1]?.name || settings.about_founder_2_name || 'Art Director'}
+                    </span>
+                  </div>
                 </div>
               </div>
 
               {/* Sağ: Metin */}
               <div className="home-founder-content">
-                <span className="home-sec-eyebrow"><span className="eyebrow-star">✦</span> Kurucuyla Tanış</span>
+                <span className="home-sec-eyebrow">Kurucularımızla Tanış</span>
                 <h2 className="home-sec-title">
-                  {settings.about_founder_name || founder?.name || 'Merhaba,'}
-                  <span className="home-sec-title-italic"> — {founder?.role || 'Kurucu & Editör'}</span>
+                  {settings.about_founder_name || 'Kurucu Ortaklar'}
+                  <span className="home-sec-title-italic"> — Kreatif Vizyon &amp; Sanat Masası</span>
                 </h2>
                 <blockquote className="home-founder-quote">
-                  {siteData.about_founder_quote || '"Her gencin anlatacak sahici, kırılgan ve özgün bir hikâyesi vardır. Çilek Dergisi bunun için burada."'}
+                  {siteData.about_founder_quote || '“Gençliğin enerjisi, tutkusu ve anlatacak cesur hikâyeleri kalıplara sığmaz! Çilek Dergisi bu bağımsız kıvılcımı birlikte parlatmak için var!”'}
                 </blockquote>
                 <p className="home-founder-bio">
-                  {siteData.about_founder_bio || founder?.bio || 'Derginin editoryal kimliğini, bağımsız tonunu ve görsel ruhunu şekillendiriyor. Her sayıda okurlarıyla buluşmak için özenle çalışıyor.'}
+                  {siteData.about_founder_bio || 'İki kurucu ortak olarak derginin editoryal kimliğini, dinamik görsel ruhunu ve bağımsız vizyonunu el ele büyütüyoruz. Her sayıda gençliğin coşkusunu ve özgür sesini sayfalarımıza taşımaktan büyük heyecan duyuyoruz!'}
                 </p>
                 <Link to="/hakkimizda" className="btn-cilek-link" id="btn-founder-more">
-                  Hakkımızda →
+                  Hakkımızda Daha Fazlası →
                 </Link>
               </div>
             </div>
@@ -469,29 +495,26 @@ export default function Home({ user, isAdmin }) {
                 <img src="/icons/cilek-vintage.png" alt="" className="home-about-deco-img" />
               </div>
               <div className="home-about-content">
-                <span className="home-sec-eyebrow"><span className="eyebrow-star">✦</span> Biz Kimiz?</span>
+                <span className="home-sec-eyebrow">Biz Kimiz?</span>
                 <h2 className="home-sec-title">
                   Çilek Dergisi<span className="home-sec-title-italic">'nin Hikâyesi</span>
                 </h2>
                 <p className="home-about-text">
-                  <strong>Çilek Dergisi</strong>, "her gencin anlatacak sahici, kırılgan ve özgün bir hikâyesi vardır"
-                  inancıyla doğdu. Dijital çağın aceleci ve yüzeysel tüketimine inat; basılı bir derginin sevgisiyle,
-                  her sayfasında özenle işlenmiş kelimeler, dikiş izleri ve özgür düşler barındırır.
+                  <strong>Çilek Dergisi</strong>, gençliğin sınır tanımayan hayal gücünü, dinamik ritmini ve cesur sesini tek bir çatı altında buluşturmak için doğdu! İki kurucu olarak, basılı bir fanzinin tutkusunu dijitalin sınırsız enerjisiyle harmanlıyoruz.
                 </p>
                 <p className="home-about-text">
-                  Sanat, edebiyat, kişisel deneyimler, şiir ve bağımsız görsel kültür… Burası kalıplara sığmak
-                  zorunda hissetmeyenlerin ilk dizelerini korkmadan paylaşabileceği sıcak bir sığınaktır.
+                  Edebiyat, sanat, özgün denemeler, cesur şiirler ve bağımsız görsel kültür… Burası kalıplara sığmayan, üretmekten ve kendini ifade etmekten heyecan duyan tüm gençlerin ilham dolu üretim sahnesi!
                 </p>
                 <Link to="/hakkimizda" className="home-about-link" id="btn-about-teaser-more">
-                  Devamını Oku →
+                  Hikâyemizi Keşfet →
                 </Link>
               </div>
               <div className="home-values-grid">
                 {[
-                  { icon: '✍️', label: 'Craftsmanship', desc: 'Bağımsız yazarlar ve özenli editoryal süreç.' },
-                  { icon: '🌿', label: 'Slowness', desc: 'Hissederek okunan, saklanan, sevilen sayfalar.' },
-                  { icon: '🎨', label: 'Playfulness', desc: 'Kuralları yıkan deneysel denemeler ve şiirler.' },
-                  { icon: '🍓', label: 'Community', desc: '15–25 yaş okurlar ve yazarların sıcak dayanışması.' },
+                  { icon: '✍️', label: 'Craftsmanship', desc: 'Özgür kalemler ve titiz, ilham verici editoryal dokunuşlar!' },
+                  { icon: '⚡', label: 'Energy & Soul', desc: 'Her satırında gençliğin dinamizmini ve tutkusunu hissettiren anlatılar!' },
+                  { icon: '🎨', label: 'Playfulness', desc: 'Kalıpları yıkan, sınır tanımayan deneysel sanat ve edebiyat!' },
+                  { icon: '🍓', label: 'Community', desc: '15–25 yaş üreticilerin ve meraklı okurların güçlü dayanışması!' },
                 ].map((v) => (
                   <div key={v.label} className="home-value-card">
                     <span className="home-value-icon">{v.icon}</span>
@@ -509,7 +532,7 @@ export default function Home({ user, isAdmin }) {
           <div className="container">
             <div className="home-archive-header">
               <div>
-                <span className="home-sec-eyebrow"><span className="eyebrow-star">✦</span> The Çilek Journey</span>
+                <span className="home-sec-eyebrow">The Çilek Journey</span>
                 <h2 className="home-sec-title">
                   Tüm<span className="home-sec-title-italic"> Sayılar</span>
                 </h2>
@@ -519,73 +542,56 @@ export default function Home({ user, isAdmin }) {
               </Link>
             </div>
 
-            {/* Dijital Ahşap Raf (Showcase Digital Shelf) */}
+            {/* Dijital Cam Raf (Showcase Glass Shelf) */}
             <div className="home-digital-shelf-wrap">
-              <div className="home-shelf-wood">
-                {/* Raftaki Dergiler */}
-                <div className="home-shelf-books">
-                  {allMagazines.slice(0, 4).map((mag, idx) => {
-                    const tilt = [-1.4, 1.2, -0.8, 1.5][idx % 4]
-                    return (
+              <div className="home-shelf-wood home-shelf-glass">
+                {/* Raftaki Dergi (Tek Dergi Örneği) */}
+                <div className="home-shelf-books home-shelf-books--single">
+                  {allMagazines.slice(0, 1).map((mag) => (
+                    <div
+                      key={mag.id}
+                      className="home-shelf-slot"
+                      style={{ '--book-tilt': '0deg' }}
+                    >
                       <div
-                        key={mag.id}
-                        className="home-shelf-slot"
-                        style={{ '--book-tilt': `${tilt}deg` }}
+                        className="shelf-book-stand"
+                        onClick={() => setSelectedMag(mag)}
+                        tabIndex={0}
+                        role="button"
+                        onKeyDown={(e) => e.key === 'Enter' && setSelectedMag(mag)}
+                        aria-label={`${mag.title} incele`}
                       >
-                        <div
-                          className="shelf-book-stand"
-                          onClick={() => setSelectedMag(mag)}
-                          tabIndex={0}
-                          role="button"
-                          onKeyDown={(e) => e.key === 'Enter' && setSelectedMag(mag)}
-                          aria-label={`${mag.title} incele`}
-                        >
-                          <div className="shelf-book-floor-shadow" />
-                          <div className="shelf-book">
-                            <div className="shelf-book-spine" />
-                            <div className="shelf-book-cover">
-                              {mag.cover_image_url ? (
-                                <img src={mag.cover_image_url} alt={mag.title} className="shelf-cover-img" />
-                              ) : (
-                                <div className="shelf-cover-fallback">
-                                  <img src="/icons/cilek-vintage.png" alt="" className="shelf-fallback-icon" />
-                                  <strong className="shelf-fallback-brand">ÇİLEK</strong>
-                                  <span className="shelf-fallback-issue">Sayı #{mag.issue_number}</span>
-                                </div>
-                              )}
-                              <div className="shelf-book-sheen" />
-                              {idx === 0 && (
-                                <div className="shelf-book-ribbon">
-                                  <span>YENİ</span>
-                                </div>
-                              )}
+                        <div className="shelf-book-floor-shadow" />
+                        <div className="shelf-book">
+                          <div className="shelf-book-spine" />
+                          <div className="shelf-book-cover">
+                            {mag.cover_image_url ? (
+                              <img src={mag.cover_image_url} alt={mag.title} className="shelf-cover-img" />
+                            ) : (
+                              <div className="shelf-cover-fallback">
+                                <img src="/icons/cilek-vintage.png" alt="" className="shelf-fallback-icon" />
+                                <strong className="shelf-fallback-brand">ÇİLEK</strong>
+                                <span className="shelf-fallback-issue">Sayı #{mag.issue_number}</span>
+                              </div>
+                            )}
+                            <div className="shelf-book-sheen" />
+                            <div className="shelf-book-ribbon">
+                              <span>YENİ</span>
                             </div>
-                            <div className="shelf-hover-actions">
-                              <span className="shelf-btn-read">İNCELE ✦</span>
-                            </div>
+                          </div>
+                          <div className="shelf-hover-actions">
+                            <span className="shelf-btn-read">İNCELE →</span>
                           </div>
                         </div>
                       </div>
-                    )
-                  })}
+                    </div>
+                  ))}
                 </div>
 
-                {/* Ahşap Raf Ön Pervazı ve Pirinç Etiketlikler */}
-                <div className="bookcase-ledge">
-                  <div className="bookcase-ledge-top" />
-                  <div className="bookcase-ledge-front home-shelf-front">
-                    {allMagazines.slice(0, 4).map((mag, idx) => (
-                      <div key={idx} className="bookcase-brass-plate" aria-hidden="true">
-                        <span className="brass-rivet rivet-left" />
-                        <div className="brass-plate-inner">
-                          <span className="brass-plate-text">
-                            SAYI {String(mag.issue_number || idx + 1).padStart(2, '0')} · {mag.month_name || 'ÇİLEK'}
-                          </span>
-                        </div>
-                        <span className="brass-rivet rivet-right" />
-                      </div>
-                    ))}
-                  </div>
+                {/* Cam Raf Ön Pervazı (Yazılar kaldırıldı) */}
+                <div className="bookcase-ledge bookcase-glass-ledge" aria-hidden="true">
+                  <div className="bookcase-ledge-top bookcase-glass-top" />
+                  <div className="bookcase-ledge-front home-shelf-front home-glass-shelf-front" />
                 </div>
               </div>
             </div>

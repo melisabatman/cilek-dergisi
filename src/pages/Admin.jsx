@@ -4,6 +4,7 @@ import { supabase, checkIsAdmin } from '../lib/supabase'
 import { uploadAsset, isR2Configured } from '../lib/r2'
 import { useSiteContent, DEFAULT_SITE_SETTINGS, DEFAULT_SITE_CONTENT } from '../lib/siteContent'
 import WelcomePostcardModal from '../components/WelcomePostcardModal'
+import { analyzeImageDimensions, optimizeCoverToA4, formatBytes } from '../lib/imageOptimizer'
 
 export default function Admin({ user, isAdmin: propIsAdmin }) {
   const navigate = useNavigate()
@@ -58,6 +59,10 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
   const [magCoverUrl, setMagCoverUrl] = useState('')
   const [magPdfFile, setMagPdfFile] = useState(null)
   const [magPdfUrl, setMagPdfUrl] = useState('')
+  const [magCoverMeta, setMagCoverMeta] = useState(null)
+  const [isOptimizingCover, setIsOptimizingCover] = useState(false)
+  const [coverFitMode, setCoverFitMode] = useState('cover')
+  const [isA4AutoOptimized, setIsA4AutoOptimized] = useState(false)
 
   // -------------------------------------------------------------
   // 2. EKİP YÖNETİMİ DURUMU (TEAM MEMBERS)
@@ -175,6 +180,9 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
     setMagCoverUrl('')
     setMagPdfFile(null)
     setMagPdfUrl('')
+    setMagCoverMeta(null)
+    setIsOptimizingCover(false)
+    setIsA4AutoOptimized(false)
   }
 
   const handleStartEditMagazine = (mag) => {
@@ -190,6 +198,14 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
     setMagCoverFile(null)
     setMagPdfUrl(mag.pdf_url || '')
     setMagPdfFile(null)
+    setIsA4AutoOptimized(false)
+    if (mag.cover_image_url) {
+      analyzeImageDimensions(mag.cover_image_url)
+        .then(setMagCoverMeta)
+        .catch(() => setMagCoverMeta(null))
+    } else {
+      setMagCoverMeta(null)
+    }
 
     // Form alanına yumuşak kaydır
     window.scrollTo({ top: 180, behavior: 'smooth' })
@@ -215,11 +231,53 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
     setMagToc(updated)
   }
 
-  const handleCoverFileChange = (e) => {
+  const handleCoverFileChange = async (e) => {
     const file = e.target.files?.[0]
-    if (file) {
+    if (!file) return
+
+    try {
+      setIsOptimizingCover(true)
+      const meta = await analyzeImageDimensions(file)
+      setMagCoverMeta(meta)
+
+      // Eğer dosya boyutu 2MB'den büyükse veya A4 oranına uymuyorsa,
+      // yükleme boyut sıkıntısını (413 Payload Too Large / R2 timeout) %100 önlemek için
+      // otomatik olarak A4 formatına optimize et
+      if (file.size > 2 * 1024 * 1024 || !meta.isA4Match) {
+        const opt = await optimizeCoverToA4(file, { fitMode: coverFitMode })
+        setMagCoverFile(opt.file)
+        setMagCoverPreview(opt.previewUrl)
+        setIsA4AutoOptimized(true)
+        showFeedback('success', `Kapak A4 oranına uyarlandı ve optimize edildi (${meta.formattedSize} → ${opt.optimizedSize}).`)
+      } else {
+        setMagCoverFile(file)
+        setMagCoverPreview(URL.createObjectURL(file))
+        setIsA4AutoOptimized(false)
+      }
+    } catch (err) {
+      console.warn('Cover analysis error:', err)
       setMagCoverFile(file)
       setMagCoverPreview(URL.createObjectURL(file))
+    } finally {
+      setIsOptimizingCover(false)
+    }
+  }
+
+  const handleManualA4Optimize = async (mode = coverFitMode) => {
+    if (!magCoverFile) return
+    setIsOptimizingCover(true)
+    try {
+      const opt = await optimizeCoverToA4(magCoverFile, { fitMode: mode })
+      setMagCoverFile(opt.file)
+      setMagCoverPreview(opt.previewUrl)
+      setIsA4AutoOptimized(true)
+      const meta = await analyzeImageDimensions(opt.file)
+      setMagCoverMeta(meta)
+      showFeedback('success', `Kapak A4 (210×297 mm) formatına optimize edildi: ${opt.optimizedSize}`)
+    } catch (err) {
+      showFeedback('error', 'Optimizasyon hatası: ' + err.message)
+    } finally {
+      setIsOptimizingCover(false)
     }
   }
 
@@ -584,18 +642,19 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
     showFeedback('success', 'Fotoğraf galeriden silindi.')
   }
 
-  const handleSetAsFounderPhoto = async (url) => {
-    const nextMedia = { ...mediaState, founder_photo: url }
+  const handleSetAsFounderPhoto = async (url, slot = 1) => {
+    const key = slot === 2 ? 'founder_2_photo' : 'founder_photo'
+    const nextMedia = { ...mediaState, [key]: url }
     setMediaState(nextMedia)
     await updateContent({ media: nextMedia })
-    showFeedback('success', 'Seçilen görsel Kurucu Fotoğrafı olarak atandı!')
+    showFeedback('success', `✨ Harika! Seçilen görsel Kurucu ${slot} Fotoğrafı olarak atandı!`)
   }
 
   const handleSetAsAboutPhoto = async (url, slot) => {
     const nextMedia = { ...mediaState, [`about_photo_${slot}`]: url }
     setMediaState(nextMedia)
     await updateContent({ media: nextMedia })
-    showFeedback('success', `Seçilen görsel Hakkımızda Polaroid ${slot} olarak atandı!`)
+    showFeedback('success', `✨ Harika! Seçilen görsel Hakkımızda Polaroid ${slot} olarak atandı!`)
   }
 
   const handleSaveMediaSettings = async (e) => {
@@ -603,7 +662,7 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
     setSavingMediaSettings(true)
     try {
       await updateContent({ media: mediaState })
-      showFeedback('success', 'Site fotoğraf tercihleri başarıyla kaydedildi!')
+      showFeedback('success', '✨ Harika! Site fotoğraf tercihleri başarıyla kaydedildi!')
     } catch (err) {
       showFeedback('error', 'Fotoğraf tercihleri kaydedilemedi.')
     } finally {
@@ -942,98 +1001,197 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
                     </div>
                   </div>
 
-                  {/* DOSYA YÜKLEMELERİ: KAPAK & PDF */}
-                  <div className="admin-upload-grid">
-                    {/* Kapak Görseli */}
-                    <div className="admin-upload-box">
-                      <label className="admin-label">Kapak Görseli (Cloudflare R2: covers)</label>
-                      <div className="admin-dropzone">
-                        {magCoverPreview ? (
-                          <div className="upload-preview-wrap">
-                            <img src={magCoverPreview} alt="Kapak Önizleme" className="cover-img-preview" />
-                            <button
-                              type="button"
-                              className="btn-remove-preview"
-                              onClick={() => { setMagCoverFile(null); setMagCoverPreview(''); setMagCoverUrl(''); }}
-                            >
-                              Görseli Kaldır
-                            </button>
-                          </div>
-                        ) : (
-                          <label htmlFor="mag-cover-file" className="dropzone-label">
-                            <span className="dropzone-icon">🖼️</span>
-                            <span className="dropzone-text">Görsel Seç veya Sürükle</span>
-                            <span className="dropzone-sub">PNG, JPG, WebP</span>
-                          </label>
-                        )}
-                        <input
-                          id="mag-cover-file"
-                          type="file"
-                          accept="image/*"
-                          onChange={handleCoverFileChange}
-                          className="file-hidden-input"
-                        />
+                  {/* DOSYA YÜKLEMELERİ: KAPAK & PDF (A4 FORMATI) */}
+                  <div className="admin-a4-upload-container">
+                    <div className="admin-a4-guide-box">
+                      <span style={{ fontSize: '1.25rem' }}>📐</span>
+                      <div>
+                        <strong>Dergiler Standart A4 (210 × 297 mm) Formatındadır:</strong>
+                        <p style={{ margin: '2px 0 0 0', opacity: 0.9 }}>
+                          Yüklenen kapak görselleri otomatik olarak standart A4 oranına optimize edilir. Bu sayede hem dergiler kısmında tam ve hatasız görünür hem de yüksek dosya boyutlarından kaynaklanan yükleme sıkıntıları önlenir.
+                        </p>
                       </div>
-                      {/* Alternatif URL girişi */}
-                      <input
-                        type="url"
-                        className="admin-input-sm"
-                        placeholder="Veya görsel URL'si yapıştırın"
-                        value={magCoverUrl}
-                        onChange={(e) => {
-                          setMagCoverUrl(e.target.value)
-                          if (!magCoverFile) setMagCoverPreview(e.target.value)
-                        }}
-                      />
                     </div>
 
-                    {/* PDF Dosyası */}
-                    <div className="admin-upload-box">
-                      <label className="admin-label">PDF Dosyası (Cloudflare R2: pdfs)</label>
-                      <div className="admin-dropzone">
-                        {magPdfFile ? (
-                          <div className="pdf-file-badge">
-                            <span className="pdf-icon">📄</span>
-                            <span className="pdf-filename">{magPdfFile.name}</span>
-                            <button
-                              type="button"
-                              className="btn-remove-preview"
-                              onClick={() => setMagPdfFile(null)}
-                            >
-                              Kaldır
-                            </button>
-                          </div>
-                        ) : magPdfUrl ? (
-                          <div className="pdf-file-badge">
-                            <span className="pdf-icon">📄</span>
-                            <span className="pdf-filename">Mevcut PDF Bağlı</span>
-                            <a href={magPdfUrl} target="_blank" rel="noopener noreferrer" className="pdf-view-link">
-                              Görüntüle ↗
-                            </a>
-                          </div>
-                        ) : (
-                          <label htmlFor="mag-pdf-file" className="dropzone-label">
-                            <span className="dropzone-icon">📑</span>
-                            <span className="dropzone-text">PDF Dosyası Seç</span>
-                            <span className="dropzone-sub">.pdf formatında</span>
-                          </label>
-                        )}
+                    <div className="admin-upload-grid">
+                      {/* Kapak Görseli */}
+                      <div className="admin-upload-box">
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                          <label className="admin-label" style={{ margin: 0 }}>Kapak Görseli (A4 Formatı)</label>
+                          <span className="admin-a4-pill admin-a4-pill--ratio-good">210 × 297 mm</span>
+                        </div>
+
+                        <div className="admin-dropzone">
+                          {magCoverPreview ? (
+                            <div className="admin-a4-preview-stage">
+                              {/* Gerçekçi A4 Dergi Önizleme Çerçevesi */}
+                              <div className="admin-a4-book-frame">
+                                <div className="admin-a4-book-spine" aria-hidden="true" />
+                                <img src={magCoverPreview} alt="A4 Kapak Önizleme" className="admin-a4-book-img" />
+                                <div className="admin-a4-book-sheen" aria-hidden="true" />
+                                <span className="admin-a4-book-badge">A4 · 210×297</span>
+                              </div>
+
+                              {/* Ölçü ve Optimizasyon Bilgi Hapları */}
+                              <div className="admin-a4-meta-pills">
+                                {magCoverMeta && (
+                                  <>
+                                    <span className="admin-a4-pill admin-a4-pill--dims">
+                                      📏 {magCoverMeta.width} × {magCoverMeta.height} px
+                                    </span>
+                                    <span className="admin-a4-pill admin-a4-pill--size">
+                                      💾 {magCoverMeta.formattedSize}
+                                    </span>
+                                    <span className={`admin-a4-pill ${magCoverMeta.isA4Match ? 'admin-a4-pill--ratio-good' : 'admin-a4-pill--ratio-opt'}`}>
+                                      {magCoverMeta.isA4Match ? '✓ A4 Standardı' : `📐 A4 Oranı: %${Math.round(100 - magCoverMeta.ratioDiffPercent)}`}
+                                    </span>
+                                  </>
+                                )}
+                                {isA4AutoOptimized && (
+                                  <span className="admin-a4-pill admin-a4-pill--ratio-good">
+                                    ⚡ Web İçin Optimize Edildi
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* A4 Yerleşim Seçenekleri & Yeniden Optimize Butonları */}
+                              <div className="admin-a4-actions-row">
+                                <div style={{ display: 'inline-flex', gap: 4 }}>
+                                  <button
+                                    type="button"
+                                    className={`admin-a4-mode-btn ${coverFitMode === 'cover' ? 'active' : ''}`}
+                                    onClick={() => {
+                                      setCoverFitMode('cover')
+                                      handleManualA4Optimize('cover')
+                                    }}
+                                    disabled={isOptimizingCover}
+                                    title="Kapak A4 alanını tam doldurur"
+                                  >
+                                    A4 Tam Doldur
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className={`admin-a4-mode-btn ${coverFitMode === 'contain' ? 'active' : ''}`}
+                                    onClick={() => {
+                                      setCoverFitMode('contain')
+                                      handleManualA4Optimize('contain')
+                                    }}
+                                    disabled={isOptimizingCover}
+                                    title="Tüm kapağı sığdırır, kenarları doldurur"
+                                  >
+                                    A4 Sığdır
+                                  </button>
+                                </div>
+
+                                <button
+                                  type="button"
+                                  className="btn-remove-preview"
+                                  onClick={() => {
+                                    setMagCoverFile(null)
+                                    setMagCoverPreview('')
+                                    setMagCoverUrl('')
+                                    setMagCoverMeta(null)
+                                    setIsA4AutoOptimized(false)
+                                  }}
+                                >
+                                  Görseli Kaldır
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <label htmlFor="mag-cover-file" className="dropzone-label">
+                              <span className="dropzone-icon">🖼️</span>
+                              <span className="dropzone-text">A4 Kapak Görseli Seç veya Sürükle</span>
+                              <span className="dropzone-sub">PNG, JPG, WebP (Otomatik A4 Optimizasyonlu)</span>
+                            </label>
+                          )}
+                          <input
+                            id="mag-cover-file"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleCoverFileChange}
+                            className="file-hidden-input"
+                          />
+                        </div>
+                        {/* Alternatif URL girişi */}
                         <input
-                          id="mag-pdf-file"
-                          type="file"
-                          accept=".pdf,application/pdf"
-                          onChange={handlePdfFileChange}
-                          className="file-hidden-input"
+                          type="url"
+                          className="admin-input-sm"
+                          placeholder="Veya görsel URL'si yapıştırın"
+                          value={magCoverUrl}
+                          onChange={(e) => {
+                            setMagCoverUrl(e.target.value)
+                            if (!magCoverFile) {
+                              setMagCoverPreview(e.target.value)
+                              if (e.target.value) {
+                                analyzeImageDimensions(e.target.value).then(setMagCoverMeta).catch(() => {})
+                              }
+                            }
+                          }}
                         />
                       </div>
-                      {/* Alternatif PDF linki */}
-                      <input
-                        type="url"
-                        className="admin-input-sm"
-                        placeholder="Veya harici PDF linki yapıştırın"
-                        value={magPdfUrl}
-                        onChange={(e) => setMagPdfUrl(e.target.value)}
-                      />
+
+                      {/* PDF Dosyası */}
+                      <div className="admin-upload-box">
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                          <label className="admin-label" style={{ margin: 0 }}>PDF Dosyası (Sayı Sayfaları)</label>
+                          <span className="admin-a4-pill admin-a4-pill--dims">A4 Baskı Belgesi</span>
+                        </div>
+                        <div className="admin-dropzone">
+                          {magPdfFile ? (
+                            <div className="pdf-file-badge">
+                              <span className="pdf-icon">📄</span>
+                              <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+                                <span className="pdf-filename" style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{magPdfFile.name}</span>
+                                <span style={{ fontSize: '0.73rem', color: 'var(--text-muted)' }}>
+                                  Boyut: {formatBytes(magPdfFile.size)} · Okuyucuda A4 olarak açılacaktır
+                                </span>
+                              </div>
+                              <button
+                                type="button"
+                                className="btn-remove-preview"
+                                onClick={() => setMagPdfFile(null)}
+                              >
+                                Kaldır
+                              </button>
+                            </div>
+                          ) : magPdfUrl ? (
+                            <div className="pdf-file-badge">
+                              <span className="pdf-icon">📄</span>
+                              <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                                <span className="pdf-filename">Mevcut PDF Bağlı</span>
+                                <span style={{ fontSize: '0.73rem', color: 'var(--text-muted)' }}>
+                                  Bulut bağlantısı aktif
+                                </span>
+                              </div>
+                              <a href={magPdfUrl} target="_blank" rel="noopener noreferrer" className="pdf-view-link">
+                                Görüntüle ↗
+                              </a>
+                            </div>
+                          ) : (
+                            <label htmlFor="mag-pdf-file" className="dropzone-label">
+                              <span className="dropzone-icon">📑</span>
+                              <span className="dropzone-text">A4 PDF Dosyası Seç</span>
+                              <span className="dropzone-sub">.pdf formatında tüm dergi sayfaları</span>
+                            </label>
+                          )}
+                          <input
+                            id="mag-pdf-file"
+                            type="file"
+                            accept=".pdf,application/pdf"
+                            onChange={handlePdfFileChange}
+                            className="file-hidden-input"
+                          />
+                        </div>
+                        {/* Alternatif PDF linki */}
+                        <input
+                          type="url"
+                          className="admin-input-sm"
+                          placeholder="Veya harici PDF linki yapıştırın"
+                          value={magPdfUrl}
+                          onChange={(e) => setMagPdfUrl(e.target.value)}
+                        />
+                      </div>
                     </div>
                   </div>
 
@@ -2199,37 +2357,39 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
 
                     <div className="admin-form-row" style={{ borderTop: '1px dashed rgba(190,38,37,0.15)', paddingTop: '14px' }}>
                       <div className="admin-field-group" style={{ flex: 1 }}>
-                        <label className="admin-label">Kurucu Alıntısı</label>
-                        <textarea
-                          rows={2}
-                          className="admin-textarea"
-                          value={siteState.about_founder_quote || ''}
-                          onChange={(e) => handleSiteChange('about_founder_quote', e.target.value)}
+                        <label className="admin-label">1. Kurucu Adı</label>
+                        <input
+                          type="text"
+                          className="admin-input"
+                          value={siteState.about_founder_1_name || ''}
+                          onChange={(e) => handleSiteChange('about_founder_1_name', e.target.value)}
+                          placeholder="Örn: Melisa Batman"
                         />
                       </div>
                       <div className="admin-field-group" style={{ flex: 1 }}>
-                        <label className="admin-label">Kurucu Biyografi / Editoryal Açıklama</label>
-                        <textarea
-                          rows={2}
-                          className="admin-textarea"
-                          value={siteState.about_founder_bio || ''}
-                          onChange={(e) => handleSiteChange('about_founder_bio', e.target.value)}
+                        <label className="admin-label">1. Kurucu Unvanı</label>
+                        <input
+                          type="text"
+                          className="admin-input"
+                          value={siteState.about_founder_1_role || ''}
+                          onChange={(e) => handleSiteChange('about_founder_1_role', e.target.value)}
+                          placeholder="Örn: Kurucu Ortak & Genel Yayın Yönetmeni"
                         />
                       </div>
                     </div>
 
-                    {/* Kurucu Fotoğrafı Yükleme */}
-                    <div className="admin-field-group" style={{ marginTop: '10px' }}>
-                      <label className="admin-label">📸 Kurucu Fotoğrafı (Polaroid Görsel)</label>
+                    {/* 1. Kurucu Fotoğrafı Yükleme */}
+                    <div className="admin-field-group" style={{ marginTop: '8px', marginBottom: '14px' }}>
+                      <label className="admin-label">📸 1. Kurucu Fotoğrafı (Polaroid Görsel)</label>
                       <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
                         {siteState.about_founder_photo_url ? (
                           <img
                             src={siteState.about_founder_photo_url}
-                            alt="Kurucu Önizleme"
-                            style={{ width: '100px', height: '110px', objectFit: 'cover', borderRadius: '8px', border: '2px solid #1A0A0E' }}
+                            alt="1. Kurucu Önizleme"
+                            style={{ width: '90px', height: '100px', objectFit: 'cover', borderRadius: '8px', border: '2px solid #1A0A0E' }}
                           />
                         ) : (
-                          <div style={{ width: '100px', height: '110px', borderRadius: '8px', border: '2px dashed #1A0A0E', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem' }}>
+                          <div style={{ width: '90px', height: '100px', borderRadius: '8px', border: '2px dashed #1A0A0E', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.8rem' }}>
                             🍓
                           </div>
                         )}
@@ -2239,20 +2399,102 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
                             className="admin-input"
                             value={siteState.about_founder_photo_url || ''}
                             onChange={(e) => handleSiteChange('about_founder_photo_url', e.target.value)}
-                            placeholder="Kurucu fotoğrafı bağlantısı veya doğrudan yükleyin..."
+                            placeholder="1. Kurucu fotoğraf linki..."
                             style={{ marginBottom: '8px' }}
                           />
                           <label className="btn-admin-upload" style={{ cursor: uploadingImageKey === 'about_founder_photo_url' ? 'wait' : 'pointer', display: 'inline-block' }}>
-                            {uploadingImageKey === 'about_founder_photo_url' ? '⏳ Cloudflare R2\'ye Yükleniyor…' : '📁 Fotoğraf Değiştir (Cloudflare R2)'}
+                            {uploadingImageKey === 'about_founder_photo_url' ? '⏳ Cloudflare R2\'ye Yükleniyor…' : '📁 1. Kurucu Fotoğrafını Değiştir (R2)'}
                             <input
                               type="file"
                               accept="image/*"
                               style={{ display: 'none' }}
                               disabled={uploadingImageKey === 'about_founder_photo_url'}
-                              onChange={(e) => handleUploadImageForField('about_founder_photo_url', e.target.files[0], 'founder')}
+                              onChange={(e) => handleUploadImageForField('about_founder_photo_url', e.target.files[0], 'founder1')}
                             />
                           </label>
                         </div>
+                      </div>
+                    </div>
+
+                    <div className="admin-form-row" style={{ borderTop: '1px dashed rgba(190,38,37,0.15)', paddingTop: '14px' }}>
+                      <div className="admin-field-group" style={{ flex: 1 }}>
+                        <label className="admin-label">2. Kurucu Adı</label>
+                        <input
+                          type="text"
+                          className="admin-input"
+                          value={siteState.about_founder_2_name || ''}
+                          onChange={(e) => handleSiteChange('about_founder_2_name', e.target.value)}
+                          placeholder="Örn: Kurucu Ortak"
+                        />
+                      </div>
+                      <div className="admin-field-group" style={{ flex: 1 }}>
+                        <label className="admin-label">2. Kurucu Unvanı</label>
+                        <input
+                          type="text"
+                          className="admin-input"
+                          value={siteState.about_founder_2_role || ''}
+                          onChange={(e) => handleSiteChange('about_founder_2_role', e.target.value)}
+                          placeholder="Örn: Kurucu Ortak & Kreatif Direktör"
+                        />
+                      </div>
+                    </div>
+
+                    {/* 2. Kurucu Fotoğrafı Yükleme */}
+                    <div className="admin-field-group" style={{ marginTop: '8px', marginBottom: '14px' }}>
+                      <label className="admin-label">📸 2. Kurucu Fotoğrafı (Polaroid Görsel)</label>
+                      <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
+                        {siteState.about_founder_2_photo_url ? (
+                          <img
+                            src={siteState.about_founder_2_photo_url}
+                            alt="2. Kurucu Önizleme"
+                            style={{ width: '90px', height: '100px', objectFit: 'cover', borderRadius: '8px', border: '2px solid #1A0A0E' }}
+                          />
+                        ) : (
+                          <div style={{ width: '90px', height: '100px', borderRadius: '8px', border: '2px dashed #1A0A0E', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.8rem' }}>
+                            🍓
+                          </div>
+                        )}
+                        <div style={{ flex: 1 }}>
+                          <input
+                            type="text"
+                            className="admin-input"
+                            value={siteState.about_founder_2_photo_url || ''}
+                            onChange={(e) => handleSiteChange('about_founder_2_photo_url', e.target.value)}
+                            placeholder="2. Kurucu fotoğraf linki..."
+                            style={{ marginBottom: '8px' }}
+                          />
+                          <label className="btn-admin-upload" style={{ cursor: uploadingImageKey === 'about_founder_2_photo_url' ? 'wait' : 'pointer', display: 'inline-block' }}>
+                            {uploadingImageKey === 'about_founder_2_photo_url' ? '⏳ Cloudflare R2\'ye Yükleniyor…' : '📁 2. Kurucu Fotoğrafını Değiştir (R2)'}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              style={{ display: 'none' }}
+                              disabled={uploadingImageKey === 'about_founder_2_photo_url'}
+                              onChange={(e) => handleUploadImageForField('about_founder_2_photo_url', e.target.files[0], 'founder2')}
+                            />
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="admin-form-row" style={{ borderTop: '1px dashed rgba(190,38,37,0.15)', paddingTop: '14px' }}>
+                      <div className="admin-field-group" style={{ flex: 1 }}>
+                        <label className="admin-label">Kurucuların Ortak Manifestosu / Alıntısı</label>
+                        <textarea
+                          rows={2}
+                          className="admin-textarea"
+                          value={siteState.about_founder_quote || ''}
+                          onChange={(e) => handleSiteChange('about_founder_quote', e.target.value)}
+                        />
+                      </div>
+                      <div className="admin-field-group" style={{ flex: 1 }}>
+                        <label className="admin-label">Kurucular Biyografi / Editoryal Açıklama</label>
+                        <textarea
+                          rows={2}
+                          className="admin-textarea"
+                          value={siteState.about_founder_bio || ''}
+                          onChange={(e) => handleSiteChange('about_founder_bio', e.target.value)}
+                        />
                       </div>
                     </div>
                   </div>
@@ -2776,7 +3018,7 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
 
                 <form onSubmit={handleSaveMediaSettings} className="admin-form">
                   <div className="admin-field-group">
-                    <label className="admin-label">Kurucu Fotoğrafı URL</label>
+                    <label className="admin-label">1. Kurucu Fotoğrafı URL</label>
                     <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
                       <input
                         type="text"
@@ -2788,7 +3030,27 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
                       {mediaState.founder_photo && (
                         <img
                           src={mediaState.founder_photo}
-                          alt="Kurucu Önizleme"
+                          alt="1. Kurucu Önizleme"
+                          style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--c-bordo)' }}
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="admin-field-group">
+                    <label className="admin-label">2. Kurucu Fotoğrafı URL</label>
+                    <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+                      <input
+                        type="text"
+                        className="admin-input"
+                        value={mediaState.founder_2_photo || ''}
+                        onChange={(e) => setMediaState({ ...mediaState, founder_2_photo: e.target.value })}
+                        placeholder="https://... veya /icons/cilek-vintage.png"
+                      />
+                      {mediaState.founder_2_photo && (
+                        <img
+                          src={mediaState.founder_2_photo}
+                          alt="2. Kurucu Önizleme"
                           style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--c-bordo)' }}
                         />
                       )}
@@ -2872,10 +3134,34 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
                             <button
                               type="button"
                               className="btn-media-assign"
-                              onClick={() => handleSetAsFounderPhoto(item.url)}
-                              title="Bu fotoğrafı kurucu fotoğrafı yap"
+                              onClick={() => handleSetAsFounderPhoto(item.url, 1)}
+                              title="Bu fotoğrafı 1. kurucu fotoğrafı yap"
                             >
-                              Kurucu Yap
+                              Kurucu 1
+                            </button>
+                            <button
+                              type="button"
+                              className="btn-media-assign"
+                              onClick={() => handleSetAsFounderPhoto(item.url, 2)}
+                              title="Bu fotoğrafı 2. kurucu fotoğrafı yap"
+                            >
+                              Kurucu 2
+                            </button>
+                            <button
+                              type="button"
+                              className="btn-media-assign"
+                              onClick={() => handleSetAsAboutPhoto(item.url, 1)}
+                              title="Bu fotoğrafı Hakkımızda 1. polaroidi yap"
+                            >
+                              Polaroid 1
+                            </button>
+                            <button
+                              type="button"
+                              className="btn-media-assign"
+                              onClick={() => handleSetAsAboutPhoto(item.url, 2)}
+                              title="Bu fotoğrafı Hakkımızda 2. polaroidi yap"
+                            >
+                              Polaroid 2
                             </button>
                             <button
                               type="button"

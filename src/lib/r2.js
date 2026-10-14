@@ -50,7 +50,12 @@ export async function uploadAsset(folder, file, prefix = 'asset') {
     const data = await response.json().catch(() => null)
 
     if (!response.ok) {
-      const errMsg = data?.error || `Yükleme başarısız oldu (HTTP ${response.status})`
+      let errMsg = data?.error
+      if (response.status === 413) {
+        errMsg = 'Dosya boyutu sunucu yükleme sınırını aşıyor (HTTP 413). Lütfen kapağı "A4 Formatına Optimize Et" butonuyla küçülterek tekrar deneyin.'
+      } else if (!errMsg) {
+        errMsg = `Yükleme başarısız oldu (HTTP ${response.status})`
+      }
       throw new Error(errMsg)
     }
 

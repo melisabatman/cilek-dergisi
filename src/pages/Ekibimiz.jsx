@@ -5,12 +5,12 @@ import { supabase } from '../lib/supabase'
 import { useSiteContent } from '../lib/siteContent'
 
 const TEAM_FALLBACK = [
-  { id: 't-1', name: 'Genel Yayın Yönetmeni', role: 'Kreatif Direktör & Kurucu', bio: 'Derginin editoryal kimliğini, bağımsız tonunu ve görsel ruhunu şekillendiriyor. Her sayıda okurlarıyla buluşmak için özenle çalışıyor.', photo_url: null, order_index: 1 },
-  { id: 't-2', name: 'Art Director', role: 'Tasarım & Görsel Dil', bio: 'Her sayfanın görsel dilini tasarlıyor. Kapaktan mizanpaja estetik kararların sahibi.', photo_url: null, order_index: 2 },
-  { id: 't-3', name: 'İçerik Editörü', role: 'Edebiyat & Yazı İşleri', bio: 'Yazarlarla çalışıyor, metinleri besliyor ve yayın sürecini titizlikle koordine ediyor.', photo_url: null, order_index: 3 },
-  { id: 't-4', name: 'Görsel Sanat Editörü', role: 'Fotoğraf & Sanat', bio: 'Derginin görsel arşivini oluşturuyor. Fotoğraf serilerinden illüstrasyonlara kadar.', photo_url: null, order_index: 4 },
-  { id: 't-5', name: 'Dijital Koordinatör', role: 'Sosyal Medya & Web', bio: 'Derginin dijital varlığını yönetiyor. Platform etkileşimi ve topluluk iletişimi.', photo_url: null, order_index: 5 },
-  { id: 't-6', name: 'Yazar Koordinatörü', role: 'Topluluk & Başvurular', bio: '15-25 yaş genç yazar başvurularını karşılıyor, yeni yetenekleri keşfedip cesaretlendiriyor.', photo_url: null, order_index: 6 },
+  { id: 't-1', name: 'Genel Yayın Yönetmeni', role: 'Kreatif Direktör & Kurucu Ortak', bio: 'Derginin editoryal kimliğini, bağımsız tonunu ve ilham veren vizyonunu şekillendiriyor. Her sayıda gençliğin enerjisini sayfalara taşıyor.', photo_url: null, order_index: 1 },
+  { id: 't-2', name: 'Art Director', role: 'Görsel Tasarım & Kurucu Ortak', bio: 'Çilek Dergisi’nin kendine has görsel dilini, kapağından mizanpajına estetik ruhunu ve sanatsal ritmini tasarlıyor.', photo_url: null, order_index: 2 },
+  { id: 't-3', name: 'İçerik Editörü', role: 'Edebiyat & Yazı İşleri', bio: 'Yazarlarla el ele çalışıyor, taze fikirleri ve güçlü metinleri titizlikle yayına hazırlıyor.', photo_url: null, order_index: 3 },
+  { id: 't-4', name: 'Görsel Sanat Editörü', role: 'Fotoğraf & Sanat', bio: 'Derginin görsel arşivini oluşturuyor. Fotoğraf serilerinden özgün illüstrasyonlara uzanan sanatsal köprüyü kuruyor.', photo_url: null, order_index: 4 },
+  { id: 't-5', name: 'Dijital Koordinatör', role: 'Sosyal Medya & Web', bio: 'Derginin dinamik dijital dünyasını ve topluluk etkileşimini yönetiyor. Okurlarla her an iletişimde kalıyor.', photo_url: null, order_index: 5 },
+  { id: 't-6', name: 'Yazar Koordinatörü', role: 'Topluluk & Başvurular', bio: '15-25 yaş genç yazar ve sanatçı başvurularını karşılıyor, yeni yeteneklerin sesini cesaretlendiriyor.', photo_url: null, order_index: 6 },
 ]
 
 // Fallback için avatar gradient paleti (çilek meyvesi paletinde)
@@ -103,7 +103,7 @@ export default function Ekibimiz({ user, isAdmin }) {
         <header className="stv-header">
           <div className="container">
             <span className="stv-eyebrow">
-              <span className="eyebrow-star">✦</span> {settings.team_page_eyebrow || 'Sahne Arkasındakiler'}
+              {settings.team_page_eyebrow || 'Sahne Arkasındakiler'}
             </span>
             <h1 className="stv-page-title">{settings.team_page_title || 'Ekibimiz'}</h1>
             <p className="stv-page-sub">
@@ -137,7 +137,7 @@ export default function Ekibimiz({ user, isAdmin }) {
               onMouseLeave={handleMouseUp}
             >
               {team.map((member, idx) => {
-                const isFounder = idx === 0
+                const isFounder = idx < 2 || member.role?.toLowerCase().includes('kurucu') || member.role?.toLowerCase().includes('founder')
                 const isActive = activeIdx === idx
                 const gradBg = AVATAR_GRADIENTS[idx % AVATAR_GRADIENTS.length]
 
@@ -199,15 +199,15 @@ export default function Ekibimiz({ user, isAdmin }) {
                         )}
                         {isFounder && (
                           <blockquote className="stv-hover-quote">
-                            "Her sayı, bir topluluk çabası."
+                            "Her sayı, bir topluluk çabası ve ortak tutku."
                           </blockquote>
                         )}
                       </div>
 
                       {/* Kurucu rozeti */}
                       {isFounder && (
-                        <div className="stv-founder-badge" aria-label="Kurucu">
-                          ✦ Kurucu
+                        <div className="stv-founder-badge" aria-label="Kurucu Ortak">
+                          Kurucu Ortak
                         </div>
                       )}
                     </div>

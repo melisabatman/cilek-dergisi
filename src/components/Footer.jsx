@@ -2,7 +2,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { useSiteContent } from '../lib/siteContent'
 
-const TICKER_TEXT = '✦ Sayı 06 yayında · Şimdi oku ✦ Her ay yeni bir sayı ✦ Bağımsız Gençlik ✦ Çilek Dergisi ✦ Sayı 06 yayında · Şimdi oku ✦ Her ay yeni bir sayı ✦ Bağımsız Gençlik ✦ Çilek Dergisi ✦ '
+const TICKER_TEXT = 'Sayı 06 Yayında · Şimdi Oku · Her Ay Yepyeni Bir Sayı · Bağımsız Gençlik · Çilek Dergisi · Sayı 06 Yayında · Şimdi Oku · Her Ay Yepyeni Bir Sayı · Bağımsız Gençlik · Çilek Dergisi · '
 
 export default function Footer({ showTicker = false }) {
   const { settings } = useSiteContent()

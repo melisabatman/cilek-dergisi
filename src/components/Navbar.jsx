@@ -80,17 +80,7 @@ export default function Navbar({ user, isAdmin: propIsAdmin, onOpenWelcomeLetter
             Hey Chaps! Welcome to Çilek Dergisi 🍓
           </p>
 
-          {onToggleMoodboard && (
-            <button
-              type="button"
-              className="announcement-moodboard-btn"
-              onClick={onToggleMoodboard}
-              title="Telli İlham Panosunu Aç / Kapat"
-              id="btn-nav-moodboard-toggle"
-            >
-              <span>📌</span> Telli Pano
-            </button>
-          )}
+          <div className="announcement-socials-spacer" aria-hidden="true" />
         </div>
       )}
 

@@ -58,23 +58,37 @@ export const supabase = createClient(
   }
 )
 
+// Varsayılan sistem yöneticisi e-posta adresleri (her iki kurucu / yönetici)
+export const DEFAULT_ADMIN_EMAILS = [
+  'irselinas@gmail.com',
+  'burcaksirin367@gmail.com'
+]
+
 /**
  * Kullanıcının admin yetkisine sahip olup olmadığını doğrular:
- * 1. İlk olarak .env.local dosyasındaki VITE_ADMIN_EMAIL ile eşleşiyor mu bakar.
+ * 1. Tanımlı varsayılan yönetici e-postaları veya .env'deki VITE_ADMIN_EMAIL listesi ile eşleşiyor mu bakar.
  * 2. Ardından veritabanındaki `admins` tablosunda kayıtlı mı sorgular.
  */
 export async function checkIsAdmin(user) {
   if (!user || !user.email) return false
 
-  const envAdminEmail = (import.meta.env.VITE_ADMIN_EMAIL || 'irselinas@gmail.com').trim().toLowerCase()
   const userEmail = user.email.trim().toLowerCase()
 
-  // 1. Çevresel değişken kontrolü
-  if (envAdminEmail && userEmail === envAdminEmail) {
+  // 1. Varsayılan e-posta listesi kontrolü
+  if (DEFAULT_ADMIN_EMAILS.includes(userEmail)) {
     return true
   }
 
-  // 2. Supabase `admins` tablosu kontrolü
+  // 2. Çevresel değişken (VITE_ADMIN_EMAIL) kontrolü (virgülle ayrılmış çoklu e-posta desteklenir)
+  const envRaw = (import.meta.env.VITE_ADMIN_EMAIL || '').trim()
+  if (envRaw) {
+    const envEmails = envRaw.split(/[,;]/).map(e => e.trim().toLowerCase()).filter(Boolean)
+    if (envEmails.includes(userEmail)) {
+      return true
+    }
+  }
+
+  // 3. Supabase `admins` tablosu kontrolü
   if (!isSupabaseConfigured) return false
 
   try {

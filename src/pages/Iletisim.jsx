@@ -76,12 +76,12 @@ export default function Iletisim({ user, isAdmin }) {
         {/* ── Sayfa Başlığı ─────────────────────────────────────────── */}
         <header className="submit-v2-header">
           <div className="container submit-v2-header-inner">
-            <span className="eyebrow-cilek"><span className="eyebrow-star">✦</span> {settings.contact_eyebrow || 'Açık Başvuru'}</span>
+            <span className="eyebrow-cilek">{settings.contact_eyebrow || 'Açık Başvuru'}</span>
             <h1 className="submit-v2-title">
-              {settings.contact_title || 'Bize Yazın'}
+              {settings.contact_title || 'Bize Yazın!'}
             </h1>
             <p className="submit-v2-subtitle">
-              {settings.contact_subtitle || 'Çilek Dergisi, 15–25 yaş bağımsız üreticilere kapılarını açık tutuyor. Yazın, illüstrasyonun veya fotoğraf serinle sayfalarımızda yer al.'}
+              {settings.contact_subtitle || 'Çilek Dergisi, 15–25 yaş arası tüm bağımsız üreticilere kapılarını sonuna kadar açıyor! Kaleme aldığın yazınla, illüstrasyonunla veya fotoğraflarınla aramıza katıl!'}
             </p>
           </div>
         </header>
