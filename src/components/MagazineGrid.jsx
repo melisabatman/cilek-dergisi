@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
+import { getSafeMediaUrl } from '../lib/r2'
 import MagazineReader from './MagazineReader'
 
 const ALL_MAGAZINES_FALLBACK = [
@@ -261,6 +262,8 @@ export default function MagazineGrid({ user, isAdmin }) {
       if (!error && data?.length) {
         const mapped = data.map((m, idx) => ({
           ...m,
+          cover_image_url: getSafeMediaUrl(m.cover_image_url),
+          pdf_url: getSafeMediaUrl(m.pdf_url),
           month_name: m.published_date
             ? TR_MONTHS[new Date(m.published_date).getMonth()]
             : (m.month_name || ''),

@@ -69,3 +69,22 @@ export async function uploadAsset(folder, file, prefix = 'asset') {
     return { publicUrl: null, error: err }
   }
 }
+
+/**
+ * Türkiye'de r2.dev domainine uygulanan DNS/ISP engellerini aşmak için
+ * r2.dev bağlantılarını kendi güvenli /api/file proxy rotamıza yönlendirir.
+ * Bu sayede kullanıcılar VPN kullanmadan tüm kapakları ve PDF'leri görebilir.
+ */
+export function getSafeMediaUrl(url) {
+  if (!url || typeof url !== 'string') return url
+  if (url.includes('.r2.dev')) {
+    try {
+      const u = new URL(url)
+      const key = u.pathname.replace(/^\/+/, '')
+      return `/api/file?key=${encodeURIComponent(key)}`
+    } catch {
+      return `/api/file?url=${encodeURIComponent(url)}`
+    }
+  }
+  return url
+}

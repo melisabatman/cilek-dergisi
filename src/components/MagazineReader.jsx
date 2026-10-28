@@ -3,10 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import * as pdfjsLib from 'pdfjs-dist'
 import { PageFlip } from 'page-flip'
 import PageCommentsDrawer from './PageCommentsDrawer'
+import { getSafeMediaUrl } from '../lib/r2'
 
-// PDF.js Worker yapılandırması
+// PDF.js Worker yapılandırması (Türkiye ve globalde engellenmeyen güvenli cdnjs CDN)
 if (typeof window !== 'undefined' && pdfjsLib.GlobalWorkerOptions) {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version || '4.10.38'}/build/pdf.worker.min.mjs`
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version || '4.10.38'}/pdf.worker.min.mjs`
 }
 
 function getIsMobile() {
@@ -95,7 +96,6 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
   const [pdfPages, setPdfPages] = useState([])
   const [loadingPdf, setLoadingPdf] = useState(Boolean(magazine?.pdf_url))
   const [pdfProgress, setPdfProgress] = useState(0)
-  const [pdfError, setPdfError] = useState(false)
 
   // Arayüz Kontrolleri
   const [isFullscreen, setIsFullscreen] = useState(false)
@@ -107,26 +107,28 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
   const touchStartYRef = useRef(null)
 
   // -------------------------------------------------------------
-  // 1. PDF SAYFALARINI İŞLEME
+  // 1. PDF SAYFALARINI İŞLEME (VPN Gerektirmeyen Güvenli Proxy ile)
   // -------------------------------------------------------------
   const loadPdfSource = useCallback(async (source, title = null) => {
     setLoadingPdf(true)
     setPdfProgress(10)
-    setPdfError(false)
     if (title) setActivePdfTitle(title)
+
+    // Türkiye ve kısıtlı ağlarda r2.dev engelini aşan güvenli URL
+    const safeSource = typeof source === 'string' ? getSafeMediaUrl(source) : source
 
     try {
       let loadingTask
-      if (typeof source === 'string') {
+      if (typeof safeSource === 'string') {
         loadingTask = pdfjsLib.getDocument({
-          url: source,
-          cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjsLib.version || '4.10.38'}/cmaps/`,
+          url: safeSource,
+          cMapUrl: `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version || '4.10.38'}/cmaps/`,
           cMapPacked: true,
         })
       } else {
         loadingTask = pdfjsLib.getDocument({
-          data: source,
-          cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjsLib.version || '4.10.38'}/cmaps/`,
+          data: safeSource,
+          cMapUrl: `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version || '4.10.38'}/cmaps/`,
           cMapPacked: true,
         })
       }
@@ -161,9 +163,10 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
       setPdfPages(renderedUrls)
       setLoadingPdf(false)
     } catch (err) {
-      console.warn('PDF yüklenemedi:', err)
-      setPdfError(true)
+      console.warn('PDF yüklenemedi, zengin editoryal dergi sayfalarına geçiliyor:', err)
+      // PDF yüklenemese dahi dergi ASLA kapanmaz, editoryal şablonla flipbook olarak açılır!
       setLoadingPdf(false)
+      setPdfPages([])
       setTotalPagesCount(8)
     }
   }, [])
@@ -203,7 +206,7 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
   }
 
   // -------------------------------------------------------------
-  // 2. SAYFA KONTROLLERİ (Önceki / Sonraki)
+  // 2. SAYFA KONTROLLERİ: OKLARA BASINCA ÇEVİRME
   // -------------------------------------------------------------
   const handlePrev = useCallback(() => {
     if (!flipbookRef.current) return
@@ -212,7 +215,9 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
     } catch (err) {
       console.warn('flipPrev fallback:', err)
       const cur = currentPageIndexRef.current
-      if (cur > 0) flipbookRef.current.flip(cur - 1)
+      if (cur > 0) {
+        flipbookRef.current.flip(cur - 1)
+      }
     }
   }, [])
 
@@ -223,12 +228,14 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
     } catch (err) {
       console.warn('flipNext fallback:', err)
       const cur = currentPageIndexRef.current
-      if (cur < totalPagesCount - 1) flipbookRef.current.flip(cur + 1)
+      if (cur < totalPagesCount - 1) {
+        flipbookRef.current.flip(cur + 1)
+      }
     }
   }, [totalPagesCount])
 
   // -------------------------------------------------------------
-  // 3. FLIPBOOK OLUŞTURMA: ÖN/ARKA KAPAK TEK, DİĞERLERİ İKİLİ (SPREAD)
+  // 3. FLIPBOOK OLUŞTURMA: ÖN VE ARKA KAPAK TEK, DİĞERLERİ İKİLİ (SPREAD)
   // -------------------------------------------------------------
   const initFlipbook = useCallback(() => {
     const mountEl = bookMountRef.current
@@ -243,7 +250,7 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
     const isMobile = getIsMobile()
     setIsMobileMode(isMobile)
 
-    // Önceki örneği yok et
+    // Önceki örneği temizle
     if (flipbookRef.current) {
       try { flipbookRef.current.destroy() } catch (e) { console.warn('destroy error:', e) }
       flipbookRef.current = null
@@ -252,24 +259,22 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
     mountEl.innerHTML = ''
     setIsBookReady(false)
 
-    // Kullanılabilir alan hesaplaması (Viewport - sağ toolbar ve alt bar hariç)
+    // Kullanılabilir alan (Oklar ve araç çubuğu dışarıda)
     const viewportRect = viewportEl.getBoundingClientRect()
     const paddingX = isMobile ? 16 : 80
-    const paddingY = isMobile ? 16 : 40
+    const paddingY = isMobile ? 16 : 36
 
-    const availableWidth = Math.max(120, viewportRect.width - paddingX * 2)
-    const availableHeight = Math.max(120, viewportRect.height - paddingY * 2)
+    const availableWidth = Math.max(120, (viewportRect.width || window.innerWidth) - paddingX * 2)
+    const availableHeight = Math.max(120, (viewportRect.height || (window.innerHeight - 100)) - paddingY * 2)
 
     const naturalWidth = Math.max(1, pdfMeta.width || 210)
     const naturalHeight = Math.max(1, pdfMeta.height || 297)
 
-    // İKİLİ SAYFA (SPREAD) HESAPLAMASI:
-    // Masaüstünde dergi açıldığında 2 sayfa yan yana gelir (2 * naturalWidth).
-    // Mobilde dar ekranda tek sayfa, masaüstünde çift sayfa.
+    // Masaüstünde 2 sayfa yan yana (spread). Mobilde dikey ekranda tek sayfa.
     const useSinglePage = isMobile && window.innerWidth < 640
     const spreadWidthFactor = useSinglePage ? 1 : 2
 
-    // Ölçek: açılmış dergi (2 sayfa yan yana) ekrana tam sığsın
+    // Ölçek: açılmış 2 sayfa yan yana ekrana tam sığsın
     const scale = Math.min(
       availableWidth / (naturalWidth * spreadWidthFactor),
       availableHeight / naturalHeight
@@ -279,7 +284,7 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
     const pageHeight = Math.max(1, Math.floor(naturalHeight * scale))
     setSinglePageWidth(pageWidth)
 
-    // Mount kapsayıcısı açık kitap (2 sayfa) genişliğinde ayarlanır
+    // Container açık kitap genişliğinde (2 x tek sayfa) ayarlanır
     mountEl.style.width = `${pageWidth * spreadWidthFactor}px`
     mountEl.style.height = `${pageHeight}px`
 
@@ -319,7 +324,7 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
       minHeight: pageHeight,
       maxHeight: pageHeight,
       startPage: targetStartPage,
-      showCover: true, // ÖN VE ARKA KAPAK HARİÇ İKİLİ!
+      showCover: true, // ÖN VE ARKA KAPAK TEK, DİĞERLERİ İKİLİ!
       usePortrait: useSinglePage,
       mobileScrollSupport: true,
       useMouseEvents: true,
@@ -481,15 +486,16 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
   }
 
   // ÖN VE ARKA KAPAK ORTALAMA HESABI:
-  // showCover: true modunda kapak sayfa 0 sağ kanattadır. Ön kapağı tam ortalamak için sola (-pageWidth/2) kaydırılır.
-  // Arka kapak sol kanattadır. Arka kapağı tam ortalamak için sağa (+pageWidth/2) kaydırılır.
-  // İç çift sayfalarda ise 0 kaydırma ile tam merkezdedir.
-  let coverShiftX = 0
+  // DOM akışında margin-left ile kaydırma yapılarak fare koordinatları ve StPageFlip rect'i %100 örtüştürülür.
+  // Ön kapak sağ kanatta olduğundan sola (-pageWidth/2) kaydırılır -> Ön kapak TAM EKRANIN ORTASINDA TEK SAYFA durur.
+  // Arka kapak sol kanatta olduğundan sağa (+pageWidth/2) kaydırılır -> Arka kapak TAM EKRANIN ORTASINDA TEK SAYFA durur.
+  // İç sayfalarda (çift sayfalar) kaydırma 0'dır -> İKİLİ SAYFA TAM MERKEZDE durur.
+  let coverMarginLeft = 0
   if (!isMobileMode && singlePageWidth > 0) {
     if (currentPageIndex === 0) {
-      coverShiftX = -(singlePageWidth / 2)
+      coverMarginLeft = -(singlePageWidth / 2)
     } else if (currentPageIndex >= totalPagesCount - 1) {
-      coverShiftX = singlePageWidth / 2
+      coverMarginLeft = singlePageWidth / 2
     }
   }
 
@@ -530,10 +536,10 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
           {commentsCount > 0 && <span className="vbar-badge">{commentsCount}</span>}
         </button>
 
-        {/* PDF İndir (Varsa) */}
+        {/* PDF İndir (Varsa - Güvenli Proxy Linki ile) */}
         {magazine?.pdf_url && (
           <a
-            href={magazine.pdf_url}
+            href={getSafeMediaUrl(magazine.pdf_url)}
             download
             target="_blank"
             rel="noopener noreferrer"
@@ -628,34 +634,19 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
           {loadingPdf ? (
             <div className="reader-pdf-loading-box">
               <div className="reader-spinner" />
-              <h3>Dergi Hazırlanıyor…</h3>
+              <h3>Dergi Sayfaları Hazırlanıyor…</h3>
               <div className="pdf-progress-bar">
                 <div className="pdf-progress-fill" style={{ width: `${pdfProgress}%` }} />
               </div>
               <p>%{pdfProgress}</p>
-            </div>
-          ) : pdfError ? (
-            <div className="reader-pdf-error-box">
-              <span className="pdf-error-icon">📄</span>
-              <p className="pdf-error-msg">PDF yüklenemedi.</p>
-              {magazine?.pdf_url && (
-                <a
-                  href={magazine.pdf_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-pdf-fallback-download"
-                >
-                  ⬇ PDF'i İndir
-                </a>
-              )}
             </div>
           ) : (
             <div
               className="flipbook-mount-wrapper"
               ref={bookMountRef}
               style={{
-                transform: coverShiftX !== 0 ? `translateX(${coverShiftX}px)` : 'translateX(0)',
-                transition: 'transform 0.42s cubic-bezier(0.22, 1, 0.36, 1)',
+                marginLeft: `${coverMarginLeft}px`,
+                transition: 'margin-left 0.42s cubic-bezier(0.22, 1, 0.36, 1)',
               }}
             />
           )}
@@ -730,7 +721,7 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
             <div className="flip-page-node page-cover-front" data-density="hard">
               {magazine?.cover_image_url ? (
                 <div className="page-paper-sheet pdf-page-clean">
-                  <img src={magazine.cover_image_url} alt={magazine.title} className="cover-art-full" />
+                  <img src={getSafeMediaUrl(magazine.cover_image_url)} alt={magazine.title} className="cover-art-full" />
                 </div>
               ) : (
                 <div className="page-paper-sheet cover-sheet">

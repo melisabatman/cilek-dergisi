@@ -1,6 +1,7 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig, loadEnv } from 'vite'
 import { handleUploadRequest } from './api/upload.js'
+import { handleFileRequest } from './api/file.js'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -13,9 +14,9 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       {
-        name: 'vite-plugin-r2-upload',
+        name: 'vite-plugin-r2-upload-and-proxy',
         configureServer(server) {
-          // Geliştirme sunucusunda /api/upload isteklerini karşılar
+          // Geliştirme sunucusunda /api/upload ve /api/file isteklerini karşılar
           server.middlewares.use(async (req, res, next) => {
             const parsedUrl = req.url ? req.url.split('?')[0] : ''
             if (parsedUrl === '/api/upload') {
@@ -23,6 +24,19 @@ export default defineConfig(({ mode }) => {
                 await handleUploadRequest(req, res)
               } catch (err) {
                 console.error('[Vite /api/upload error]:', err)
+                if (!res.headersSent) {
+                  res.statusCode = 500
+                  res.setHeader('Content-Type', 'application/json')
+                  res.end(JSON.stringify({ error: err.message }))
+                }
+              }
+              return
+            }
+            if (parsedUrl === '/api/file') {
+              try {
+                await handleFileRequest(req, res)
+              } catch (err) {
+                console.error('[Vite /api/file error]:', err)
                 if (!res.headersSent) {
                   res.statusCode = 500
                   res.setHeader('Content-Type', 'application/json')
