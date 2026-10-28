@@ -52,7 +52,7 @@ function playPageFlipSound() {
     noise.start()
     noise.stop(ctx.currentTime + duration + 0.04)
   } catch {
-    // Sessizce yoksay
+    // Autoplay kısıtlamalarını sessizce yoksay
   }
 }
 
@@ -78,7 +78,8 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
   const [activePages, setActivePages] = useState([1])
   const [isBookReady, setIsBookReady] = useState(false)
   const [activePdfTitle, setActivePdfTitle] = useState(null)
-  const [singlePageWidth, setSinglePageWidth] = useState(380)
+  const [singlePageWidth, setSinglePageWidth] = useState(400)
+  const [isMobileMode, setIsMobileMode] = useState(false)
 
   // PDF Doğal En-Boy Oranı (varsayılan ISO A4 210 × 297 mm)
   const [pdfMeta, setPdfMeta] = useState({ width: 210, height: 297, aspect: 210 / 297 })
@@ -202,30 +203,32 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
   }
 
   // -------------------------------------------------------------
-  // 2. SAYFA KONTROLLERİ (Önceki / Sonraki) - Güçlendirilmiş Flip
+  // 2. SAYFA KONTROLLERİ (Önceki / Sonraki)
   // -------------------------------------------------------------
   const handlePrev = useCallback(() => {
-    const pf = flipbookRef.current
-    if (!pf) return
+    if (!flipbookRef.current) return
     try {
-      pf.flipPrev()
-    } catch {
-      try { pf.turnToPrevPage() } catch {}
+      flipbookRef.current.flipPrev()
+    } catch (err) {
+      console.warn('flipPrev fallback:', err)
+      const cur = currentPageIndexRef.current
+      if (cur > 0) flipbookRef.current.flip(cur - 1)
     }
   }, [])
 
   const handleNext = useCallback(() => {
-    const pf = flipbookRef.current
-    if (!pf) return
+    if (!flipbookRef.current) return
     try {
-      pf.flipNext()
-    } catch {
-      try { pf.turnToNextPage() } catch {}
+      flipbookRef.current.flipNext()
+    } catch (err) {
+      console.warn('flipNext fallback:', err)
+      const cur = currentPageIndexRef.current
+      if (cur < totalPagesCount - 1) flipbookRef.current.flip(cur + 1)
     }
-  }, [])
+  }, [totalPagesCount])
 
   // -------------------------------------------------------------
-  // 3. FLIPBOOK OLUŞTURMA: ÖN/ARKA KAPAK TEK, DİĞERLERİ İKİLİ
+  // 3. FLIPBOOK OLUŞTURMA: ÖN/ARKA KAPAK TEK, DİĞERLERİ İKİLİ (SPREAD)
   // -------------------------------------------------------------
   const initFlipbook = useCallback(() => {
     const mountEl = bookMountRef.current
@@ -238,7 +241,9 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
     if (templateItems.length === 0) return
 
     const isMobile = getIsMobile()
+    setIsMobileMode(isMobile)
 
+    // Önceki örneği yok et
     if (flipbookRef.current) {
       try { flipbookRef.current.destroy() } catch (e) { console.warn('destroy error:', e) }
       flipbookRef.current = null
@@ -247,38 +252,40 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
     mountEl.innerHTML = ''
     setIsBookReady(false)
 
-    // Kullanılabilir alan hesaplaması (Viewport - sağ toolbar, ok butonları ve alt bar hariç)
+    // Kullanılabilir alan hesaplaması (Viewport - sağ toolbar ve alt bar hariç)
     const viewportRect = viewportEl.getBoundingClientRect()
     const paddingX = isMobile ? 16 : 80
     const paddingY = isMobile ? 16 : 40
 
-    const availableWidth = Math.max(160, viewportRect.width - paddingX * 2)
-    const availableHeight = Math.max(160, viewportRect.height - paddingY * 2)
+    const availableWidth = Math.max(120, viewportRect.width - paddingX * 2)
+    const availableHeight = Math.max(120, viewportRect.height - paddingY * 2)
 
     const naturalWidth = Math.max(1, pdfMeta.width || 210)
     const naturalHeight = Math.max(1, pdfMeta.height || 297)
 
-    // İkili yayılım (Spread) modu:
-    // Dergi açıkken 2 sayfa yan yana olacağı için toplam genişlik (2 * naturalWidth) baz alınır
-    const isSinglePageMode = isMobile && window.innerWidth < 640
-    const spreadFactor = isSinglePageMode ? 1 : 2
+    // İKİLİ SAYFA (SPREAD) HESAPLAMASI:
+    // Masaüstünde dergi açıldığında 2 sayfa yan yana gelir (2 * naturalWidth).
+    // Mobilde dar ekranda tek sayfa, masaüstünde çift sayfa.
+    const useSinglePage = isMobile && window.innerWidth < 640
+    const spreadWidthFactor = useSinglePage ? 1 : 2
 
+    // Ölçek: açılmış dergi (2 sayfa yan yana) ekrana tam sığsın
     const scale = Math.min(
-      availableWidth / (naturalWidth * spreadFactor),
+      availableWidth / (naturalWidth * spreadWidthFactor),
       availableHeight / naturalHeight
     )
 
     const pageWidth = Math.max(1, Math.floor(naturalWidth * scale))
     const pageHeight = Math.max(1, Math.floor(naturalHeight * scale))
-
     setSinglePageWidth(pageWidth)
 
-    mountEl.style.width = `${pageWidth * spreadFactor}px`
+    // Mount kapsayıcısı açık kitap (2 sayfa) genişliğinde ayarlanır
+    mountEl.style.width = `${pageWidth * spreadWidthFactor}px`
     mountEl.style.height = `${pageHeight}px`
 
     const bookWrapper = document.createElement('div')
     bookWrapper.className = 'cilek-flipbook-host'
-    bookWrapper.style.width = `${pageWidth * spreadFactor}px`
+    bookWrapper.style.width = `${pageWidth * spreadWidthFactor}px`
     bookWrapper.style.height = `${pageHeight}px`
     mountEl.appendChild(bookWrapper)
 
@@ -287,7 +294,7 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
       clone.style.display = 'block'
       clone.style.width = `${pageWidth}px`
       clone.style.height = `${pageHeight}px`
-      // Ön ve arka kapak hard, iç sayfalar soft
+      // Ön kapak (idx=0) ve arka kapak sert kapak, iç sayfalar yumuşak katlama
       if (idx === 0 || idx === templateItems.length - 1) {
         clone.setAttribute('data-density', 'hard')
       } else {
@@ -301,8 +308,8 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
       Math.max(0, clonedItems.length - 1)
     )
 
-    // STPAGEFLIP:
-    // showCover: true -> İlk sayfa (ön kapak) ve son sayfa (arka kapak) tek sayfa, iç sayfalar 2'li yan yana!
+    // STPAGEFLIP YAPILANDIRMASI:
+    // showCover: true -> Ön kapak tek sayfa, iç sayfalar 2'li yan yana, arka kapak tek sayfa kapanır!
     const pf = new PageFlip(bookWrapper, {
       width: pageWidth,
       height: pageHeight,
@@ -313,12 +320,12 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
       maxHeight: pageHeight,
       startPage: targetStartPage,
       showCover: true, // ÖN VE ARKA KAPAK HARİÇ İKİLİ!
-      usePortrait: isSinglePageMode,
+      usePortrait: useSinglePage,
       mobileScrollSupport: true,
       useMouseEvents: true,
       disableFlipByClick: false,
-      swipeDistance: isMobile ? 12 : 20,
-      flippingTime: isMobile ? 400 : 550,
+      swipeDistance: 15,
+      flippingTime: isMobile ? 420 : 550,
       showPageCorners: true,
       maxShadowOpacity: 0.35,
     })
@@ -428,7 +435,7 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
     if (endX !== undefined && endY !== undefined) {
       const diffX = endX - touchStartXRef.current
       const diffY = endY - touchStartYRef.current
-      if (Math.abs(diffX) > 35 && Math.abs(diffX) > Math.abs(diffY) * 1.4) {
+      if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
         if (diffX < 0) {
           handleNext()
         } else {
@@ -442,12 +449,7 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
 
   const handlePageSliderChange = (e) => {
     if (!flipbookRef.current) return
-    const target = parseInt(e.target.value, 10) - 1
-    try {
-      flipbookRef.current.flip(target)
-    } catch {
-      try { flipbookRef.current.turnToPage(target) } catch {}
-    }
+    flipbookRef.current.flip(parseInt(e.target.value, 10) - 1)
   }
 
   const toggleFullscreen = () => {
@@ -478,20 +480,18 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
     }
   }
 
-  // ÖN VE ARKA KAPAK ORTALAMA TRANSLATE HESABI:
-  // Kapak kapalıyken (sayfa 0), PageFlip sağ tarafa çizer.
-  // Kapsayıcıyı sola tek sayfa genişliğinin yarısı kadar kaydırarak ön kapağı TAM MERKEZE alırız!
-  // Arka kapakta ise sola çizdiği için sağa kaydırarak arka kapağı TAM MERKEZE alırız!
-  // İç sayfalarda 2 sayfa yan yana tam merkezde durur.
-  const isMobile = getIsMobile()
-  const isSinglePage = isMobile && typeof window !== 'undefined' && window.innerWidth < 640
-  const bookShiftX = isSinglePage
-    ? 0
-    : currentPageIndex === 0
-    ? -Math.round(singlePageWidth / 2)
-    : currentPageIndex >= totalPagesCount - 1
-    ? Math.round(singlePageWidth / 2)
-    : 0
+  // ÖN VE ARKA KAPAK ORTALAMA HESABI:
+  // showCover: true modunda kapak sayfa 0 sağ kanattadır. Ön kapağı tam ortalamak için sola (-pageWidth/2) kaydırılır.
+  // Arka kapak sol kanattadır. Arka kapağı tam ortalamak için sağa (+pageWidth/2) kaydırılır.
+  // İç çift sayfalarda ise 0 kaydırma ile tam merkezdedir.
+  let coverShiftX = 0
+  if (!isMobileMode && singlePageWidth > 0) {
+    if (currentPageIndex === 0) {
+      coverShiftX = -(singlePageWidth / 2)
+    } else if (currentPageIndex >= totalPagesCount - 1) {
+      coverShiftX = singlePageWidth / 2
+    }
+  }
 
   return (
     <div className={`magazine-reader-root modern-editorial-layout ${isFullscreen ? 'is-fullscreen' : ''}`} ref={bookStageRef}>
@@ -505,7 +505,7 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
         onChange={handleLocalPdfUpload}
       />
 
-      {/* ── SOL ALT: VINTAGE DERGİ ROZETİ ── */}
+      {/* ── SOL ALT: VINTAGE DERGİ AMBLEMİ & BAŞLIK ── */}
       <aside className="reader-corner-brand" aria-label="Dergi Bilgisi">
         <div className="reader-brand-emblem-wrap">
           <img src="/icons/cilek-vintage.png" alt="" className="reader-corner-berry" />
@@ -603,7 +603,7 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
         </button>
       </aside>
 
-      {/* ── ANA OKUMA ALANI: BÜYÜK OK BUTONLARI & GERÇEKÇİ ÇEVİRMELİ DERGİ ── */}
+      {/* ── ANA OKUMA ALANI: SAYFA DIŞINDA BÜYÜK OKLAR + MERKEZDE DERGİ ── */}
       <main
         className="reader-stage-container modern-stage"
         onDragOver={(e) => e.preventDefault()}
@@ -611,21 +611,19 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Sol Çevirme Oku: Sayfanın solunda büyük buton */}
+        {/* SOL ÇEVİRME OKU (Sayfanın DIŞINDA) */}
         <button
           type="button"
-          className={`btn-side-flip btn-side-prev ${currentPageIndex <= 0 ? 'disabled' : ''}`}
+          className={`btn-stage-arrow btn-stage-prev ${currentPageIndex <= 0 ? 'disabled' : ''}`}
           onClick={handlePrev}
           disabled={currentPageIndex <= 0}
-          aria-label="Önceki Sayfa"
           title="Önceki Sayfa (Sol Ok)"
+          aria-label="Önceki Sayfa"
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
+          ‹
         </button>
 
-        {/* Orta Görünüm Alanı */}
+        {/* ORTA SAYFA ALANI */}
         <div className="flipbook-center-viewport" ref={viewportRef}>
           {loadingPdf ? (
             <div className="reader-pdf-loading-box">
@@ -656,25 +654,23 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
               className="flipbook-mount-wrapper"
               ref={bookMountRef}
               style={{
-                transform: `translateX(${bookShiftX}px)`,
-                transition: 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)',
+                transform: coverShiftX !== 0 ? `translateX(${coverShiftX}px)` : 'translateX(0)',
+                transition: 'transform 0.42s cubic-bezier(0.22, 1, 0.36, 1)',
               }}
             />
           )}
         </div>
 
-        {/* Sağ Çevirme Oku: Sayfanın sağında büyük buton */}
+        {/* SAĞ ÇEVİRME OKU (Sayfanın DIŞINDA) */}
         <button
           type="button"
-          className={`btn-side-flip btn-side-next ${currentPageIndex >= totalPagesCount - 1 ? 'disabled' : ''}`}
+          className={`btn-stage-arrow btn-stage-next ${currentPageIndex >= totalPagesCount - 1 ? 'disabled' : ''}`}
           onClick={handleNext}
           disabled={currentPageIndex >= totalPagesCount - 1}
-          aria-label="Sonraki Sayfa"
           title="Sonraki Sayfa (Sağ Ok)"
+          aria-label="Sonraki Sayfa"
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="9 18 15 12 9 6" />
-          </svg>
+          ›
         </button>
       </main>
 
@@ -730,7 +726,7 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
           ))
         ) : (
           <>
-            {/* SAYFA 1: ÖN KAPAK (HARD COVER) */}
+            {/* SAYFA 1: ÖN KAPAK */}
             <div className="flip-page-node page-cover-front" data-density="hard">
               {magazine?.cover_image_url ? (
                 <div className="page-paper-sheet pdf-page-clean">
@@ -953,7 +949,7 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
               </div>
             </div>
 
-            {/* SAYFA 8: ARKA KAPAK (HARD COVER) */}
+            {/* SAYFA 8: ARKA KAPAK */}
             <div className="flip-page-node page-cover-back" data-density="hard">
               <div className="page-paper-sheet back-cover-sheet">
                 <div className="back-cover-layout">

@@ -4708,50 +4708,6 @@ button {
   color: #FFFFFF !important;
 }
 
-/* ── Büyük Yan Ok Butonları (Oklara basınca Flipbook Sayfa Çevirme) ── */
-.btn-side-flip {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: #FFFFFF;
-  border: 1px solid rgba(61, 39, 48, 0.16);
-  color: #3D2730;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 45;
-  transition: all 0.22s cubic-bezier(0.22, 1, 0.36, 1);
-  box-shadow: 0 4px 16px rgba(61, 39, 48, 0.12);
-  user-select: none;
-}
-
-.btn-side-flip:hover:not(.disabled) {
-  background: #BE2625;
-  color: #FFFFFF;
-  border-color: #BE2625;
-  transform: translateY(-50%) scale(1.12);
-  box-shadow: 0 6px 20px rgba(190, 38, 37, 0.35);
-}
-
-.btn-side-flip.disabled {
-  opacity: 0.18;
-  cursor: not-allowed;
-  pointer-events: none;
-  box-shadow: none;
-}
-
-.btn-side-prev {
-  left: 24px;
-}
-
-.btn-side-next {
-  right: 78px; /* Sağdaki dikey araç çubuğunun hemen solunda, çakışmaz */
-}
-
 /* ── Ana Sahne (Modern Stage) ── */
 .reader-stage-container.modern-stage {
   flex: 1;
@@ -4765,6 +4721,53 @@ button {
   padding: 16px 85px 44px 85px;
   background: #FFF9F8;
   box-sizing: border-box;
+}
+
+/* Sahne Sol ve Sağ Büyük Ok Butonları */
+.btn-stage-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: 1px solid rgba(61, 39, 48, 0.16);
+  color: #3D2730;
+  font-size: 2.3rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 45;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 18px rgba(61, 39, 48, 0.12);
+  user-select: none;
+  padding-bottom: 3px;
+}
+
+.btn-stage-arrow:hover:not(.disabled) {
+  background: #BE2625;
+  color: #FFFFFF;
+  border-color: #BE2625;
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 6px 24px rgba(190, 38, 37, 0.38);
+}
+
+.btn-stage-arrow.disabled {
+  opacity: 0.18;
+  cursor: not-allowed;
+  pointer-events: none;
+  box-shadow: none;
+}
+
+.btn-stage-prev {
+  left: 20px;
+}
+
+.btn-stage-next {
+  right: 80px;
 }
 
 .reader-stage-container.modern-stage .flipbook-center-viewport {
@@ -4843,6 +4846,20 @@ button {
     padding: 4px;
     border-radius: 10px;
     transform: translateY(-50%) scale(0.92);
+  }
+
+  .btn-stage-arrow {
+    width: 38px;
+    height: 38px;
+    font-size: 1.7rem;
+  }
+
+  .btn-stage-prev {
+    left: 8px;
+  }
+
+  .btn-stage-next {
+    right: 56px;
   }
 
   .reader-stage-container.modern-stage {
