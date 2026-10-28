@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { supabase, translateAuthError, checkIsAdmin } from '../lib/supabase'
 
@@ -8,8 +8,16 @@ export default function Auth() {
   const redirectTarget = searchParams.get('redirect')
   const reason = searchParams.get('reason')
 
-  // 'register' (varsayılan) veya 'login' veya 'forgot'
-  const [mode, setMode] = useState(searchParams.get('mode') === 'login' ? 'login' : 'register')
+  // 'login' (varsayılan) veya 'register' veya 'forgot'
+  const initialMode = searchParams.get('mode') || (reason === 'pdf' ? 'register' : 'login')
+  const [mode, setMode] = useState(initialMode)
+
+  useEffect(() => {
+    const urlMode = searchParams.get('mode')
+    if (urlMode) {
+      setMode(urlMode)
+    }
+  }, [searchParams])
 
   const [email, setEmail]             = useState('')
   const [password, setPassword]       = useState('')
@@ -32,22 +40,35 @@ export default function Auth() {
     }
     setLoading(true)
     try {
-      const { data, error: err } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
+      const { data, error: err } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      })
       setLoading(false)
       if (err) {
         setError(translateAuthError(err.message))
         return
       }
-      // Başarılı giriş sonrası yönlendirme
+
+      // Kullanıcının admin olup olmadığını kontrol et
+      const isUserAdmin = await checkIsAdmin(data?.user)
+
+      // Yönlendirme hedefi varsa kontrol et
       if (redirectTarget) {
+        // Eğer kullanıcı admin değilse ve hedef /admin ise yetkisiz sayfasına düşürme, dergilere yönlendir
+        if (redirectTarget.startsWith('/admin') && !isUserAdmin) {
+          navigate('/dergiler')
+          return
+        }
         navigate(redirectTarget)
         return
       }
-      const isUserAdmin = await checkIsAdmin(data?.user)
+
+      // Varsayılan yönlendirme: Admin ise panele, normal okuyucu ise dergiler arşivine
       if (isUserAdmin) {
         navigate('/admin')
       } else {
-        navigate('/')
+        navigate('/dergiler')
       }
     } catch (err) {
       setLoading(false)
@@ -72,16 +93,59 @@ export default function Auth() {
     }
     setLoading(true)
     try {
-      const { error: err } = await supabase.auth.signUp({ email: email.trim(), password })
-      setLoading(false)
+      const { data, error: err } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+      })
+
       if (err) {
-        setError(translateAuthError(err.message))
+        setLoading(false)
+        const errMsg = err.message || ''
+        if (errMsg.toLowerCase().includes('already registered')) {
+          setError('Bu e-posta adresiyle zaten kayıtlı bir hesap var. Giriş Yap sekmesinden giriş yapabilirsiniz.')
+          setMode('login')
+          return
+        }
+        setError(translateAuthError(errMsg))
         return
       }
-      setSuccess('Kayıt başarıyla oluşturuldu! Aramıza hoş geldin mektubuna yönlendiriliyorsun… 💌')
-      setTimeout(() => {
-        navigate('/?welcome=true')
-      }, 1000)
+
+      // 1. Eğer doğrudan oturum açıldıysa (Email confirm zorunlu değilse)
+      if (data?.session) {
+        setLoading(false)
+        setSuccess('Kayıt başarıyla oluşturuldu! Aramıza hoş geldin… 🍓')
+        setTimeout(() => {
+          if (redirectTarget && !redirectTarget.startsWith('/admin')) {
+            navigate(redirectTarget)
+          } else {
+            navigate('/dergiler?welcome=true')
+          }
+        }, 700)
+        return
+      }
+
+      // 2. Oturum henüz açılmadıysa anında otomatik oturum açmayı dene
+      const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      })
+      setLoading(false)
+
+      if (!signInErr && signInData?.session) {
+        setSuccess('Kayıt başarıyla oluşturuldu! Aramıza hoş geldin… 🍓')
+        setTimeout(() => {
+          if (redirectTarget && !redirectTarget.startsWith('/admin')) {
+            navigate(redirectTarget)
+          } else {
+            navigate('/dergiler?welcome=true')
+          }
+        }, 700)
+        return
+      }
+
+      // 3. E-posta onayı bekleniyorsa
+      setSuccess('Hesabınız başarıyla oluşturuldu! Giriş yapabilirsiniz.')
+      setMode('login')
     } catch (err) {
       setLoading(false)
       setError(translateAuthError(err?.message || ''))

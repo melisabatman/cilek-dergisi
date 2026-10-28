@@ -5,42 +5,18 @@ export default function Hero() {
   return (
     <section className="hero-intro" id="hero-intro" aria-label="Çilek Dergi Giriş Alanı">
       <div className="hero-frame">
-        {/* İPSİZ SÜZÜLEN (FLOATING) VE ARKASI PARLAYAN 6 ADET ÇİLEK OBJESİ */}
+        {/* Sade 2 adet dekoratif obje */}
         <div className="hero-floating-objects" aria-hidden="true">
           <img
             src="/icons/icon1.png"
-            alt="Çilek Obje 1"
+            alt=""
             className="hero-object hero-obj-1"
           />
 
           <img
             src="/icons/icon2.png"
-            alt="Çilek Obje 2"
+            alt=""
             className="hero-object hero-obj-2"
-          />
-
-          <img
-            src="/icons/icon3.png"
-            alt="Çilek Obje 3"
-            className="hero-object hero-obj-3"
-          />
-
-          <img
-            src="/icons/icon4.png"
-            alt="Çilek Obje 4"
-            className="hero-object hero-obj-4"
-          />
-
-          <img
-            src="/icons/icon5.png"
-            alt="Çilek Obje 5"
-            className="hero-object hero-obj-5"
-          />
-
-          <img
-            src="/icons/icon6.png"
-            alt="Çilek Obje 6"
-            className="hero-object hero-obj-6"
           />
         </div>
 

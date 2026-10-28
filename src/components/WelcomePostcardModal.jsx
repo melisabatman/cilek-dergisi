@@ -4,7 +4,7 @@ import { useSiteContent, DEFAULT_SITE_CONTENT } from '../lib/siteContent'
 
 export default function WelcomePostcardModal({ isOpen, onClose, user }) {
   // 'sealed' (ip sarılı kartpostal) veya 'opened' (içinden çıkan mektup)
-  const [stage, setStage] = useState('sealed')
+  const [stage, setStage] = useState('opened')
   const [isUntying, setIsUntying] = useState(false)
   const navigate = useNavigate()
   const { content } = useSiteContent()
@@ -12,7 +12,7 @@ export default function WelcomePostcardModal({ isOpen, onClose, user }) {
 
   useEffect(() => {
     if (isOpen) {
-      setStage('sealed')
+      setStage('opened')
       setIsUntying(false)
       document.body.style.overflow = 'hidden'
     } else {
@@ -70,6 +70,16 @@ export default function WelcomePostcardModal({ isOpen, onClose, user }) {
       aria-label="Hoş Geldin Kartpostalı"
     >
       <div className="postcard-modal-container">
+        {/* Sağ Üst Kapatma Çarpı Butonu */}
+        <button
+          type="button"
+          className="postcard-modal-close-btn"
+          onClick={onClose}
+          aria-label="Pencereyi kapat"
+          title="Kapat"
+        >
+          ×
+        </button>
         
         {stage === 'sealed' ? (
           /* ==========================================================
@@ -95,7 +105,7 @@ export default function WelcomePostcardModal({ isOpen, onClose, user }) {
                 <div className="vintage-post-seal">
                   <div className="seal-round">
                     <span>ÇİLEK POST</span>
-                    <small>★ 2026 ★</small>
+                    <small>2026</small>
                   </div>
                 </div>
                 <div className="postage-stamp-item stamp-berry">

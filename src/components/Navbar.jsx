@@ -10,7 +10,7 @@ const NAV_LINKS = [
   { to: '/yazi-gonderi', label: 'YAZI GÖNDERİ' },
 ]
 
-export default function Navbar({ user, isAdmin: propIsAdmin, onOpenWelcomeLetter, onToggleMoodboard, hideTopBar = false }) {
+export default function Navbar({ user, isAdmin: propIsAdmin, onOpenWelcomeLetter, hideTopBar = false }) {
   const { settings } = useSiteContent()
   const location = useLocation()
   const navigate = useNavigate()
@@ -105,7 +105,7 @@ export default function Navbar({ user, isAdmin: propIsAdmin, onOpenWelcomeLetter
               className={`cassius-nav-link ${location.pathname === '/admin' ? 'active' : ''}`}
               style={{ color: 'var(--c-red)' }}
             >
-              ★ ADMİN
+              ADMİN
             </Link>
           )}
         </nav>
@@ -123,7 +123,7 @@ export default function Navbar({ user, isAdmin: propIsAdmin, onOpenWelcomeLetter
           </Link>
         </div>
 
-        {/* Sağ Eylemler: Kalp/Mektup, Çanta ve "Your Space" Butonu */}
+        {/* Sağ Eylemler: Kalp/Mektup, Çanta ve "Kayıt Ol" Butonu */}
         <div className="cassius-nav-right">
           {onOpenWelcomeLetter && (
             <button
@@ -138,7 +138,7 @@ export default function Navbar({ user, isAdmin: propIsAdmin, onOpenWelcomeLetter
             </button>
           )}
 
-          {/* Çift Çerçeveli El Yazısı "Your Space" Butonu */}
+          {/* Çift Çerçeveli El Yazısı "Kayıt Ol" Butonu */}
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
               <Link
@@ -147,7 +147,7 @@ export default function Navbar({ user, isAdmin: propIsAdmin, onOpenWelcomeLetter
                 id="btn-your-space"
                 title={user.email}
               >
-                {isAdmin ? 'Admin' : (user.email?.split('@')[0] || 'Your Space')}
+                {isAdmin ? 'Admin' : (user.email?.split('@')[0] || 'Hesabım')}
               </Link>
               <button
                 type="button"
@@ -162,11 +162,11 @@ export default function Navbar({ user, isAdmin: propIsAdmin, onOpenWelcomeLetter
             </div>
           ) : (
             <Link
-              to="/auth"
+              to="/auth?mode=register"
               className="btn-your-space"
-              id="btn-your-space"
+              id="btn-nav-register"
             >
-              Your Space
+              Kayıt Ol
             </Link>
           )}
 
@@ -223,7 +223,7 @@ export default function Navbar({ user, isAdmin: propIsAdmin, onOpenWelcomeLetter
               onClick={() => setMobileOpen(false)}
               style={{ color: 'var(--c-red)', fontWeight: 800 }}
             >
-              ★ ADMİN PANELİ
+              ADMİN PANELİ
             </Link>
           )}
         </nav>
@@ -253,12 +253,12 @@ export default function Navbar({ user, isAdmin: propIsAdmin, onOpenWelcomeLetter
             </button>
           ) : (
             <Link
-              to="/auth"
+              to="/auth?mode=register"
               className="mobile-login btn-your-space"
               onClick={() => setMobileOpen(false)}
               style={{ display: 'block', textAlign: 'center' }}
             >
-              Your Space (Giriş Yap)
+              Kayıt Ol
             </Link>
           )}
         </div>

@@ -5,33 +5,46 @@ import MagazineReader from '../components/MagazineReader'
 
 const FALLBACK_MAGAZINES = [
   {
-    id: 'f-6',
-    issue_number: 6,
-    title: 'Sayı 06 — Yaz',
-    published_date: '2024-06-11',
-    description: 'Uzun günler, sıcak esintiler ve yeni anlatılar. Yaz mevsimine dair bağımsız perspektifler.',
+    id: 'f-1',
+    issue_number: 1,
+    title: 'Sayı 01 — Başlangıç',
+    published_date: '2024-01-11',
+    description: 'Her şeyin bir başlangıcı var. Yeni başlangıçların, ilk adımların ve sıfırdan kurmanın hikâyeleri.',
     toc: [
-      'Güneşin Gölgesinde Kalanlar',
-      'Bir Yaz Öğledensonrası Notları',
-      'Deniz Kenarında Bağımsız Edebiyat',
-      'Mevsim Değişirken İç Dünyamız'
+      'İlk Sayfanın Heyecanı',
+      'Çilek Dergisi Doğuyor',
+      'Bağımsız Yayıncılık Yolu',
+      'Korkulara Rağmen Yola Çıkmak'
     ],
     cover_image_url: null,
     pdf_url: null
   },
   {
-    id: 'f-5',
-    issue_number: 5,
-    title: 'Sayı 05 — Sesler',
-    published_date: '2024-05-11',
-    description: 'Kendi sesini bulmak, belki de en büyük macera. Farklı seslerin ve anlatıların peşine düştük.',
+    id: 'f-2',
+    issue_number: 2,
+    title: 'Sayı 02 — Kök & Bahar',
+    published_date: '2024-02-11',
+    description: 'Nereden geldiğimiz, bizi kim yaptığımızı şekillendirir. Nakışlar, çiçekler ve bellek.',
     toc: [
-      'Sessizliği Bozma Rehberi',
-      'Şehrin Fısıltıları',
-      'Kadın Sesleri ve Bellek',
-      'Sözcüklerin Gücü Üzerine'
+      'Geçmişin Ayak İzleri',
+      'Büyüdüğümüz Evler ve Odalar',
+      'Kuşaklararası Sohbet'
     ],
-    cover_image_url: null,
+    cover_image_url: '/icons/icon2.png',
+    pdf_url: null
+  },
+  {
+    id: 'f-3',
+    issue_number: 3,
+    title: 'Sayı 03 — Dönüşüm',
+    published_date: '2024-03-11',
+    description: 'Değişim kaçınılmazdır ama her dönüşüm bir seçim taşır. Stüdyo notları ve tasarım dili.',
+    toc: [
+      'Eski Alışkanlıklara Veda',
+      'Yeniden Başlama Cesareti',
+      'İçsel Dönüşüm'
+    ],
+    cover_image_url: '/icons/icon4.png',
     pdf_url: null
   },
   {
@@ -39,8 +52,41 @@ const FALLBACK_MAGAZINES = [
     issue_number: 4,
     title: 'Sayı 04 — Özgürlük',
     published_date: '2024-04-11',
-    description: 'Özgürlük; hem bir his, hem de gündelik bir eylem.',
-    toc: ['Sınırların Ötesinde Yaşamak', 'Kendi Alanını İnşa Etmek'],
+    description: 'Özgürlük; hem bir his, hem de gündelik bir eylem. Sokak çekimleri ve manifestolar.',
+    toc: [
+      'Sınırların Ötesinde Yaşamak',
+      'Kendi Alanını İnşa Etmek',
+      'Özgür Kelimeler'
+    ],
+    cover_image_url: '/icons/icon1.png',
+    pdf_url: null
+  },
+  {
+    id: 'f-5',
+    issue_number: 5,
+    title: 'Sayı 05 — Sessizlik',
+    published_date: '2024-05-11',
+    description: 'Bazen en güçlü ses, içten gelendir. Şiirler, duygu haritaları ve kişisel itiraflar.',
+    toc: [
+      'Sessizliğin Gücü',
+      'Kendi Kelimelerini Bulmak',
+      'Yalnızlıkta Üretmek'
+    ],
+    cover_image_url: null,
+    pdf_url: null
+  },
+  {
+    id: 'f-6',
+    issue_number: 6,
+    title: 'Sayı 06 — Yaz Dönemi',
+    published_date: '2024-06-11',
+    description: 'Yaz mevsiminin hafifliği ve sonsuzluk hissi. Uzak yollar, sıcak sokaklar, yeni başlangıçlar.',
+    toc: [
+      'Yaz Günlüğü',
+      'Sonsuz Bir Tatilde Olsaydık',
+      'Güneşin Rengi',
+      'Deniz Kokulu Şiirler'
+    ],
     cover_image_url: null,
     pdf_url: null
   }
@@ -55,13 +101,14 @@ export default function ReaderPage({ user, isAdmin }) {
     async function loadMagazine() {
       setLoading(true)
       try {
-        const isNumeric = /^\d+$/.test(id)
+        const cleanId = String(id || '').trim()
+        const isNumeric = /^\d+$/.test(cleanId)
         let query = supabase.from('magazines').select('*')
 
         if (isNumeric) {
-          query = query.eq('issue_number', parseInt(id, 10))
+          query = query.eq('issue_number', parseInt(cleanId, 10))
         } else {
-          query = query.eq('id', id)
+          query = query.eq('id', cleanId)
         }
 
         const { data, error } = await query.maybeSingle()
@@ -69,9 +116,12 @@ export default function ReaderPage({ user, isAdmin }) {
         if (!error && data) {
           setMagazine(data)
         } else {
-          // Fallback kontrolü
+          // Fallback kontrolü: id veya issue_number eşleştirmesi
           const found = FALLBACK_MAGAZINES.find(
-            m => m.id === id || m.issue_number === parseInt(id, 10)
+            m => m.id === cleanId ||
+                 String(m.issue_number) === cleanId ||
+                 m.id === `f-${cleanId}` ||
+                 `f-${m.issue_number}` === cleanId
           ) || FALLBACK_MAGAZINES[0]
           setMagazine(found)
         }

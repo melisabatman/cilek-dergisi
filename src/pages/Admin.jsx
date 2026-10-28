@@ -693,51 +693,52 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
             <img src="/icons/cilek-vintage.png" alt="Çilek Dergisi" className="auth-strawberry-img" />
           </div>
           <span className="admin-gate-tag">Güvenlik Korumalı Alan</span>
-          <h1 className="admin-gate-title">Yönetici Girişi Gerekli</h1>
+          <h1 className="admin-gate-title">
+            {user ? 'Editoryal Yönetim Alanı' : 'Yönetici Girişi Gerekli'}
+          </h1>
           <p className="admin-gate-desc">
-            Bu sayfa yalnızca yetkili <strong>Çilek Dergisi Editör ve Yöneticileri</strong> tarafından görüntülenebilir.
             {user ? (
               <>
-                <br />
-                Şu anda <strong>{user.email}</strong> hesabıyla giriş yaptınız ancak bu hesabın admin yetkisi bulunmuyor.
+                Merhaba! Şu anda <strong>{user.email}</strong> okuyucu hesabınızla oturum açmış durumdasınız. 
+                <br /><br />
+                Tüm dergi sayılarını okuyabilir, içerikleri inceleyebilir ve PDF indirebilirsiniz. 
+                Yönetim paneli ise yalnızca Çilek Dergisi editoryal ekibinin içerik düzenlemesi içindir.
               </>
             ) : (
               <>
-                <br />
+                Bu sayfa yalnızca yetkili <strong>Çilek Dergisi Editör ve Yöneticileri</strong> tarafından görüntülenebilir.
+                <br /><br />
                 Lütfen yetkili e-posta adresiniz ile giriş yapın.
               </>
             )}
           </p>
 
           <div className="admin-gate-actions">
-            {!user ? (
+            {user ? (
+              <>
+                <Link to="/dergiler" className="btn-admin-gate-primary" id="btn-gate-to-magazines">
+                  Dergileri Oku &amp; PDF İndir →
+                </Link>
+                <button
+                  type="button"
+                  className="btn-admin-gate-ghost"
+                  onClick={async () => {
+                    await supabase.auth.signOut()
+                    navigate('/auth?mode=login&redirect=/admin')
+                  }}
+                  id="btn-gate-switch"
+                >
+                  Yönetici Olarak Giriş Yap
+                </button>
+              </>
+            ) : (
               <Link to="/auth?mode=login&redirect=/admin" className="btn-admin-gate-primary" id="btn-gate-login">
                 Yönetici Girişi Yap →
               </Link>
-            ) : (
-              <button
-                type="button"
-                className="btn-admin-gate-primary"
-                onClick={async () => {
-                  await supabase.auth.signOut()
-                  navigate('/auth?mode=login&redirect=/admin')
-                }}
-                id="btn-gate-switch"
-              >
-                Farklı Hesapla Giriş Yap →
-              </button>
             )}
-            <a
-              href="/"
-              className="btn-admin-gate-ghost"
-              id="btn-gate-home"
-              onClick={(e) => {
-                e.preventDefault()
-                window.location.href = '/'
-              }}
-            >
-              ← Siteye Dön
-            </a>
+            <Link to="/" className="btn-admin-gate-ghost" id="btn-gate-home">
+              ← Ana Sayfaya Dön
+            </Link>
           </div>
         </div>
       </div>
@@ -782,7 +783,7 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
           </div>
 
           <div className="admin-user-badge">
-            <span className="admin-role-pill">★ Editör & Admin</span>
+            <span className="admin-role-pill">Editör & Admin</span>
             <span className="admin-user-email" title={user.email}>{user.email}</span>
             <button
               type="button"

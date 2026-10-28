@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import MagazineModal from '../components/MagazineModal'
 import WelcomePostcardModal from '../components/WelcomePostcardModal'
 import { supabase } from '../lib/supabase'
 import { useSiteContent } from '../lib/siteContent'
@@ -30,6 +29,12 @@ const TEAM_FALLBACK = [
 // ─── Kayan marquee metni ──────────────────────────────────────────────────────
 const MARQUEE_TEXT = 'Sayı 06 Yayında · Şimdi Oku · Her Ay Yepyeni Bir Macera · Genç, Özgür, Bağımsız! · Çilek Dergisi · '
 
+// ─── Yardımcı: ✦ ve benzeri yıldız sembollerini temizleme ─────────────────────
+const cleanSparkles = (str) => {
+  if (!str) return ''
+  return String(str).replace(/[✦✧★]/g, '').trim()
+}
+
 // ─── "Her Sayıda Seni Bekleyenler" retro takvim içeriği ─────────────────────
 const CONTENT_PICKS = [
   { num: '01', tag: 'YAZI', icon: '🖊', label: 'Bir Yazı', desc: 'Duyguların en yalın ve vurucu haliyle kaleme alınmış özgün bir deneme ya da kısa öykü.', time: 'Her Sayıda · Deneme' },
@@ -48,22 +53,11 @@ export default function Home({ user, isAdmin }) {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const [allMagazines, setAllMagazines] = useState(FEATURED_FALLBACKS)
-  const [selectedMag, setSelectedMag] = useState(null)
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false)
   const [latestMag, setLatestMag] = useState(null)
   const [teamMembers, setTeamMembers] = useState(TEAM_FALLBACK)
   const [founders, setFounders] = useState(TEAM_FALLBACK.slice(0, 2))
-  const [newsletterEmail, setNewsletterEmail] = useState('')
-  const [newsletterDone, setNewsletterDone] = useState(false)
-
-  const handleNewsletterSubmit = (e) => {
-    e.preventDefault()
-    if (newsletterEmail.trim()) {
-      setNewsletterDone(true)
-      setNewsletterEmail('')
-      setTimeout(() => setNewsletterDone(false), 4000)
-    }
-  }
+  const [founder, setFounder] = useState(TEAM_FALLBACK[0])
 
   const { settings } = useSiteContent()
   const siteData = settings
@@ -119,12 +113,8 @@ export default function Home({ user, isAdmin }) {
   const featuredMag = latestMag || allMagazines[allMagazines.length - 1]
 
   const handleReadIssue = () => {
-    if (user) {
-      if (featuredMag?.id && !featuredMag.id.startsWith('f-')) navigate(`/oku/${featuredMag.id}`)
-      else navigate('/dergiler')
-    } else {
-      navigate('/auth')
-    }
+    const targetId = featuredMag?.id || featuredMag?.issue_number || 1
+    navigate(`/oku/${targetId}`)
   }
 
   // TOC parse yardımcı
@@ -143,8 +133,12 @@ export default function Home({ user, isAdmin }) {
       {/* ── 1. KAYAN MARQUEE ŞERİDİ ─────────────────────────────────────── */}
       <div className="home-topbar-marquee" aria-label="Duyuru şeridi" role="marquee">
         <div className="home-topbar-track">
-          <span className="home-topbar-text">{siteData.hero_marquee || MARQUEE_TEXT}{siteData.hero_marquee || MARQUEE_TEXT}</span>
-          <span className="home-topbar-text" aria-hidden="true">{siteData.hero_marquee || MARQUEE_TEXT}{siteData.hero_marquee || MARQUEE_TEXT}</span>
+          <span className="home-topbar-text">
+            {cleanSparkles(siteData.hero_marquee || MARQUEE_TEXT)} · {cleanSparkles(siteData.hero_marquee || MARQUEE_TEXT)} · 
+          </span>
+          <span className="home-topbar-text" aria-hidden="true">
+            {cleanSparkles(siteData.hero_marquee || MARQUEE_TEXT)} · {cleanSparkles(siteData.hero_marquee || MARQUEE_TEXT)} · 
+          </span>
         </div>
       </div>
 
@@ -160,7 +154,7 @@ export default function Home({ user, isAdmin }) {
             {/* Sol: Metin */}
             <div className="home-hero-text">
               <div className="home-hero-eyebrow">
-                {siteData.hero_eyebrow || 'Çilek Dergisi'}
+                {cleanSparkles(siteData.hero_eyebrow || 'Çilek Dergisi')}
               </div>
               <h1 className="home-hero-title">
                 {siteData.hero_title_line1 || 'Kendi sesini'}<br />
@@ -172,10 +166,10 @@ export default function Home({ user, isAdmin }) {
               </p>
               <div className="home-hero-actions">
                 <button type="button" className="home-btn-primary" onClick={handleReadIssue} id="btn-hero-read-issue">
-                  {settings.hero_cta_text || 'SAYIYI OKU →'}
+                  {cleanSparkles(settings.hero_cta_text) || 'SAYIYI OKU →'}
                 </button>
                 <Link to="/dergiler" className="home-btn-secondary" id="btn-hero-all-issues">
-                  {settings.hero_cta_archive || 'Tüm Sayılar'}
+                  {cleanSparkles(settings.hero_cta_archive) || 'Tüm Sayılar'}
                 </Link>
               </div>
               <p className="home-hero-note">
@@ -367,27 +361,18 @@ export default function Home({ user, isAdmin }) {
               </div>
             </div>
 
-            {/* Alt Mor / Lavanta Bülten Şeridi (Periwinkle Newsletter Pill Bar) */}
+            {/* Alt Mor / Lavanta Şerit — Kayıt Ol */}
             <div className="home-calendar-banner">
               <span className="calendar-banner-text">
-                {newsletterDone
-                  ? 'KAYDINIZ ALINDI! ÇİLEK DÜNYASINA HOŞ GELDİNİZ 🍓'
-                  : 'PSST! YENİ SAYILARI VE EDİTORYAL SEÇKİLERİ KAÇIRMA!'}
+                PSST! YENİ SAYILARI VE EDİTORYAL SEÇKİLERİ KAÇIRMA!
               </span>
-              <form className="calendar-banner-form" onSubmit={handleNewsletterSubmit}>
-                <input
-                  type="email"
-                  className="calendar-banner-input"
-                  placeholder="E-posta adresin..."
-                  value={newsletterEmail}
-                  onChange={(e) => setNewsletterEmail(e.target.value)}
-                  required
-                  aria-label="E-posta ile bültene kaydol"
-                />
-                <button type="submit" className="calendar-banner-btn" id="btn-calendar-newsletter">
-                  KAYIT OL
-                </button>
-              </form>
+              <Link
+                to="/auth?mode=register"
+                className="calendar-banner-btn"
+                id="btn-calendar-register"
+              >
+                KAYIT OL
+              </Link>
             </div>
           </div>
 
@@ -433,35 +418,53 @@ export default function Home({ user, isAdmin }) {
         <section className="home-founder-section" aria-label="Kurucularımızla Tanış">
           <div className="container">
             <div className="home-founder-layout">
-              {/* Sol: Polaroid fotoğraflar (İki Kurucu) */}
+              {/* Sol: İki Kurucu Yan Yana İki Görsel Kartı */}
               <div className="home-founder-photo-wrap" aria-hidden="true">
                 <div className="home-founders-dual-wrap">
-                  {/* Kurucu 1 */}
+                  {/* Kurucu 1: İrsel İnas */}
                   <div className="home-founder-polaroid polaroid-1">
                     {(mediaData.founder_photo || founders[0]?.photo_url) ? (
-                      <img src={mediaData.founder_photo || founders[0]?.photo_url} alt={founders[0]?.name || 'Kurucu Ortak'} className="home-founder-img" />
+                      <img
+                        src={mediaData.founder_photo || founders[0]?.photo_url}
+                        alt={founders[0]?.name || 'İrsel İnas'}
+                        className="home-founder-img"
+                      />
                     ) : (
                       <div className="home-founder-img-fallback">
                         <img src="/icons/cilek-vintage.png" alt="" style={{ width: '55%' }} />
                       </div>
                     )}
-                    <span className="home-founder-polaroid-label">
-                      {founders[0]?.name || settings.about_founder_1_name || 'Genel Yayın Yönetmeni'}
-                    </span>
+                    <div className="home-founder-polaroid-meta">
+                      <strong className="home-founder-polaroid-name">
+                        {founders[0]?.name || settings.about_founder_1_name || 'İrsel İnas'}
+                      </strong>
+                      <span className="home-founder-polaroid-sub">
+                        {founders[0]?.role || settings.about_founder_1_role || 'Genel Yayın Yönetmeni'}
+                      </span>
+                    </div>
                   </div>
 
-                  {/* Kurucu 2 */}
+                  {/* Kurucu 2: Burçak Şirin */}
                   <div className="home-founder-polaroid polaroid-2">
                     {(mediaData.founder_2_photo || settings.about_founder_2_photo_url || founders[1]?.photo_url) ? (
-                      <img src={mediaData.founder_2_photo || settings.about_founder_2_photo_url || founders[1]?.photo_url} alt={founders[1]?.name || 'Kurucu Ortak'} className="home-founder-img" />
+                      <img
+                        src={mediaData.founder_2_photo || settings.about_founder_2_photo_url || founders[1]?.photo_url}
+                        alt={founders[1]?.name || 'Burçak Şirin'}
+                        className="home-founder-img"
+                      />
                     ) : (
                       <div className="home-founder-img-fallback">
                         <img src="/icons/icon2.png" alt="" style={{ width: '55%' }} />
                       </div>
                     )}
-                    <span className="home-founder-polaroid-label">
-                      {founders[1]?.name || settings.about_founder_2_name || 'Art Director'}
-                    </span>
+                    <div className="home-founder-polaroid-meta">
+                      <strong className="home-founder-polaroid-name">
+                        {founders[1]?.name || settings.about_founder_2_name || 'Burçak Şirin'}
+                      </strong>
+                      <span className="home-founder-polaroid-sub">
+                        {founders[1]?.role || settings.about_founder_2_role || 'Art Director'}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -471,7 +474,7 @@ export default function Home({ user, isAdmin }) {
                 <span className="home-sec-eyebrow">Kurucularımızla Tanış</span>
                 <h2 className="home-sec-title">
                   {settings.about_founder_name || 'Kurucu Ortaklar'}
-                  <span className="home-sec-title-italic"> — Kreatif Vizyon &amp; Sanat Masası</span>
+                  <span className="home-sec-title-italic"> — İrsel İnas &amp; Burçak Şirin</span>
                 </h2>
                 <blockquote className="home-founder-quote">
                   {siteData.about_founder_quote || '“Gençliğin enerjisi, tutkusu ve anlatacak cesur hikâyeleri kalıplara sığmaz! Çilek Dergisi bu bağımsız kıvılcımı birlikte parlatmak için var!”'}
@@ -527,7 +530,7 @@ export default function Home({ user, isAdmin }) {
           </div>
         </section>
 
-        {/* ── 9. ARŞİV BÖLÜMÜ (DİJİTAL RAF KONSEPTİ) ─────────────────── */}
+        {/* ── 9. ARŞİV BÖLÜMÜ (DÜZ DERGİLER SERGİSİ - RAFSIZ) ─────────────────── */}
         <section className="home-archive-section" aria-label="Dergiler Arşivi" id="cilek-arsiv">
           <div className="container">
             <div className="home-archive-header">
@@ -542,58 +545,55 @@ export default function Home({ user, isAdmin }) {
               </Link>
             </div>
 
-            {/* Dijital Cam Raf (Showcase Glass Shelf) */}
-            <div className="home-digital-shelf-wrap">
-              <div className="home-shelf-wood home-shelf-glass">
-                {/* Raftaki Dergi (Tek Dergi Örneği) */}
-                <div className="home-shelf-books home-shelf-books--single">
-                  {allMagazines.slice(0, 1).map((mag) => (
-                    <div
-                      key={mag.id}
-                      className="home-shelf-slot"
-                      style={{ '--book-tilt': '0deg' }}
-                    >
-                      <div
-                        className="shelf-book-stand"
-                        onClick={() => setSelectedMag(mag)}
-                        tabIndex={0}
-                        role="button"
-                        onKeyDown={(e) => e.key === 'Enter' && setSelectedMag(mag)}
-                        aria-label={`${mag.title} incele`}
-                      >
-                        <div className="shelf-book-floor-shadow" />
-                        <div className="shelf-book">
-                          <div className="shelf-book-spine" />
-                          <div className="shelf-book-cover">
-                            {mag.cover_image_url ? (
-                              <img src={mag.cover_image_url} alt={mag.title} className="shelf-cover-img" />
-                            ) : (
-                              <div className="shelf-cover-fallback">
-                                <img src="/icons/cilek-vintage.png" alt="" className="shelf-fallback-icon" />
-                                <strong className="shelf-fallback-brand">ÇİLEK</strong>
-                                <span className="shelf-fallback-issue">Sayı #{mag.issue_number}</span>
-                              </div>
-                            )}
-                            <div className="shelf-book-sheen" />
-                            <div className="shelf-book-ribbon">
-                              <span>YENİ</span>
-                            </div>
-                          </div>
-                          <div className="shelf-hover-actions">
-                            <span className="shelf-btn-read">İNCELE →</span>
-                          </div>
+            {/* Düz Dergiler Izgarası (Raf Yok, Temiz Modern Editoryal Kartlar) */}
+            <div className="home-flat-magazines-grid">
+              {allMagazines
+                .slice()
+                .sort((a, b) => (b.issue_number || 0) - (a.issue_number || 0))
+                .slice(0, 4)
+                .map((mag) => (
+                  <article
+                    key={mag.id}
+                    className="home-flat-mag-card"
+                    onClick={() => navigate(`/oku/${mag.id || mag.issue_number || 1}`)}
+                    tabIndex={0}
+                    role="button"
+                    onKeyDown={(e) => e.key === 'Enter' && navigate(`/oku/${mag.id || mag.issue_number || 1}`)}
+                    aria-label={`${mag.title} oku`}
+                  >
+                    <div className="home-flat-mag-cover-wrap">
+                      {mag.cover_image_url ? (
+                        <img
+                          src={mag.cover_image_url}
+                          alt={mag.title}
+                          className="home-flat-mag-img"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="home-flat-mag-fallback">
+                          <img
+                            src="/icons/ribbon-monogram-logo.svg"
+                            alt="Çilek Dergisi"
+                            className="home-flat-mag-logo"
+                          />
+                          <span className="home-flat-mag-brand">Çilek</span>
+                          {mag.issue_number && (
+                            <span className="home-flat-mag-badge">Sayı #{mag.issue_number}</span>
+                          )}
                         </div>
+                      )}
+                      <div className="home-flat-mag-overlay">
+                        <span className="home-flat-mag-btn">OKU →</span>
                       </div>
                     </div>
-                  ))}
-                </div>
-
-                {/* Cam Raf Ön Pervazı (Yazılar kaldırıldı) */}
-                <div className="bookcase-ledge bookcase-glass-ledge" aria-hidden="true">
-                  <div className="bookcase-ledge-top bookcase-glass-top" />
-                  <div className="bookcase-ledge-front home-shelf-front home-glass-shelf-front" />
-                </div>
-              </div>
+                    <div className="home-flat-mag-info">
+                      <h3 className="home-flat-mag-title">{mag.title}</h3>
+                      {mag.description && (
+                        <p className="home-flat-mag-desc">{mag.description}</p>
+                      )}
+                    </div>
+                  </article>
+                ))}
             </div>
           </div>
         </section>
@@ -602,9 +602,6 @@ export default function Home({ user, isAdmin }) {
 
       <Footer />
 
-      {selectedMag && (
-        <MagazineModal magazine={selectedMag} user={user} onClose={() => setSelectedMag(null)} />
-      )}
       <WelcomePostcardModal isOpen={isWelcomeModalOpen} onClose={() => setIsWelcomeModalOpen(false)} user={user} />
     </div>
   )

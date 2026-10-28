@@ -137,7 +137,13 @@ export function translateAuthError(errMsg) {
     return 'Çok fazla deneme yapıldı. Lütfen biraz bekleyip tekrar deneyin.'
   }
   if (msg.includes('email not confirmed')) {
-    return 'E-posta adresi henüz doğrulanmamış. Lütfen gelen kutunuzu kontrol edin.'
+    return 'E-posta adresiniz henüz doğrulanmamış. Lütfen gelen kutunuzdaki onay linkine tıklayın veya şifrenizi kontrol edin.'
+  }
+  if (msg.includes('signups not allowed') || msg.includes('signup is disabled')) {
+    return 'Kayıt işlemi şu anda geçici olarak kapalıdır.'
+  }
+  if (msg.includes('not authorized') || msg.includes('unauthorized') || msg.includes('access denied')) {
+    return 'Erişim izni bulunamadı. Lütfen giriş bilgilerinizi kontrol edin.'
   }
   return errMsg
 }
