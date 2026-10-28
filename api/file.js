@@ -88,7 +88,19 @@ export async function handleFileRequest(req, res) {
 
     // Akışı istemciye aktar
     if (s3Response.Body) {
-      s3Response.Body.pipe(res)
+      if (typeof s3Response.Body.pipe === 'function' && typeof res.on === 'function') {
+        s3Response.Body.pipe(res)
+      } else if (typeof s3Response.Body.transformToByteArray === 'function') {
+        const bytes = await s3Response.Body.transformToByteArray()
+        const buf = Buffer.from(bytes)
+        if (typeof res.send === 'function') {
+          res.send(buf)
+        } else {
+          res.end(buf)
+        }
+      } else {
+        res.end()
+      }
     } else {
       res.end()
     }
@@ -105,3 +117,4 @@ export async function handleFileRequest(req, res) {
 export default async function handler(req, res) {
   return handleFileRequest(req, res)
 }
+

@@ -55,7 +55,7 @@ Admin panelinden ve PDF okuyucudan dosyalara erişebilmek için bucket'a CORS ku
     "AllowedOrigins": [
       "http://localhost:5173",
       "http://localhost:3000",
-      "https://*.vercel.app",
+      "https://cilek-dergisi-jne4.vercel.app",
       "https://cilekdergisi.com",
       "https://*.cilekdergisi.com"
     ],

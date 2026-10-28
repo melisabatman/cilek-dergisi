@@ -96,6 +96,7 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
   const [pdfPages, setPdfPages] = useState([])
   const [loadingPdf, setLoadingPdf] = useState(Boolean(magazine?.pdf_url))
   const [pdfProgress, setPdfProgress] = useState(0)
+  const [pdfLoadError, setPdfLoadError] = useState(false)
 
   // Arayüz Kontrolleri
   const [isFullscreen, setIsFullscreen] = useState(false)
@@ -107,36 +108,54 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
   const touchStartYRef = useRef(null)
 
   // -------------------------------------------------------------
-  // 1. PDF SAYFALARINI İŞLEME (VPN Gerektirmeyen Güvenli Proxy ile)
+  // 1. PDF SAYFALARINI İŞLEME (ArrayBuffer ile Güvenli & Hızlı Yükleme)
   // -------------------------------------------------------------
   const loadPdfSource = useCallback(async (source, title = null) => {
+    if (!source) {
+      setLoadingPdf(false)
+      setPdfLoadError(true)
+      return
+    }
+
     setLoadingPdf(true)
+    setPdfLoadError(false)
     setPdfProgress(10)
     if (title) setActivePdfTitle(title)
 
-    // Türkiye ve kısıtlı ağlarda r2.dev engelini aşan güvenli URL
-    const safeSource = typeof source === 'string' ? getSafeMediaUrl(source) : source
-
     try {
-      let loadingTask
-      if (typeof safeSource === 'string') {
-        loadingTask = pdfjsLib.getDocument({
-          url: safeSource,
-          cMapUrl: `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version || '4.10.38'}/cmaps/`,
-          cMapPacked: true,
-        })
+      let pdfData = null
+
+      if (typeof source === 'string') {
+        const safeUrl = getSafeMediaUrl(source)
+        try {
+          const resp = await fetch(safeUrl)
+          if (!resp.ok) throw new Error(`Proxy status: ${resp.status}`)
+          const buf = await resp.arrayBuffer()
+          pdfData = new Uint8Array(buf)
+        } catch (fetchErr) {
+          console.warn('Proxy fetch başarısız, doğrudan kaynak deneniyor:', fetchErr)
+          // Doğrudan URL fallback'i
+          const directResp = await fetch(source)
+          if (!directResp.ok) throw new Error(`Direct status: ${directResp.status}`)
+          const buf = await directResp.arrayBuffer()
+          pdfData = new Uint8Array(buf)
+        }
       } else {
-        loadingTask = pdfjsLib.getDocument({
-          data: safeSource,
-          cMapUrl: `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version || '4.10.38'}/cmaps/`,
-          cMapPacked: true,
-        })
+        pdfData = source
       }
+
+      setPdfProgress(30)
+
+      const loadingTask = pdfjsLib.getDocument({
+        data: pdfData,
+        cMapUrl: `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version || '4.10.38'}/cmaps/`,
+        cMapPacked: true,
+      })
 
       const pdfDoc = await loadingTask.promise
       const numPages = pdfDoc.numPages
       setTotalPagesCount(numPages)
-      setPdfProgress(25)
+      setPdfProgress(45)
 
       const page1 = await pdfDoc.getPage(1)
       const naturalViewport = page1.getViewport({ scale: 1.0 })
@@ -157,17 +176,17 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
         canvas.width = viewport.width
         await page.render({ canvasContext: context, viewport }).promise
         renderedUrls.push(canvas.toDataURL('image/jpeg', 0.92))
-        setPdfProgress(Math.round(25 + (i / numPages) * 70))
+        setPdfProgress(Math.round(45 + (i / numPages) * 50))
       }
 
       setPdfPages(renderedUrls)
       setLoadingPdf(false)
+      setPdfLoadError(false)
     } catch (err) {
-      console.warn('PDF yüklenemedi, zengin editoryal dergi sayfalarına geçiliyor:', err)
-      // PDF yüklenemese dahi dergi ASLA kapanmaz, editoryal şablonla flipbook olarak açılır!
+      console.error('PDF yükleme hatası:', err)
       setLoadingPdf(false)
       setPdfPages([])
-      setTotalPagesCount(8)
+      setPdfLoadError(true)
     }
   }, [])
 
@@ -176,7 +195,7 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
       loadPdfSource(magazine.pdf_url)
     } else {
       setLoadingPdf(false)
-      setTotalPagesCount(8)
+      setPdfLoadError(true)
     }
   }, [magazine?.pdf_url, loadPdfSource])
 
@@ -209,30 +228,26 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
   // 2. SAYFA KONTROLLERİ: OKLARA BASINCA ÇEVİRME
   // -------------------------------------------------------------
   const handlePrev = useCallback(() => {
-    if (!flipbookRef.current) return
+    const pf = flipbookRef.current
+    if (!pf) return
     try {
-      flipbookRef.current.flipPrev()
+      pf.flipPrev('top')
     } catch (err) {
       console.warn('flipPrev fallback:', err)
-      const cur = currentPageIndexRef.current
-      if (cur > 0) {
-        flipbookRef.current.flip(cur - 1)
-      }
+      try { pf.turnToPrevPage() } catch {}
     }
   }, [])
 
   const handleNext = useCallback(() => {
-    if (!flipbookRef.current) return
+    const pf = flipbookRef.current
+    if (!pf) return
     try {
-      flipbookRef.current.flipNext()
+      pf.flipNext('top')
     } catch (err) {
       console.warn('flipNext fallback:', err)
-      const cur = currentPageIndexRef.current
-      if (cur < totalPagesCount - 1) {
-        flipbookRef.current.flip(cur + 1)
-      }
+      try { pf.turnToNextPage() } catch {}
     }
-  }, [totalPagesCount])
+  }, [])
 
   // -------------------------------------------------------------
   // 3. FLIPBOOK OLUŞTURMA: ÖN VE ARKA KAPAK TEK, DİĞERLERİ İKİLİ (SPREAD)
@@ -358,6 +373,15 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
         }
       })
 
+      pf.on('changeState', () => {
+        try {
+          const cur = pf.getCurrentPageIndex()
+          if (typeof cur === 'number' && !isNaN(cur)) {
+            setCurrentPageIndex(cur)
+          }
+        } catch {}
+      })
+
       pf.on('init', () => {
         setIsBookReady(true)
         setTotalPagesCount(pf.getPageCount())
@@ -468,7 +492,9 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
   }
 
   const getPageStatusText = () => {
-    if (!isBookReady) return 'Yükleniyor…'
+    if (loadingPdf) return 'Yükleniyor…'
+    if (pdfLoadError) return 'PDF yüklenemedi'
+    if (!isBookReady) return 'Hazırlanıyor…'
     if (currentPageIndex === 0) return 'Ön Kapak'
     if (currentPageIndex >= totalPagesCount - 1) return 'Arka Kapak'
     if (activePages && activePages.length > 1) {
@@ -640,6 +666,32 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
               </div>
               <p>%{pdfProgress}</p>
             </div>
+          ) : pdfLoadError ? (
+            <div className="reader-pdf-error-box">
+              <div className="reader-error-icon">⚠️</div>
+              <h3 className="reader-error-title">PDF Yüklenemedi</h3>
+              <p className="reader-error-desc">Dergi dosyası açılırken bir sorun oluştu.</p>
+              <div className="reader-error-actions">
+                {magazine?.pdf_url && (
+                  <a
+                    href={getSafeMediaUrl(magazine.pdf_url)}
+                    download
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-reader-action-primary"
+                  >
+                    PDF'i İndir
+                  </a>
+                )}
+                <button
+                  type="button"
+                  className="btn-reader-action-secondary"
+                  onClick={() => loadPdfSource(magazine?.pdf_url)}
+                >
+                  Tekrar Dene
+                </button>
+              </div>
+            </div>
           ) : (
             <div
               className="flipbook-mount-wrapper"
@@ -671,7 +723,7 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
           <input
             type="range"
             min="1"
-            max={totalPagesCount}
+            max={Math.max(1, totalPagesCount)}
             value={currentPageIndex + 1}
             onChange={handlePageSliderChange}
             className="reader-minimal-progress-bar"
@@ -696,278 +748,23 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
         onCommentCountChange={setCommentsCount}
       />
 
-      {/* ── GİZLİ ŞABLON SAYFALAR ── */}
+      {/* ── GİZLİ ŞABLON SAYFALAR (SADECE GERÇEK PDF SAYFALARI) ── */}
       <div ref={pagesTemplateRef} style={{ display: 'none' }} aria-hidden="true">
-        {pdfPages.length > 0 ? (
-          pdfPages.map((pageUrl, idx) => (
-            <div
-              key={`pdf-p-${idx}`}
-              className="flip-page-node flip-page-pdf"
-              data-density={idx === 0 || idx === pdfPages.length - 1 ? 'hard' : 'soft'}
-            >
-              <div className="page-paper-sheet pdf-page-clean">
-                <img
-                  src={pageUrl}
-                  alt={`Sayfa ${idx + 1}`}
-                  className="page-pdf-content-img"
-                  loading="lazy"
-                />
-              </div>
+        {pdfPages.map((pageUrl, idx) => (
+          <div
+            key={`pdf-p-${idx}`}
+            className="flip-page-node flip-page-pdf"
+            data-density={idx === 0 || idx === pdfPages.length - 1 ? 'hard' : 'soft'}
+          >
+            <div className="page-paper-sheet pdf-page-clean">
+              <img
+                src={pageUrl}
+                alt={`Sayfa ${idx + 1}`}
+                className="page-pdf-content-img"
+              />
             </div>
-          ))
-        ) : (
-          <>
-            {/* SAYFA 1: ÖN KAPAK */}
-            <div className="flip-page-node page-cover-front" data-density="hard">
-              {magazine?.cover_image_url ? (
-                <div className="page-paper-sheet pdf-page-clean">
-                  <img src={getSafeMediaUrl(magazine.cover_image_url)} alt={magazine.title} className="cover-art-full" />
-                </div>
-              ) : (
-                <div className="page-paper-sheet cover-sheet">
-                  <div className="editorial-cover-layout">
-                    <div className="cover-header-meta">
-                      <span className="cover-badge-season">YAZ 2024 • THE JOURNEY</span>
-                      <span className="cover-badge-price">Koleksiyon Sayısı</span>
-                    </div>
-                    <div className="cover-emblem-wrap">
-                      <img src="/icons/cilek-vintage.png" alt="Çilek" className="cover-strawberry-img" />
-                    </div>
-                    <h1 className="cover-magazine-brand">ÇİLEK</h1>
-                    <span className="cover-brand-subscript">Bağımsız Gençlik &amp; Edebiyat Dergisi</span>
-                    <div className="cover-title-box">
-                      <span className="cover-issue-tag">SAYI #{magazine?.issue_number || '06'}</span>
-                      <h2 className="cover-main-story-title">{magazine?.title || 'Sayı 06 — Başlangıç & Bahar'}</h2>
-                    </div>
-                    <div className="cover-headlines-list">
-                      <div className="cover-headline-item">
-                        <span className="bullet">•</span>
-                        <p><strong>Güneşin Gölgesinde:</strong> Genç yazarların büyüme ve arayış notları</p>
-                      </div>
-                      <div className="cover-headline-item">
-                        <span className="bullet">•</span>
-                        <p><strong>Bağımsız Edebiyat:</strong> 15-25 yaş üreticilerinin kolektif belleği</p>
-                      </div>
-                      <div className="cover-headline-item">
-                        <span className="bullet">•</span>
-                        <p><strong>Özgür Sanat Alanı:</strong> Şiirler, analog seriler ve stüdyo günlükleri</p>
-                      </div>
-                    </div>
-                    <div className="cover-footer-bar">
-                      <div className="cover-barcode">
-                        <div className="barcode-bars" />
-                        <span className="barcode-num">ISSN 2980-1524 • #06</span>
-                      </div>
-                      <span className="cover-price-tag">Özgür &amp; Koleksiyonluk</span>
-                    </div>
-                  </div>
-                  <div className="page-sheet-spine-shadow" />
-                </div>
-              )}
-            </div>
-
-            {/* SAYFA 2: YAYIN KÜNYESİ */}
-            <div className="flip-page-node" data-density="soft">
-              <div className="page-paper-sheet inner-sheet">
-                <div className="colophon-header">
-                  <span className="sheet-kicker">ÇİLEK DERGİSİ BASKI KÜNYESİ</span>
-                  <span className="sheet-edition">EST. 2024 • İSTANBUL</span>
-                </div>
-                <div className="sheet-divider-line" />
-                <div className="colophon-manifesto">
-                  <h3 className="colophon-title">Bağımsız Yayın İlkemiz</h3>
-                  <p>Çilek Dergisi, 15-25 yaş kuşağının sahici, yargısız ve özgün sesini sayfalarında büyütmek amacıyla kurulmuş bağımsız bir editoryal kolektiftir.</p>
-                </div>
-                <div className="colophon-team-grid">
-                  <div className="colophon-role-block"><h4>GENEL YAYIN YÖNETMENİ</h4><p>Çilek Kolektif Masası</p></div>
-                  <div className="colophon-role-block"><h4>ART DIRECTOR &amp; MİZANPAJ</h4><p>Çilek Art Studio</p></div>
-                  <div className="colophon-role-block"><h4>EDEBİYAT &amp; İÇERİK</h4><p>Yazı İşleri Masası</p></div>
-                  <div className="colophon-role-block"><h4>GÖRSEL SANATLAR &amp; FOTOĞRAF</h4><p>Genç Sanatçı Kolektifi</p></div>
-                </div>
-                <div className="colophon-quote-box">
-                  <p>"İyi bir dergi, yalnızca yazanların değil; sayfalarını sevgiyle aralayan herkesin ortak evidir."</p>
-                </div>
-                <div className="colophon-contact-footer">
-                  <p><strong>Yazı Gönderimi:</strong> yazi@cilekdergisi.com</p>
-                  <p><strong>Sosyal:</strong> @cilekdergisi</p>
-                </div>
-                <div className="page-sheet-spine-shadow" />
-                <div className="page-number-folio">2 • ÇİLEK DERGİSİ</div>
-              </div>
-            </div>
-
-            {/* SAYFA 3: İÇİNDEKİLER */}
-            <div className="flip-page-node" data-density="soft">
-              <div className="page-paper-sheet inner-sheet">
-                <div className="colophon-header">
-                  <span className="sheet-kicker">BU SAYIDA NELER VAR?</span>
-                  <span className="sheet-edition">İÇİNDEKİLER</span>
-                </div>
-                <div className="sheet-divider-line" />
-                <h2 className="editorial-sheet-h2">Sayfaların Haritası</h2>
-                <ul className="flip-toc-list">
-                  {(magazine?.toc?.length ? magazine.toc : [
-                    'Güneşin Gölgesinde Kalanlar',
-                    'Bir Yaz Öğledensonrası Notları',
-                    'Deniz Kenarında Bağımsız Edebiyat',
-                    'Mevsim Değişirken İç Dünyamız'
-                  ]).map((item, idx) => (
-                    <li key={idx} className="flip-toc-item">
-                      <div className="toc-left">
-                        <span className="toc-index">0{idx + 1}</span>
-                        <div className="toc-info">
-                          <strong className="toc-title">{item}</strong>
-                          <span className="toc-category">{['Deneme & Anlatı', 'Şiir & Edebiyat', 'Kültür Sanat', 'Fotoğraf Serisi'][idx % 4]}</span>
-                        </div>
-                      </div>
-                      <div className="toc-dots-filler" />
-                      <span className="toc-page-num">s. {idx + 4}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="toc-vignette-box">
-                  <img src="/icons/cilek-vintage.png" alt="Çilek" className="toc-vignette-img" />
-                  <p>Her sayfa bir ses, her ses yeni bir başlangıçtır.</p>
-                </div>
-                <div className="page-sheet-spine-shadow" />
-                <div className="page-number-folio">3 • İÇİNDEKİLER</div>
-              </div>
-            </div>
-
-            {/* SAYFA 4: EDİTÖRÜN NOTU */}
-            <div className="flip-page-node" data-density="soft">
-              <div className="page-paper-sheet inner-sheet">
-                <div className="colophon-header">
-                  <span className="sheet-kicker">EDİTÖRÜN MASASINDAN</span>
-                  <span className="sheet-edition">BİR BAŞLANGIÇ CÜMLESİ</span>
-                </div>
-                <div className="sheet-divider-line" />
-                <h2 className="editorial-sheet-h2">Sevgili Okur,</h2>
-                <p className="editorial-sheet-lead">
-                  Kendi sesini bulmak, belki de hayatın en sessiz ve en cesur yolculuğudur.
-                </p>
-                <div className="editorial-sheet-text-cols">
-                  <p>{magazine?.description || 'Çilek Dergisi, hiçbir kalıba sığmak zorunda hissetmeyen, kendi ritminde yazıp çizen insanların ortak sığınağıdır.'}</p>
-                  <p>15-25 yaş arası büyüme sancılarını, ilk dizelerin heyecanını ve stüdyoda dökülen fırça izlerini bir araya getirdik.</p>
-                </div>
-                <blockquote className="editorial-sheet-blockquote">
-                  <span className="quote-mark">"</span>
-                  <p>Hiçbir hikâye yarım kalmaz; sadece doğru okuyucusunun sayfayı çevirmesini bekler.</p>
-                </blockquote>
-                <div className="editorial-sheet-sign">
-                  <span>With all our love,</span>
-                  <strong>Çilek Dergisi Yayın Kurulu 🍓</strong>
-                </div>
-                <div className="page-sheet-spine-shadow" />
-                <div className="page-number-folio">4 • EDİTÖRÜN NOTU</div>
-              </div>
-            </div>
-
-            {/* SAYFA 5: EDEBİ ANLATI */}
-            <div className="flip-page-node" data-density="soft">
-              <div className="page-paper-sheet inner-sheet">
-                <div className="colophon-header">
-                  <span className="sheet-kicker">EDEBİYAT &amp; ANLATI</span>
-                  <span className="sheet-edition">ÖZGÜN SESLER</span>
-                </div>
-                <div className="sheet-divider-line" />
-                <h2 className="editorial-sheet-h2">Güneşin Gölgesinde Kalanlar</h2>
-                <span className="editorial-byline">Yazan: Genç Yazarlar Kolektifi</span>
-                <div className="editorial-article-body">
-                  <p className="article-dropcap-para">
-                    <span className="dropcap">K</span>elimeler bazen bir kentin sokaklarında yankılanır, bazen de bir odanın sessizliğinde kaybolur. Bu sayıda, bizi biz yapan detayları konuştuk.
-                  </p>
-                  <p>Pencerelerden içeri süzülen öğleden sonra ışığı gibi; bazen tek bir satır, günlerce zihnimizde bir melodi gibi dolanır.</p>
-                  <p>Kendi alanını kurmak ve kalıplara inat üretmek... Çilek Dergisi'nin her sayfasında bu özgürlüğün ayak izlerini arıyoruz.</p>
-                </div>
-                <div className="page-sheet-spine-shadow" />
-                <div className="page-number-folio">5 • ANLATI</div>
-              </div>
-            </div>
-
-            {/* SAYFA 6: ŞİİR */}
-            <div className="flip-page-node" data-density="soft">
-              <div className="page-paper-sheet inner-sheet">
-                <div className="colophon-header">
-                  <span className="sheet-kicker">ŞİİR &amp; GÖRSEL DİL</span>
-                  <span className="sheet-edition">GALERİ ALANI</span>
-                </div>
-                <div className="sheet-divider-line" />
-                <div className="poetry-spread-card">
-                  <div className="poem-polaroid-frame">
-                    <img src="/icons/cilek-vintage.png" alt="Sanat" className="poem-art-icon" />
-                    <span className="poem-polaroid-caption">Stüdyo Notları, No: 4</span>
-                  </div>
-                  <div className="poem-content-wrap">
-                    <h3 className="poem-title">Sözcüklerin Bahçesi</h3>
-                    <div className="poem-stanzas">
-                      <p>Bir yaprağın düşüşü gibi sessiz,<br />Bir çileğin kokusunda saklı yaz.<br />Adını bilmediğimiz yollardan geçtik,<br />Kelimeler bize yurt oldu bu gece.</p>
-                      <p>Korkmadan açılan defterler,<br />Mürekkebin kağıda fısıldadığı cesaret.<br />Biz buradayız, bir aradayız,<br />Sayfaların sıcak sığınağında.</p>
-                    </div>
-                    <span className="poem-author">— Çilek Şiir İnisiyatifi</span>
-                  </div>
-                </div>
-                <div className="page-sheet-spine-shadow" />
-                <div className="page-number-folio">6 • ŞİİR &amp; SANAT</div>
-              </div>
-            </div>
-
-            {/* SAYFA 7: RÖPORTAJ */}
-            <div className="flip-page-node" data-density="soft">
-              <div className="page-paper-sheet inner-sheet">
-                <div className="colophon-header">
-                  <span className="sheet-kicker">RÖPORTAJ &amp; PERSPEKTİF</span>
-                  <span className="sheet-edition">15-25 ÜRETİM MANİFESTOSU</span>
-                </div>
-                <div className="sheet-divider-line" />
-                <h2 className="editorial-sheet-h2">Genç Üretim Alanı</h2>
-                <div className="interview-qa-block">
-                  <div className="qa-item">
-                    <span className="qa-q">Soru: Bağımsız bir dergide üretmek nasıl hissettiriyor?</span>
-                    <p className="qa-a">"Hiçbir ticari kaygı olmadan, doğrudan kendi yaşdaşlarına hitap etmek paha biçilmez bir özgürlük."</p>
-                  </div>
-                  <div className="qa-item">
-                    <span className="qa-q">Soru: Genç yazarlara tavsiyeniz nedir?</span>
-                    <p className="qa-a">"Mükemmel olmayı beklemeyin. İlk taslaklarınızı saklamayın. Çilek bu ilk adımları karşılamak için var."</p>
-                  </div>
-                </div>
-                <div className="submission-callout-mini">
-                  <strong>Sen de Eserini Bize Gönder!</strong>
-                  <p>Deneme, şiir, kültür incelemesi ve fotoğraf serilerini bir sonraki sayımız için bekliyoruz.</p>
-                </div>
-                <div className="page-sheet-spine-shadow" />
-                <div className="page-number-folio">7 • PERSPEKTİF</div>
-              </div>
-            </div>
-
-            {/* SAYFA 8: ARKA KAPAK */}
-            <div className="flip-page-node page-cover-back" data-density="hard">
-              <div className="page-paper-sheet back-cover-sheet">
-                <div className="back-cover-layout">
-                  <div className="back-cover-emblem">
-                    <img src="/icons/cilek-vintage.png" alt="Çilek" className="back-strawberry-img" />
-                  </div>
-                  <h2 className="back-cover-title">ÇİLEK DERGİSİ</h2>
-                  <p className="back-cover-motto">"To Read Forever, To Feel Together."</p>
-                  <div className="back-cover-features">
-                    <span>15-25 Yaş Bağımsız Yayın</span>
-                    <span>Koleksiyonluk Sanat &amp; Edebiyat</span>
-                    <span>Sahici Genç Anlatılar</span>
-                  </div>
-                  <div className="back-cover-barcode-box">
-                    <div className="barcode-bars" />
-                    <span className="barcode-num">ISSN 2980-1524 • Sayı 06</span>
-                    <span className="barcode-info">cilekdergisi.com • @cilekdergisi</span>
-                  </div>
-                  <div className="back-cover-closing-note">
-                    Bir sonraki sayıda yeni sayfalarla buluşmak dileğiyle 💌
-                  </div>
-                </div>
-                <div className="page-sheet-spine-shadow" />
-              </div>
-            </div>
-          </>
-        )}
+          </div>
+        ))}
       </div>
 
     </div>
