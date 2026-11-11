@@ -4789,9 +4789,9 @@ button {
 
 .reader-stage-container.modern-stage .cilek-flipbook-host {
   margin: 0 auto;
-  box-shadow: 0 16px 50px rgba(61, 39, 48, 0.2) !important;
+  box-shadow: none !important;
   border-radius: 4px;
-  background: #FFFFFF;
+  background: transparent !important;
 }
 
 /* ── Alt Minimal İlerleme Çubuğu (Görseldeki İnce Çizgi) ── */
@@ -4913,9 +4913,43 @@ button {
 
 .cilek-flipbook-host {
   margin: 0 auto;
-  box-shadow: 0 10px 40px rgba(61, 39, 48, 0.18) !important;
+  box-shadow: none !important;
   border-radius: 4px;
+  background: transparent !important;
+}
+
+.cilek-flipbook-host .stf__item {
+  box-shadow: 0 10px 40px rgba(61, 39, 48, 0.18) !important;
   background: #FFFFFF;
+}
+
+/* PageFlip showCover modunda aktif olmayan/gizli sayfaların beyaz taşmasını engelle */
+.cilek-flipbook-host .stf__item[style*="display: none"],
+.cilek-flipbook-host .stf__item.--hidden {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  box-shadow: none !important;
+}
+
+/* ── Sitede Kalan Dergi Modal Katmanı (Arka Taraf Flulaşır) ── */
+.reader-site-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(26, 10, 14, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: readerModalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes readerModalFadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 /* Temiz PDF Sayfa Şablonu (Kullanıcının yüklediği belgeyi olduğu gibi göstermek için) */
@@ -6404,8 +6438,6 @@ button {
   /* PageFlip kütüphanesinin iç elemanlarını mobilde tam ortala */
   .cilek-flipbook-host .stf__parent {
     margin: 0 auto !important;
-    width: 100% !important;
-    max-width: 100% !important;
   }
 
   .cilek-flipbook-host .stf__wrapper {

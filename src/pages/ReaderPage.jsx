@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { getSafeMediaUrl } from '../lib/r2'
 import MagazineReader from '../components/MagazineReader'
 
 const FALLBACK_MAGAZINES = [
@@ -114,7 +115,11 @@ export default function ReaderPage({ user, isAdmin }) {
         const { data, error } = await query.maybeSingle()
 
         if (!error && data) {
-          setMagazine(data)
+          setMagazine({
+            ...data,
+            cover_image_url: getSafeMediaUrl(data.cover_image_url),
+            pdf_url: getSafeMediaUrl(data.pdf_url)
+          })
         } else {
           // Fallback kontrolü: id veya issue_number eşleştirmesi
           const found = FALLBACK_MAGAZINES.find(

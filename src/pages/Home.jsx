@@ -5,6 +5,8 @@ import Footer from '../components/Footer'
 import WelcomePostcardModal from '../components/WelcomePostcardModal'
 import { supabase } from '../lib/supabase'
 import { useSiteContent } from '../lib/siteContent'
+import { getSafeMediaUrl } from '../lib/r2'
+import MagazineReader from '../components/MagazineReader'
 
 // ─── Fallback dergi verisi ────────────────────────────────────────────────────
 const FEATURED_FALLBACKS = [
@@ -55,6 +57,7 @@ export default function Home({ user, isAdmin }) {
   const [allMagazines, setAllMagazines] = useState(FEATURED_FALLBACKS)
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false)
   const [latestMag, setLatestMag] = useState(null)
+  const [openReaderMag, setOpenReaderMag] = useState(null)
   const [teamMembers, setTeamMembers] = useState(TEAM_FALLBACK)
   const [founders, setFounders] = useState(TEAM_FALLBACK.slice(0, 2))
   const [founder, setFounder] = useState(TEAM_FALLBACK[0])
@@ -76,7 +79,12 @@ export default function Home({ user, isAdmin }) {
     supabase.from('magazines').select('*').order('issue_number', { ascending: true })
       .then(({ data, error }) => {
         if (!error && data && data.length > 0) {
-          const mapped = data.map(m => ({ ...m, month_name: m.published_date ? TR_MONTHS[new Date(m.published_date).getMonth()] : '' }))
+          const mapped = data.map(m => ({
+            ...m,
+            cover_image_url: getSafeMediaUrl(m.cover_image_url),
+            pdf_url: getSafeMediaUrl(m.pdf_url),
+            month_name: m.published_date ? TR_MONTHS[new Date(m.published_date).getMonth()] : ''
+          }))
           setAllMagazines(mapped)
           setLatestMag(mapped[mapped.length - 1])
         } else {
@@ -113,8 +121,9 @@ export default function Home({ user, isAdmin }) {
   const featuredMag = latestMag || allMagazines[allMagazines.length - 1]
 
   const handleReadIssue = () => {
-    const targetId = featuredMag?.id || featuredMag?.issue_number || 1
-    navigate(`/oku/${targetId}`)
+    if (featuredMag) {
+      setOpenReaderMag(featuredMag)
+    }
   }
 
   // TOC parse yardımcı
@@ -181,8 +190,16 @@ export default function Home({ user, isAdmin }) {
             </div>
 
             {/* Sağ: Kapak görseli */}
-            <div className="home-hero-visual" aria-hidden="true">
-              <div className="home-cover-stage">
+            <div className="home-hero-visual">
+              <div
+                className="home-cover-stage"
+                onClick={handleReadIssue}
+                style={{ cursor: 'pointer' }}
+                title="Sayıyı Oku"
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && handleReadIssue()}
+              >
                 <div className="home-cover-shadow" />
                 <div className="home-cover-frame">
                   {featuredMag?.cover_image_url ? (
@@ -555,10 +572,10 @@ export default function Home({ user, isAdmin }) {
                   <article
                     key={mag.id}
                     className="home-flat-mag-card"
-                    onClick={() => navigate(`/oku/${mag.id || mag.issue_number || 1}`)}
+                    onClick={() => setOpenReaderMag(mag)}
                     tabIndex={0}
                     role="button"
-                    onKeyDown={(e) => e.key === 'Enter' && navigate(`/oku/${mag.id || mag.issue_number || 1}`)}
+                    onKeyDown={(e) => e.key === 'Enter' && setOpenReaderMag(mag)}
                     aria-label={`${mag.title} oku`}
                   >
                     <div className="home-flat-mag-cover-wrap">
@@ -603,6 +620,18 @@ export default function Home({ user, isAdmin }) {
       <Footer />
 
       <WelcomePostcardModal isOpen={isWelcomeModalOpen} onClose={() => setIsWelcomeModalOpen(false)} user={user} />
+
+      {/* ── SAYFA İÇİ DERGİ OKUYUCU MODALI (FLIPBOOK SİTEDE KALIR) ── */}
+      {openReaderMag && (
+        <div className="reader-site-modal-overlay">
+          <MagazineReader
+            magazine={openReaderMag}
+            user={user}
+            isAdmin={isAdmin}
+            onClose={() => setOpenReaderMag(null)}
+          />
+        </div>
+      )}
     </div>
   )
 }

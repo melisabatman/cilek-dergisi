@@ -309,17 +309,13 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
     bookWrapper.style.height = `${pageHeight}px`
     mountEl.appendChild(bookWrapper)
 
-    const clonedItems = templateItems.map((item, idx) => {
+    const clonedItems = templateItems.map((item) => {
       const clone = item.cloneNode(true)
       clone.style.display = 'block'
       clone.style.width = `${pageWidth}px`
       clone.style.height = `${pageHeight}px`
-      // Ön kapak (idx=0) ve arka kapak sert kapak, iç sayfalar yumuşak katlama
-      if (idx === 0 || idx === templateItems.length - 1) {
-        clone.setAttribute('data-density', 'hard')
-      } else {
-        clone.setAttribute('data-density', 'soft')
-      }
+      // Gerçekçi kuşe kağıt dergi kıvrımı için soft sayfa yoğunluğu
+      clone.setAttribute('data-density', 'soft')
       return clone
     })
 
@@ -344,10 +340,37 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
       mobileScrollSupport: true,
       useMouseEvents: true,
       disableFlipByClick: false,
+      clickEventForward: true,
       swipeDistance: 15,
       flippingTime: isMobile ? 420 : 550,
       showPageCorners: true,
       maxShadowOpacity: 0.35,
+    })
+
+    // Derginin üzerine tıklandığında yaprak çevirme (Flipbook Click-to-Flip)
+    bookWrapper.addEventListener('click', (e) => {
+      if (e.target.closest('button') || e.target.closest('a')) return
+      const pfInstance = flipbookRef.current
+      if (!pfInstance) return
+      try {
+        if (pfInstance.getState() === 'flipping') return
+      } catch {}
+
+      const rect = bookWrapper.getBoundingClientRect()
+      const clickX = e.clientX - rect.left
+      const cur = currentPageIndexRef.current
+
+      if (cur === 0) {
+        handleNext()
+      } else if (cur >= clonedItems.length - 1) {
+        handlePrev()
+      } else {
+        if (clickX >= rect.width / 2) {
+          handleNext()
+        } else {
+          handlePrev()
+        }
+      }
     })
 
     try {
