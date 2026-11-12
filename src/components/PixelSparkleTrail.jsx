@@ -31,26 +31,36 @@ export default function PixelSparkleTrail() {
     let lastTime = 0
     let animId
 
-    // 4-noktalı pixel yıldız çizimi
+    // 5-kanatlı pixel yıldız (★) çizimi
     const drawPixelStar = (context, x, y, size, color, alpha) => {
       context.save()
       context.globalAlpha = Math.max(0, Math.min(1, alpha))
       context.fillStyle = color
       const s = Math.max(1, Math.round(size))
+      const px = Math.round(x)
+      const py = Math.round(y)
 
-      // Merkez piksel
-      context.fillRect(Math.round(x), Math.round(y), s, s)
-      // Dikey ve yatay pixel kollar (✦ şekli)
-      context.fillRect(Math.round(x - s), Math.round(y), s, s)
-      context.fillRect(Math.round(x + s), Math.round(y), s, s)
-      context.fillRect(Math.round(x), Math.round(y - s), s, s)
-      context.fillRect(Math.round(x), Math.round(y + s), s, s)
+      // Merkez gövde
+      context.fillRect(px - s, py - s, s * 2, s * 2)
 
-      // Beyaz çekirdek
-      if (s >= 2) {
-        context.fillStyle = '#FFFFFF'
-        context.fillRect(Math.round(x), Math.round(y), s, s)
-      }
+      // 1. Üst kanat (tepe noktası)
+      context.fillRect(px, Math.round(py - s * 2.2), s, Math.round(s * 1.4))
+
+      // 2. Sol üst kanat
+      context.fillRect(Math.round(px - s * 2.2), Math.round(py - s * 0.5), Math.round(s * 1.4), s)
+
+      // 3. Sağ üst kanat
+      context.fillRect(Math.round(px + s * 1.0), Math.round(py - s * 0.5), Math.round(s * 1.4), s)
+
+      // 4. Sol alt kanat
+      context.fillRect(Math.round(px - s * 1.6), Math.round(py + s * 1.2), Math.round(s * 1.1), Math.round(s * 1.1))
+
+      // 5. Sağ alt kanat
+      context.fillRect(Math.round(px + s * 0.7), Math.round(py + s * 1.2), Math.round(s * 1.1), Math.round(s * 1.1))
+
+      // Beyaz kıvılcım çekirdeği
+      context.fillStyle = '#FFFFFF'
+      context.fillRect(px, py, s, s)
       context.restore()
     }
 
@@ -122,3 +132,4 @@ export default function PixelSparkleTrail() {
     />
   )
 }
+
