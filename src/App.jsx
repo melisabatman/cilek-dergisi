@@ -10,6 +10,7 @@ import Iletisim   from './pages/Iletisim'
 import Auth       from './pages/Auth'
 import Admin      from './pages/Admin'
 import ReaderPage from './pages/ReaderPage'
+import PixelSparkleTrail from './components/PixelSparkleTrail'
 
 export default function App() {
   const [user, setUser] = useState(undefined) // undefined = loading, null = unauthenticated
@@ -45,6 +46,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <PixelSparkleTrail />
       <Routes>
         <Route path="/"           element={<Home       user={user} isAdmin={isAdmin} />} />
         <Route path="/dergiler"   element={<Dergiler   user={user} isAdmin={isAdmin} />} />

@@ -65,7 +65,6 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
   const bookStageRef = useRef(null)
   const viewportRef = useRef(null)
   const bookMountRef = useRef(null)
-  const pagesTemplateRef = useRef(null)
   const flipbookRef = useRef(null)
 
   // Durumlar
@@ -250,17 +249,14 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
   }, [])
 
   // -------------------------------------------------------------
-  // 3. FLIPBOOK OLUŞTURMA: ÖN VE ARKA KAPAK TEK, DİĞERLERİ İKİLİ (SPREAD)
+  // 3. FLIPBOOK OLUŞTURMA: GERÇEKÇİ KUŞE KAĞIT DERGİ KIVRILMA EFEKTİ (CANVAS 2D)
   // -------------------------------------------------------------
   const initFlipbook = useCallback(() => {
     const mountEl = bookMountRef.current
     const viewportEl = viewportRef.current
-    const templateEl = pagesTemplateRef.current
 
-    if (!mountEl || !viewportEl || !templateEl) return
-
-    const templateItems = Array.from(templateEl.querySelectorAll('.flip-page-node'))
-    if (templateItems.length === 0) return
+    if (!mountEl || !viewportEl) return
+    if (!pdfPages || pdfPages.length === 0) return
 
     const isMobile = getIsMobile()
     setIsMobileMode(isMobile)
@@ -276,8 +272,8 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
 
     // Kullanılabilir alan (Oklar ve araç çubuğu dışarıda)
     const viewportRect = viewportEl.getBoundingClientRect()
-    const paddingX = isMobile ? 16 : 80
-    const paddingY = isMobile ? 16 : 36
+    const paddingX = isMobile ? 12 : 72
+    const paddingY = isMobile ? 16 : 32
 
     const availableWidth = Math.max(120, (viewportRect.width || window.innerWidth) - paddingX * 2)
     const availableHeight = Math.max(120, (viewportRect.height || (window.innerHeight - 100)) - paddingY * 2)
@@ -309,23 +305,21 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
     bookWrapper.style.height = `${pageHeight}px`
     mountEl.appendChild(bookWrapper)
 
-    const clonedItems = templateItems.map((item) => {
-      const clone = item.cloneNode(true)
-      clone.style.display = 'block'
-      clone.style.width = `${pageWidth}px`
-      clone.style.height = `${pageHeight}px`
-      // Gerçekçi kuşe kağıt dergi kıvrımı için soft sayfa yoğunluğu
-      clone.setAttribute('data-density', 'soft')
-      return clone
-    })
-
     const targetStartPage = Math.min(
       currentPageIndexRef.current || 0,
-      Math.max(0, clonedItems.length - 1)
+      Math.max(0, pdfPages.length - 1)
     )
 
+    // showCover: true modunda ön kapağın tekli, iç sayfaların ikili, arka kapağın tekli olması için:
+    let pagesToLoad = [...pdfPages]
+    if (pagesToLoad.length > 1 && pagesToLoad.length % 2 !== 0) {
+      // Çift sayıya tamamlayarak arka kapağın daima tek sayfa kapanmasını sağla
+      pagesToLoad.push(pagesToLoad[pagesToLoad.length - 1])
+    }
+
     // STPAGEFLIP YAPILANDIRMASI:
-    // showCover: true -> Ön kapak tek sayfa, iç sayfalar 2'li yan yana, arka kapak tek sayfa kapanır!
+    // loadFromImages ile Canvas 2D motoru kullanılır.
+    // Sert kitap kapağı (rotateY) yerine gerçek dergi gibi esneyen, kıvrılan ve gölgeli yaprak çevirme animasyonu!
     const pf = new PageFlip(bookWrapper, {
       width: pageWidth,
       height: pageHeight,
@@ -338,43 +332,39 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
       showCover: true, // ÖN VE ARKA KAPAK TEK, DİĞERLERİ İKİLİ!
       usePortrait: useSinglePage,
       mobileScrollSupport: true,
-      useMouseEvents: true,
-      disableFlipByClick: false,
+      useMouseEvents: true, // Fare ile tutup kıvırma/katlama desteği
+      disableFlipByClick: false, // Sayfa köşesine/kenarına tıklayınca da çevrilsin
       clickEventForward: true,
       swipeDistance: 15,
-      flippingTime: isMobile ? 420 : 550,
-      showPageCorners: true,
-      maxShadowOpacity: 0.35,
-    })
-
-    // Derginin üzerine tıklandığında yaprak çevirme (Flipbook Click-to-Flip)
-    bookWrapper.addEventListener('click', (e) => {
-      if (e.target.closest('button') || e.target.closest('a')) return
-      const pfInstance = flipbookRef.current
-      if (!pfInstance) return
-      try {
-        if (pfInstance.getState() === 'flipping') return
-      } catch {}
-
-      const rect = bookWrapper.getBoundingClientRect()
-      const clickX = e.clientX - rect.left
-      const cur = currentPageIndexRef.current
-
-      if (cur === 0) {
-        handleNext()
-      } else if (cur >= clonedItems.length - 1) {
-        handlePrev()
-      } else {
-        if (clickX >= rect.width / 2) {
-          handleNext()
-        } else {
-          handlePrev()
-        }
-      }
+      flippingTime: isMobile ? 480 : 650, // Gerçekçi akıcı dergi yaprağı çevirme süresi
+      showPageCorners: true, // Köşeleri fare yaklaşınca hafifçe kaldırıp kıvırır
+      maxShadowOpacity: 0.55, // Zengin dergi gölgeleri
+      drawShadow: true,
     })
 
     try {
-      pf.loadFromHTML(clonedItems)
+      // Canvas 2D görsel yükleme
+      pf.loadFromImages(pagesToLoad)
+
+      // Tüm sayfaların soft density olmasını ve ImagePage'lerin isLoad bayrağını güvenceye al
+      const collection = pf.getPageCollection()
+      if (collection) {
+        const pages = collection.getPages()
+        pages.forEach((p) => {
+          try { p.setDensity('soft') } catch {}
+          try { p.setDrawingDensity('soft') } catch {}
+          if (p.image) {
+            if (p.image.complete) {
+              p.isLoad = true
+            } else {
+              p.image.addEventListener('load', () => {
+                p.isLoad = true
+                try { pf.getRender().update() } catch {}
+              })
+            }
+          }
+        })
+      }
 
       pf.on('flip', (e) => {
         const pIndex = Number(e.data) || 0
@@ -410,6 +400,16 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
         setTotalPagesCount(pf.getPageCount())
         setCurrentPageIndex(targetStartPage)
         try {
+          const pages = pf.getPageCollection().getPages()
+          pages.forEach((p) => {
+            try { p.setDensity('soft') } catch {}
+            try { p.setDrawingDensity('soft') } catch {}
+            if (p.image && p.image.complete) p.isLoad = true
+          })
+          pf.getRender().update()
+        } catch {}
+
+        try {
           const pageCollection = pf.getPageCollection()
           const currentSpreadIndex = pageCollection.getCurrentSpreadIndex()
           const spreads = pageCollection.getSpread()
@@ -428,7 +428,7 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
     } catch (err) {
       console.error('Flipbook load error:', err)
     }
-  }, [pdfMeta.width, pdfMeta.height])
+  }, [pdfMeta.width, pdfMeta.height, pdfPages])
 
   useEffect(() => {
     if (loadingPdf) return
@@ -770,25 +770,6 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
         onClose={() => setIsCommentsOpen(false)}
         onCommentCountChange={setCommentsCount}
       />
-
-      {/* ── GİZLİ ŞABLON SAYFALAR (SADECE GERÇEK PDF SAYFALARI) ── */}
-      <div ref={pagesTemplateRef} style={{ display: 'none' }} aria-hidden="true">
-        {pdfPages.map((pageUrl, idx) => (
-          <div
-            key={`pdf-p-${idx}`}
-            className="flip-page-node flip-page-pdf"
-            data-density={idx === 0 || idx === pdfPages.length - 1 ? 'hard' : 'soft'}
-          >
-            <div className="page-paper-sheet pdf-page-clean">
-              <img
-                src={pageUrl}
-                alt={`Sayfa ${idx + 1}`}
-                className="page-pdf-content-img"
-              />
-            </div>
-          </div>
-        ))}
-      </div>
 
     </div>
   )
