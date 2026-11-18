@@ -315,7 +315,7 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
     const naturalHeight = Math.max(1, pdfMeta.height || 297)
 
     // Masaüstünde 2 sayfa yan yana (spread). Mobilde dikey ekranda tek sayfa.
-    const useSinglePage = isMobile && window.innerWidth < 640
+    const useSinglePage = isMobile
     const spreadWidthFactor = useSinglePage ? 1 : 2
 
     // Ölçek: açılmış 2 sayfa yan yana ekrana tam sığsın

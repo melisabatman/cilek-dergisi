@@ -201,6 +201,7 @@ export default function Home({ user, isAdmin }) {
                 </div>
                 <div className="home-cover-sticker home-sticker-1">Yayında!</div>
                 <div className="home-cover-sticker home-sticker-2">Son Sayı</div>
+                <span className="home-cover-mobile-tap-hint">📖 Sayfaları çevirmek için dokun</span>
               </div>
             </div>
           </div>
