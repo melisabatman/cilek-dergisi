@@ -1,11 +1,39 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useSiteContent } from '../lib/siteContent'
-
-const TICKER_TEXT = 'Sayı 06 Yayında · Şimdi Oku · Her Ay Yepyeni Bir Sayı · Bağımsız Gençlik · Çilek Dergisi · Sayı 06 Yayında · Şimdi Oku · Her Ay Yepyeni Bir Sayı · Bağımsız Gençlik · Çilek Dergisi · '
+import { supabase } from '../lib/supabase'
 
 export default function Footer({ showTicker = false }) {
   const { settings } = useSiteContent()
+  const [latestIssueText, setLatestIssueText] = useState('Yeni Sayı Yayında')
+
+  useEffect(() => {
+    let isMounted = true
+    const fetchLatestIssue = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('magazines')
+          .select('issue_number, title')
+          .order('issue_number', { ascending: false })
+          .limit(1)
+
+        if (!error && data && data.length > 0 && isMounted) {
+          const mag = data[0]
+          const issueLabel = mag.issue_number
+            ? `Sayı ${String(mag.issue_number).padStart(2, '0')}`
+            : (mag.title || 'Yeni Sayı')
+          setLatestIssueText(`${issueLabel} Yayında`)
+        }
+      } catch (e) {
+        console.warn('Footer latest issue fetch error:', e)
+      }
+    }
+    fetchLatestIssue()
+    return () => { isMounted = false }
+  }, [])
+
+  const tickerItem = `${latestIssueText} · Şimdi Oku · Her Ay Yepyeni Bir Sayı · Bağımsız Gençlik · Çilek Dergisi · `
+  const fullTicker = tickerItem.repeat(3)
 
   return (
     <footer className="site-footer-v2" role="contentinfo">
@@ -13,8 +41,8 @@ export default function Footer({ showTicker = false }) {
       {/* ── Kayan Şerit (Footer Üstü) ────────────────────────────────── */}
       <div className="footer-ticker-band" aria-hidden="true">
         <div className="footer-ticker-track">
-          <span className="footer-ticker-text">{TICKER_TEXT}</span>
-          <span className="footer-ticker-text">{TICKER_TEXT}</span>
+          <span className="footer-ticker-text">{fullTicker}</span>
+          <span className="footer-ticker-text">{fullTicker}</span>
         </div>
       </div>
 

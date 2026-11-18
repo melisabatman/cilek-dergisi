@@ -322,9 +322,8 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
     const naturalWidth = Math.max(1, pdfMeta.width || 210)
     const naturalHeight = Math.max(1, pdfMeta.height || 297)
 
-    // Masaüstünde 2 sayfa yan yana (spread). Mobilde dikey ekranda tek sayfa.
-    const useSinglePage = isMobile
-    const spreadWidthFactor = useSinglePage ? 1 : 2
+    // Gerçek kitap modu: Her cihazda 2 sayfa yan yana (spread), ön ve arka kapak tek sayfa, iç sayfalar açık kitap
+    const spreadWidthFactor = 2
 
     // Ölçek: açılmış 2 sayfa yan yana ekrana tam sığsın
     const scale = Math.min(
@@ -351,10 +350,8 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
       clone.style.display = 'block'
       clone.style.width = `${pageWidth}px`
       clone.style.height = `${pageHeight}px`
-      // Mobilde sayfaların köşeden yırtılır/kopuyor gibi görünmesini engellemek için solid kuşe sayfa modu
-      if (isMobile) {
-        clone.setAttribute('data-density', 'hard')
-      } else if (idx === 0 || idx === templateItems.length - 1) {
+      // Ön ve arka kapak kuşe ciltli (hard), iç sayfalar esnek kitap sayfası (soft)
+      if (idx === 0 || idx === templateItems.length - 1) {
         clone.setAttribute('data-density', 'hard')
       } else {
         clone.setAttribute('data-density', 'soft')
@@ -370,8 +367,8 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
     setTotalPagesCount(clonedItems.length)
 
     // STPAGEFLIP YAPILANDIRMASI:
-    // showCover: !isMobile -> Masaüstünde ön ve arka kapak tek sayfa ortalanır, iç sayfalar çiftli.
-    // Mobilde ise showCover: false yapılır; böylece her sayfa tek sayfa akar ve sayfa yarıda kesilmez!
+    // showCover: true -> Ön ve arka kapak tek sayfa ortalanır, iç sayfalar açık kitap gibi çiftli açılır ve çevrilir.
+    // usePortrait: false -> Her zaman kitap modu (spread).
     const pf = new PageFlip(bookWrapper, {
       width: pageWidth,
       height: pageHeight,
@@ -381,16 +378,16 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
       minHeight: pageHeight,
       maxHeight: pageHeight,
       startPage: targetStartPage,
-      showCover: !isMobile,
-      usePortrait: isMobile,
-      mobileScrollSupport: false, // Mobilde dokunmatik yaprak çevirmeyi engellemez
+      showCover: true,
+      usePortrait: false,
+      mobileScrollSupport: false,
       useMouseEvents: true, // Fare ve parmakla tutup kıvırma/katlama desteği
       disableFlipByClick: false, // Kenarlara tıklayarak veya dokunarak sayfa çevirme
       clickEventForward: true,
-      swipeDistance: isMobile ? 24 : 25,
-      flippingTime: isMobile ? 420 : 520, // Akıcı yaprak çevirme süresi
-      showPageCorners: !isMobile, // Mobilde sayfa köşelerinin yırtılmış gibi katlanmasını engelle
-      maxShadowOpacity: isMobile ? 0.22 : 0.42, // Mobilde aşırı koyu kırılma gölgeleri yerine temiz kuşe gölgesi
+      swipeDistance: 20,
+      flippingTime: 480, // Doğal, akıcı yaprak çevirme süresi
+      showPageCorners: true,
+      maxShadowOpacity: 0.35, // Gerçekçi kitap omurga ve yaprak gölgesi
       drawShadow: true,
     })
 
@@ -604,7 +601,7 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
   // Arka kapak sol kanatta olduğundan sağa (+pageWidth/2) kaydırılır -> Arka kapak TAM EKRANIN ORTASINDA TEK SAYFA durur.
   // İç sayfalarda (çift sayfalar) kaydırma 0'dır -> İKİLİ SAYFA TAM MERKEZDE durur.
   let coverMarginLeft = 0
-  if (!isMobileMode && singlePageWidth > 0) {
+  if (singlePageWidth > 0) {
     if (currentPageIndex === 0) {
       coverMarginLeft = -(singlePageWidth / 2)
     } else if (currentPageIndex >= totalPagesCount - 1) {

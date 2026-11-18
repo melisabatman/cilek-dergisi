@@ -74,28 +74,6 @@ export default function Hakkimizda({ user, isAdmin }) {
                 </blockquote>
               )}
             </div>
-
-            {/* Sağ: Görsel süsleme */}
-            <div className="about-v2-story-visual" aria-hidden="true">
-              <div className="about-v2-polaroid about-v2-polaroid-1">
-                <div className="about-v2-polaroid-img">
-                  <img src={settings.about_photo_1_url || '/icons/icon4.png'} alt="" style={{ width: '60%' }} />
-                </div>
-                <span className="about-v2-polaroid-caption">Her sayı bir macera!</span>
-              </div>
-              <div className="about-v2-polaroid about-v2-polaroid-2">
-                <div className="about-v2-polaroid-img">
-                  <img src={settings.about_photo_2_url || '/icons/icon1.png'} alt="" style={{ width: '55%' }} />
-                </div>
-                <span className="about-v2-polaroid-caption">Bağımsız sesler 🍓</span>
-              </div>
-              <div className="about-v2-polaroid about-v2-polaroid-3">
-                <div className="about-v2-polaroid-img">
-                  <img src="/icons/cilek-vintage.png" alt="" style={{ width: '65%' }} />
-                </div>
-                <span className="about-v2-polaroid-caption">EST. 2024</span>
-              </div>
-            </div>
           </div>
         </section>
 
@@ -110,7 +88,7 @@ export default function Hakkimizda({ user, isAdmin }) {
                   <img
                     src={settings.about_founder_photo_url || settings.home_founder_photo_url || '/icons/cilek-vintage.png'}
                     alt="Kurucumuz"
-                    style={{ width: '65%' }}
+                    className="about-v2-founder-full-img"
                   />
                 </div>
                 <span className="about-v2-founder-photo-caption">Genel Yayın Yönetmeni</span>
