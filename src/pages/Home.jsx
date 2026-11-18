@@ -157,8 +157,8 @@ export default function Home({ user, isAdmin }) {
         {/* ── 2. HERO BÖLÜMÜ ─────────────────────────────────────────── */}
         <section className="home-hero-section" aria-label="Hero">
           <div className="home-hero-grid-bg" aria-hidden="true" />
-          <div className="home-hero-shell home-hero-shell-clean">
-            {/* Metin */}
+          <div className="home-hero-shell">
+            {/* Sol: Metin */}
             <div className="home-hero-text">
               <div className="home-hero-eyebrow">
                 {cleanSparkles(siteData.hero_eyebrow || 'Çilek Dergisi')}
@@ -171,6 +171,47 @@ export default function Home({ user, isAdmin }) {
               <p className="home-hero-copy">
                 {settings.hero_subtitle || siteData.hero_copy}
               </p>
+              <div className="home-hero-actions">
+                <button type="button" className="home-btn-primary" onClick={handleReadIssue} id="btn-hero-read-issue">
+                  {cleanSparkles(settings.hero_cta_text) || 'SAYIYI OKU →'}
+                </button>
+                <Link to="/dergiler" className="home-btn-secondary" id="btn-hero-all-issues">
+                  {cleanSparkles(settings.hero_cta_archive) || 'Tüm Sayılar'}
+                </Link>
+              </div>
+              <p className="home-hero-note">
+                <strong className="home-hero-note-strong">
+                  Sayı {currentIssueNum} yayında!
+                </strong>
+                {' '}· Hemen keşfet, sayfaları çevir ve ilhamı yakala!
+              </p>
+            </div>
+
+            {/* Sağ: Kapak görseli */}
+            <div className="home-hero-visual">
+              <div
+                className="home-cover-stage"
+                onClick={handleReadIssue}
+                style={{ cursor: 'pointer' }}
+                title="Sayıyı Oku"
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && handleReadIssue()}
+              >
+                <div className="home-cover-shadow" />
+                <div className="home-cover-frame">
+                  {featuredMag?.cover_image_url ? (
+                    <img src={featuredMag.cover_image_url} alt={`${featuredMag.title} kapak görseli`} className="home-cover-img" />
+                  ) : (
+                    <div className="home-cover-placeholder">
+                      <img src="/icons/cilek-vintage.png" alt="Çilek Dergisi" className="home-cover-placeholder-icon" />
+                      <span className="home-cover-placeholder-label">Çilek Dergisi</span>
+                    </div>
+                  )}
+                </div>
+                <div className="home-cover-sticker home-sticker-1">Yayında!</div>
+                <div className="home-cover-sticker home-sticker-2">Son Sayı</div>
+              </div>
             </div>
           </div>
           <div className="home-hero-wave" aria-hidden="true" />
@@ -288,53 +329,6 @@ export default function Home({ user, isAdmin }) {
             </div>
           </section>
         )}
-
-        {/* ── SON SAYI SERGİSİ (KAPAK + OKUMA VE ARŞİV BUTONLARI) ────── */}
-        <section className="home-featured-magazine-showcase" aria-label="Son Sayıyı Keşfet">
-          <div className="container">
-            <div className="home-showcase-inner">
-              <div
-                className="home-cover-stage"
-                onClick={handleReadIssue}
-                style={{ cursor: 'pointer' }}
-                title="Sayıyı Oku"
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => e.key === 'Enter' && handleReadIssue()}
-              >
-                <div className="home-cover-shadow" />
-                <div className="home-cover-frame">
-                  {featuredMag?.cover_image_url ? (
-                    <img src={featuredMag.cover_image_url} alt={`${featuredMag.title} kapak görseli`} className="home-cover-img" />
-                  ) : (
-                    <div className="home-cover-placeholder">
-                      <img src="/icons/cilek-vintage.png" alt="Çilek Dergisi" className="home-cover-placeholder-icon" />
-                      <span className="home-cover-placeholder-label">Çilek Dergisi</span>
-                    </div>
-                  )}
-                </div>
-                <div className="home-cover-sticker home-sticker-1">Yayında!</div>
-                <div className="home-cover-sticker home-sticker-2">Son Sayı</div>
-              </div>
-
-              <div className="home-showcase-actions">
-                <button type="button" className="home-btn-primary" onClick={handleReadIssue} id="btn-showcase-read-issue">
-                  {cleanSparkles(settings.hero_cta_text) || 'Son Sayıyı Oku →'}
-                </button>
-                <Link to="/dergiler" className="home-btn-secondary" id="btn-showcase-all-issues">
-                  {cleanSparkles(settings.hero_cta_archive) || 'Arşivi İncele →'}
-                </Link>
-              </div>
-
-              <p className="home-showcase-note">
-                <strong className="home-showcase-note-strong">
-                  Sayı {currentIssueNum} yayında!
-                </strong>
-                {' '}· Hemen keşfet, sayfaları çevir ve ilhamı yakala!
-              </p>
-            </div>
-          </div>
-        </section>
 
         {/* ── 8. HAKKIMIZDA ÖZET + DEĞERLER ──────────────────────────── */}
         <section className="home-about-teaser" aria-label="Hakkımızda Özeti">

@@ -676,6 +676,29 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
     return () => clearTimeout(timer)
   }, [loadingPdf, displayPages.length, initFlipbook])
 
+  // Tam ekran veya pencere büyüklüğü değiştiğinde flipbook'u yeniden hesapla ve büyüt
+  useEffect(() => {
+    if (loadingPdf) return
+    const timer = setTimeout(() => {
+      initFlipbook()
+    }, 120)
+    return () => clearTimeout(timer)
+  }, [isFullscreen, loadingPdf, initFlipbook])
+
+  // Tarayıcı yerel tam ekran olayını dinle (Esc ile çıkıldığında durumu senkronize et)
+  useEffect(() => {
+    const handleFsChange = () => {
+      const isFs = Boolean(document.fullscreenElement || document.webkitFullscreenElement)
+      setIsFullscreen(isFs)
+    }
+    document.addEventListener('fullscreenchange', handleFsChange)
+    document.addEventListener('webkitfullscreenchange', handleFsChange)
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFsChange)
+      document.removeEventListener('webkitfullscreenchange', handleFsChange)
+    }
+  }, [])
+
   useEffect(() => {
     let timeoutId
     const handleResize = () => {
@@ -700,7 +723,30 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
     }
   }, [])
 
-  // Klavye ile sayfa çevirme ve kısayollar (+/- zoom, M büyüteç)
+  const toggleFullscreen = useCallback(() => {
+    const isCurrentlyFs = Boolean(document.fullscreenElement || document.webkitFullscreenElement || isFullscreen)
+    if (!isCurrentlyFs) {
+      if (bookStageRef.current?.requestFullscreen) {
+        bookStageRef.current.requestFullscreen().catch(() => {
+          setIsFullscreen(true)
+        })
+      } else if (bookStageRef.current?.webkitRequestFullscreen) {
+        bookStageRef.current.webkitRequestFullscreen()
+      }
+      setIsFullscreen(true)
+    } else {
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {})
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen()
+        }
+      }
+      setIsFullscreen(false)
+    }
+  }, [isFullscreen])
+
+  // Klavye ile sayfa çevirme ve kısayollar (+/- zoom, M büyüteç, F tam ekran)
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return
@@ -710,15 +756,16 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
       else if (e.key === '-' || e.key === '_') { e.preventDefault(); handleZoomOut() }
       else if (e.key === '0') { e.preventDefault(); handleZoomReset() }
       else if (e.key.toLowerCase() === 'm' || e.key.toLowerCase() === 'b') { e.preventDefault(); toggleLoupe() }
+      else if (e.key.toLowerCase() === 'f') { e.preventDefault(); toggleFullscreen() }
       else if (e.key === 'Escape') {
         if (isLoupeActiveRef.current) { toggleLoupe() }
         else if (zoomLevel > 1.0) { handleZoomReset() }
-        else if (isFullscreen) { document.exitFullscreen?.() }
+        else if (isFullscreen) { toggleFullscreen() }
       }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [handleNext, handlePrev, isFullscreen, handleZoomIn, handleZoomOut, handleZoomReset, toggleLoupe, zoomLevel])
+  }, [handleNext, handlePrev, isFullscreen, handleZoomIn, handleZoomOut, handleZoomReset, toggleLoupe, toggleFullscreen, zoomLevel])
 
   // Mobilde Dokunmatik Swipe
   const handleTouchStart = (e) => {
@@ -760,16 +807,6 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
   const handlePageSliderChange = (e) => {
     if (!flipbookRef.current) return
     flipbookRef.current.flip(parseInt(e.target.value, 10) - 1)
-  }
-
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      bookStageRef.current?.requestFullscreen?.()
-      setIsFullscreen(true)
-    } else {
-      document.exitFullscreen?.()
-      setIsFullscreen(false)
-    }
   }
 
   const getPageStatusText = () => {
@@ -875,13 +912,14 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
           </a>
         )}
 
-        {/* Tam Ekran */}
+        {/* Tam Ekran / Ekranı Kapla */}
         <button
           type="button"
-          className="btn-vbar-tool"
+          className={`btn-vbar-tool ${isFullscreen ? 'active' : ''}`}
           onClick={toggleFullscreen}
-          title={isFullscreen ? 'Tam Ekrandan Çık' : 'Tam Ekran'}
-          aria-label="Tam Ekran"
+          title={isFullscreen ? 'Tam Sayfadan Çık (F / Esc)' : 'Ekranı Kapla / Tam Boyut (F)'}
+          aria-label={isFullscreen ? 'Tam Sayfadan Çık' : 'Ekranı Kapla'}
+          id="btn-reader-fullscreen"
         >
           {isFullscreen ? (
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -1108,8 +1146,53 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
           <span className="status-title">{magazine?.title || 'Çilek'}</span>
           <span className="status-separator">·</span>
           <span className="status-pages">{getPageStatusText()}</span>
+          <div className="status-quick-actions">
+            <button
+              type="button"
+              className={`btn-reader-quick-zoom ${zoomLevel > 1.0 ? 'active' : ''}`}
+              onClick={handleZoomIn}
+              disabled={zoomLevel >= 2.25}
+              title="Sayfayı Yakınlaştır (+)"
+              aria-label="Büyüt"
+            >
+              🔍 + Büyüt
+            </button>
+            {zoomLevel > 1.0 && (
+              <button
+                type="button"
+                className="btn-reader-quick-reset"
+                onClick={handleZoomReset}
+                title="Büyütmeyi Sıfırla (%100)"
+                aria-label="Sıfırla"
+              >
+                %{Math.round(zoomLevel * 100)} Sıfırla
+              </button>
+            )}
+            <button
+              type="button"
+              className={`btn-reader-quick-expand ${isFullscreen ? 'active' : ''}`}
+              onClick={toggleFullscreen}
+              title={isFullscreen ? 'Tam Sayfadan Çık (F / Esc)' : 'Ekranı Tam Kapla / Büyüt (F)'}
+              aria-label="Tam Sayfa Kapla"
+            >
+              {isFullscreen ? '✕ Normal Boyut' : '⛶ Tam Sayfa Kapla'}
+            </button>
+          </div>
         </div>
       </footer>
+
+      {/* ── TAM SAYFA MODU ÇIKIŞ BUTONU (Ekranın sağ üstünde belirgin) ── */}
+      {isFullscreen && (
+        <button
+          type="button"
+          className="btn-exit-fullscreen-floating"
+          onClick={toggleFullscreen}
+          title="Tam Sayfadan Çık (F veya Esc)"
+          aria-label="Tam Sayfadan Çık"
+        >
+          ✕ Tam Sayfadan Çık (Esc)
+        </button>
+      )}
 
       {/* ── YORUMLAR ÇEKMECESİ (Yalnızca Modal / Bağımsız Modda) ── */}
       {!embedded && (
