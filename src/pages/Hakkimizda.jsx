@@ -36,21 +36,11 @@ export default function Hakkimizda({ user, isAdmin }) {
         {/* ── 1. Açılış Bölümü ──────────────────────────────────────── */}
         <section className="about-v2-hero" aria-label="Giriş">
           <div className="about-v2-hero-inner container">
-            {/* Dekoratif sol ikon */}
-            <div className="about-v2-deco-left" aria-hidden="true">
-              <img src="/icons/cilek-vintage.png" alt="" />
-            </div>
-
             <div className="about-v2-hero-text">
               <span className="eyebrow-cilek">{settings.about_title || 'Biz Kimiz?'}</span>
               <h1 className="about-v2-opening">
                 {settings.about_opening_quote || 'Gençliğin hayalleri, cesareti ve üretme tutkusu dünyayı değiştirecek güçte!'}
               </h1>
-            </div>
-
-            {/* Dekoratif sağ ikon */}
-            <div className="about-v2-deco-right" aria-hidden="true">
-              <img src="/icons/icon2.png" alt="" />
             </div>
           </div>
         </section>
@@ -109,39 +99,27 @@ export default function Hakkimizda({ user, isAdmin }) {
           </div>
         </section>
 
-        {/* ── 3. Kurucular Bölümü (İki Kurucu Ortak) ──────────────────── */}
-        <section className="about-v2-founder" aria-label="Kurucularımız ile Tanışın">
+        {/* ── 3. Kurucumuz Bölümü ──────────────────── */}
+        <section className="about-v2-founder" aria-label="Kurucumuz ile Tanışın">
           <div className="container about-v2-founder-inner">
 
-            {/* Polaroid kartlar - İki Kurucu */}
+            {/* Polaroid kart - Kurucu */}
             <div className="about-v2-founder-photo-wrap">
-              <div className="about-v2-founders-dual-polaroids">
-                <div className="about-v2-founder-polaroid polaroid-founder-1">
-                  <div className="about-v2-founder-photo">
-                    <img
-                      src={settings.about_founder_photo_url || settings.home_founder_photo_url || '/icons/cilek-vintage.png'}
-                      alt={settings.about_founder_1_name || 'Kurucu Ortak'}
-                      style={{ width: '65%' }}
-                    />
-                  </div>
-                  <span className="about-v2-founder-photo-caption">{settings.about_founder_1_name || 'Genel Yayın Yönetmeni'}</span>
+              <div className="about-v2-founder-polaroid polaroid-founder-single">
+                <div className="about-v2-founder-photo">
+                  <img
+                    src={settings.about_founder_photo_url || settings.home_founder_photo_url || '/icons/cilek-vintage.png'}
+                    alt="Kurucumuz"
+                    style={{ width: '65%' }}
+                  />
                 </div>
-                <div className="about-v2-founder-polaroid polaroid-founder-2">
-                  <div className="about-v2-founder-photo">
-                    <img
-                      src={settings.about_founder_2_photo_url || '/icons/icon2.png'}
-                      alt={settings.about_founder_2_name || 'Kurucu Ortak'}
-                      style={{ width: '65%' }}
-                    />
-                  </div>
-                  <span className="about-v2-founder-photo-caption">{settings.about_founder_2_name || 'Art Director'}</span>
-                </div>
+                <span className="about-v2-founder-photo-caption">Genel Yayın Yönetmeni</span>
               </div>
             </div>
 
             {/* Metin */}
             <div className="about-v2-founder-text">
-              <span className="eyebrow-cilek">Kurucularımızla Tanışın</span>
+              <span className="eyebrow-cilek">Kurucumuzla Tanışın</span>
               <h2 className="heading-cilek">
                 Neden<span className="italic"> Çilek'i kurduk?</span>
               </h2>

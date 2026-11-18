@@ -357,16 +357,13 @@ export default function Home({ user, isAdmin }) {
         <section className="home-about-teaser" aria-label="Hakkımızda Özeti">
           <div className="container">
             <div className="home-about-inner">
-              <div className="home-about-deco" aria-hidden="true">
-                <img src="/icons/cilek-vintage.png" alt="" className="home-about-deco-img" />
-              </div>
               <div className="home-about-content">
                 <span className="home-sec-eyebrow">Biz Kimiz?</span>
                 <h2 className="home-sec-title">
                   Çilek Dergisi<span className="home-sec-title-italic">'nin Hikâyesi</span>
                 </h2>
                 <p className="home-about-text">
-                  <strong>Çilek Dergisi</strong>, gençliğin sınır tanımayan hayal gücünü, dinamik ritmini ve cesur sesini tek bir çatı altında buluşturmak için doğdu! İki kurucu olarak, basılı bir fanzinin tutkusunu dijitalin sınırsız enerjisiyle harmanlıyoruz.
+                  <strong>Çilek Dergisi</strong>, gençliğin sınır tanımayan hayal gücünü, dinamik ritmini ve cesur sesini tek bir çatı altında buluşturmak için doğdu! Basılı bir fanzinin tutkusunu dijitalin sınırsız enerjisiyle harmanlıyoruz.
                 </p>
                 <p className="home-about-text">
                   Edebiyat, sanat, özgün denemeler, cesur şiirler ve bağımsız görsel kültür… Burası kalıplara sığmayan, üretmekten ve kendini ifade etmekten heyecan duyan tüm gençlerin ilham dolu üretim sahnesi!

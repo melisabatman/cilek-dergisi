@@ -734,14 +734,9 @@ button {
 }
 
 @keyframes float-freely {
-
   0%,
   100% {
-    transform: translateY(0) rotate(0deg);
-  }
-
-  50% {
-    transform: translateY(-12px) rotate(2.5deg);
+    transform: none;
   }
 }
 
@@ -5031,8 +5026,15 @@ button {
 }
 
 @keyframes readerModalFadeIn {
-  from { opacity: 0; transform: scale(0.98); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* Temiz PDF Sayfa Şablonu (Kullanıcının yüklediği belgeyi olduğu gibi göstermek için) */
@@ -8917,6 +8919,7 @@ button {
    26. SAYFA YANLARINDA SÜZÜLEN (FLOATING) İKONLAR & ÇİLEK STİCKER
    ================================================================ */
 .page-side-floating-container {
+  display: none !important;
   position: fixed;
   top: 0;
   left: 0;
@@ -8928,6 +8931,7 @@ button {
 }
 
 .side-float-item {
+  display: none !important;
   position: absolute;
   pointer-events: auto;
   cursor: pointer;
@@ -9005,39 +9009,15 @@ button {
 }
 
 @keyframes floatSway1 {
-
-  0%,
-  100% {
-    transform: translateY(0px) rotate(0deg);
-  }
-
-  50% {
-    transform: translateY(-15px) rotate(4deg);
-  }
+  0%, 100% { transform: none; }
 }
 
 @keyframes floatSway2 {
-
-  0%,
-  100% {
-    transform: translateY(0px) rotate(0deg);
-  }
-
-  50% {
-    transform: translateY(16px) rotate(-5deg);
-  }
+  0%, 100% { transform: none; }
 }
 
 @keyframes floatSway3 {
-
-  0%,
-  100% {
-    transform: translateY(0px) rotate(0deg);
-  }
-
-  50% {
-    transform: translateY(-13px) rotate(3deg);
-  }
+  0%, 100% { transform: none; }
 }
 
 /* Çilek Köşe Çıkartması (Kiraz yerine kullanıcının yüklediği cilek-vintage.png) */
@@ -9492,6 +9472,7 @@ button {
 
 /* Çerçevenin Kenarlarında Süzülen (Floating) İkonlar */
 .about-card-float-icon {
+  display: none !important;
   position: absolute;
   z-index: 25;
   filter: drop-shadow(0 10px 22px rgba(190, 38, 37, 0.32));
@@ -9569,39 +9550,15 @@ button {
 }
 
 @keyframes floatCardSway1 {
-
-  0%,
-  100% {
-    transform: translateY(0px) rotate(0deg);
-  }
-
-  50% {
-    transform: translateY(-16px) rotate(4deg);
-  }
+  0%, 100% { transform: none; }
 }
 
 @keyframes floatCardSway2 {
-
-  0%,
-  100% {
-    transform: translateY(0px) rotate(0deg);
-  }
-
-  50% {
-    transform: translateY(18px) rotate(-5deg);
-  }
+  0%, 100% { transform: none; }
 }
 
 @keyframes floatCardSway3 {
-
-  0%,
-  100% {
-    transform: translateY(0px) rotate(0deg);
-  }
-
-  50% {
-    transform: translateY(-14px) rotate(3deg);
-  }
+  0%, 100% { transform: none; }
 }
 
 @media (max-width: 960px) {
@@ -10858,16 +10815,11 @@ button {
 }
 
 .home-about-deco {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding-top: 1.5rem;
+  display: none !important;
 }
 
 .home-about-deco-img {
-  width: 80px;
-  height: auto;
-  filter: drop-shadow(0 8px 18px rgba(190, 38, 37, 0.2));
+  display: none !important;
 }
 
 .home-about-content {
@@ -12269,14 +12221,12 @@ button {
 }
 
 .dergiler-header-deco {
+  display: none !important;
   flex-shrink: 0;
 }
 
 .dergiler-header-icon {
-  width: 72px;
-  height: auto;
-  filter: drop-shadow(0 6px 16px var(--c-shadow));
-  animation: float-freely 5s ease-in-out infinite;
+  display: none !important;
 }
 
 .dergiler-header-text {
@@ -13674,15 +13624,13 @@ button {
 
 .about-v2-deco-left,
 .about-v2-deco-right {
+  display: none !important;
   flex-shrink: 0;
 }
 
 .about-v2-deco-left img,
 .about-v2-deco-right img {
-  width: 72px;
-  height: auto;
-  filter: drop-shadow(0 6px 16px var(--c-shadow));
-  animation: float-freely 6s ease-in-out infinite;
+  display: none !important;
 }
 
 .about-v2-deco-right img {
@@ -16531,6 +16479,7 @@ p,
     opacity: 0;
     backdrop-filter: blur(0px);
   }
+
   to {
     opacity: 1;
     backdrop-filter: blur(10px);
@@ -16558,6 +16507,7 @@ p,
     opacity: 0;
     transform: scale(0.85) translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -16574,6 +16524,7 @@ p,
     opacity: 1;
     transform: scale(1) translateY(0);
   }
+
   to {
     opacity: 0;
     transform: scale(0.9) translateY(16px);
@@ -16611,6 +16562,7 @@ p,
       opacity: 0.5;
       transform: translateY(30px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
