@@ -16961,13 +16961,20 @@ p,
 
   /* 2. Üst Kayan Marquee Duyuru Şeridi */
   .home-topbar-marquee {
-    height: 30px !important;
-    line-height: 30px !important;
+    height: auto !important;
+    min-height: 34px !important;
+    line-height: normal !important;
+    padding: 8px 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    overflow: hidden !important;
   }
 
   .home-topbar-text {
-    font-size: 11px !important;
-    letter-spacing: 0.1em !important;
+    font-size: 11.5px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.08em !important;
+    display: inline-block !important;
   }
 
   /* 3. Navbar & Mobil Çekmece */
@@ -16996,15 +17003,32 @@ p,
   }
 
   .btn-your-space {
-    padding: 6px 12px !important;
-    font-size: 0.78rem !important;
+    padding: 5px 10px !important;
+    font-size: 0.72rem !important;
     border-radius: 999px !important;
   }
 
+  .btn-nav-logout-pill {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+    font-weight: 800 !important;
+    border-radius: 999px !important;
+    background: rgba(190, 38, 37, 0.08) !important;
+    border: 1px solid rgba(190, 38, 37, 0.25) !important;
+    color: var(--c-bordo) !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
+    width: auto !important;
+    height: auto !important;
+  }
+
   .btn-cassius-icon {
-    width: 38px !important;
-    height: 38px !important;
-    font-size: 1.25rem !important;
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 1.15rem !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -17069,13 +17093,14 @@ p,
   /* 4. Hero Alanı — Mobil Uyarlaması */
   .home-hero-section {
     min-height: auto !important;
-    padding-bottom: 32px !important;
+    padding: 36px 0 44px !important;
+    border-bottom: 2px dashed rgba(190, 38, 37, 0.22) !important;
   }
 
   .home-hero-shell {
     grid-template-columns: 1fr !important;
-    padding: 24px 16px 32px !important;
-    gap: 26px !important;
+    padding: 20px 16px 28px !important;
+    gap: 18px !important;
     text-align: center !important;
   }
 
@@ -17250,6 +17275,11 @@ p,
   }
 
   /* 6. Telli Pano (İçindekiler) */
+  .home-toc-section {
+    padding: 44px 0 !important;
+    border-bottom: 2px dashed rgba(190, 38, 37, 0.22) !important;
+  }
+
   .home-wireboard {
     padding: 30px 14px 22px !important;
     border-radius: 18px !important;
@@ -17287,9 +17317,16 @@ p,
     top: -12px !important;
   }
 
+  /* Son Sayı Vitrini */
+  .home-featured-magazine-showcase {
+    padding: 44px 0 52px !important;
+    border-bottom: 2px dashed rgba(190, 38, 37, 0.22) !important;
+  }
+
   /* 7. Kurucumuzun Mesajı */
   .home-founder-section {
-    padding: 36px 0 !important;
+    padding: 44px 0 !important;
+    border-bottom: 2px dashed rgba(190, 38, 37, 0.22) !important;
   }
 
   .home-founder-layout {
@@ -17326,7 +17363,8 @@ p,
 
   /* 8. Hakkımızda Özeti & Değerler */
   .home-about-teaser {
-    padding: 36px 0 !important;
+    padding: 44px 0 !important;
+    border-bottom: 2px dashed rgba(190, 38, 37, 0.22) !important;
   }
 
   .home-about-inner {
@@ -17380,7 +17418,34 @@ p,
 
   /* 9. Arşiv Bölümü (Düz Dergiler Sergisi) */
   .home-archive-section {
-    padding: 36px 0 !important;
+    padding: 44px 0 52px !important;
+    border-bottom: 2px dashed rgba(190, 38, 37, 0.22) !important;
+  }
+
+  /* Mobil Dergi Çerçevesi */
+  .magazine-reader-frame {
+    height: clamp(540px, 80dvh, 750px) !important;
+    border-radius: 14px !important;
+    background: #FFF9F8 !important;
+  }
+
+  .magazine-reader-root.reader-embedded-mode .reader-stage-container.modern-stage {
+    padding: 6px 4px 44px 4px !important;
+  }
+
+  .magazine-reader-root.reader-embedded-mode .btn-stage-arrow {
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 1.5rem !important;
+    background: rgba(255, 255, 255, 0.92) !important;
+    box-shadow: 0 4px 14px rgba(61, 39, 48, 0.18) !important;
+    z-index: 40 !important;
+  }
+  .magazine-reader-root.reader-embedded-mode .btn-stage-prev {
+    left: 4px !important;
+  }
+  .magazine-reader-root.reader-embedded-mode .btn-stage-next {
+    right: 4px !important;
   }
 
   .home-archive-header {

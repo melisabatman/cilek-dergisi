@@ -166,10 +166,9 @@ export default function Navbar({ user, isAdmin: propIsAdmin, onOpenWelcomeLetter
               <button
                 type="button"
                 onClick={handleLogout}
-                className="btn-cassius-icon"
+                className="btn-nav-logout-pill"
                 title="Çıkış Yap"
                 id="btn-nav-logout"
-                style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--c-bordo)' }}
               >
                 Çıkış
               </button>

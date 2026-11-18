@@ -485,8 +485,8 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
 
     // Kullanılabilir alan (Oklar ve araç çubuğu dışarıda)
     const viewportRect = viewportEl.getBoundingClientRect()
-    const paddingX = isMobile ? 8 : (embedded ? 32 : 64)
-    const paddingY = isMobile ? 8 : (embedded ? 12 : 24)
+    const paddingX = isMobile ? 4 : (embedded ? 32 : 64)
+    const paddingY = isMobile ? 6 : (embedded ? 12 : 24)
 
     const containerW = viewportRect.width || viewportEl.clientWidth || window.innerWidth
     const containerH = viewportRect.height || viewportEl.clientHeight || (window.innerHeight * 0.75)
@@ -497,10 +497,10 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
     const naturalWidth = Math.max(1, pdfMeta.width || 210)
     const naturalHeight = Math.max(1, pdfMeta.height || 297)
 
-    // Gerçek kitap modu: Her cihazda 2 sayfa yan yana (spread), ön ve arka kapak tek sayfa, iç sayfalar açık kitap
-    const spreadWidthFactor = 2
+    // Masaüstünde 2 sayfa yan yana (spread). Mobilde ise derginin kocaman ve net olması için tek sayfa modu
+    const spreadWidthFactor = isMobile ? 1 : 2
 
-    // Ölçek: açılmış 2 sayfa yan yana ekrana tam sığsın
+    // Ölçek: ekrana tam ve büyük sığsın
     const scale = Math.min(
       availableWidth / (naturalWidth * spreadWidthFactor),
       availableHeight / naturalHeight
@@ -510,7 +510,7 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
     const pageHeight = Math.max(1, Math.floor(naturalHeight * scale))
     setSinglePageWidth(pageWidth)
 
-    // Container açık kitap genişliğinde (2 x tek sayfa) ayarlanır
+    // Container açık kitap genişliğinde (veya mobilde tek sayfa genişliğinde) ayarlanır
     mountEl.style.width = `${pageWidth * spreadWidthFactor}px`
     mountEl.style.height = `${pageHeight}px`
 
@@ -525,8 +525,10 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
       clone.style.display = 'block'
       clone.style.width = `${pageWidth}px`
       clone.style.height = `${pageHeight}px`
-      // Ön ve arka kapak kuşe ciltli (hard), iç sayfalar esnek kitap sayfası (soft)
-      if (idx === 0 || idx === templateItems.length - 1) {
+      if (isMobile) {
+        // Mobilde tek sayfa çevrildiğinde pürüzsüz kuşe sayfa hissi
+        clone.setAttribute('data-density', 'hard')
+      } else if (idx === 0 || idx === templateItems.length - 1) {
         clone.setAttribute('data-density', 'hard')
       } else {
         clone.setAttribute('data-density', 'soft')
@@ -542,8 +544,8 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
     setTotalPagesCount(clonedItems.length)
 
     // STPAGEFLIP YAPILANDIRMASI:
-    // showCover: true -> Ön ve arka kapak tek sayfa ortalanır, iç sayfalar açık kitap gibi çiftli açılır ve çevrilir.
-    // usePortrait: false -> Her zaman kitap modu (spread).
+    // Masaüstünde: showCover: true, usePortrait: false (2 sayfa yan yana, açık kitap)
+    // Mobilde: usePortrait: true, showCover: false (ekranı tam kaplayan büyük tek sayfa)
     const pf = new PageFlip(bookWrapper, {
       width: pageWidth,
       height: pageHeight,
@@ -553,16 +555,16 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
       minHeight: pageHeight,
       maxHeight: pageHeight,
       startPage: targetStartPage,
-      showCover: true,
-      usePortrait: false,
+      showCover: !isMobile,
+      usePortrait: isMobile,
       mobileScrollSupport: false,
       useMouseEvents: true, // Fare ve parmakla tutup kıvırma/katlama desteği
       disableFlipByClick: false, // Kenarlara tıklayarak veya dokunarak sayfa çevirme
       clickEventForward: true,
-      swipeDistance: 20,
-      flippingTime: 480, // Doğal, akıcı yaprak çevirme süresi
-      showPageCorners: true,
-      maxShadowOpacity: 0.35, // Gerçekçi kitap omurga ve yaprak gölgesi
+      swipeDistance: isMobile ? 24 : 20,
+      flippingTime: isMobile ? 420 : 480, // Doğal, akıcı yaprak çevirme süresi
+      showPageCorners: !isMobile,
+      maxShadowOpacity: isMobile ? 0.24 : 0.35,
       drawShadow: true,
     })
 
@@ -585,11 +587,18 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
       const cur = currentPageIndexRef.current
       const total = clonedItems.length
 
-      if (cur === 0) {
-        // Ön kapak kapalıyken tıklandığında kesinlikle açılır (ileri gider)
+      if (isMobile) {
+        // Mobilde sağ yarı ileri, sol yarı geri
+        if (clickX >= rect.width / 2) {
+          handleNext()
+        } else {
+          handlePrev()
+        }
+      } else if (cur === 0) {
+        // Masaüstünde ön kapak kapalıyken tıklandığında açılır
         handleNext()
       } else if (cur >= total - 1) {
-        // Arka kapak kapalıyken tıklandığında kesinlikle geri döner
+        // Masaüstünde arka kapak kapalıyken tıklandığında geri döner
         handlePrev()
       } else {
         // İç çift sayfalarda: sağ yarı ileri, sol yarı geri
@@ -791,7 +800,7 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
   // Arka kapak sol kanatta olduğundan sağa (+pageWidth/2) kaydırılır -> Arka kapak TAM EKRANIN ORTASINDA TEK SAYFA durur.
   // İç sayfalarda (çift sayfalar) kaydırma 0'dır -> İKİLİ SAYFA TAM MERKEZDE durur.
   let coverMarginLeft = 0
-  if (singlePageWidth > 0) {
+  if (!isMobileMode && singlePageWidth > 0) {
     if (currentPageIndex === 0) {
       coverMarginLeft = -(singlePageWidth / 2)
     } else if (currentPageIndex >= totalPagesCount - 1) {
