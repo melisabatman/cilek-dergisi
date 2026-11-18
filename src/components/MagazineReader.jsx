@@ -525,10 +525,8 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
       clone.style.display = 'block'
       clone.style.width = `${pageWidth}px`
       clone.style.height = `${pageHeight}px`
-      if (isMobile) {
-        // Mobilde tek sayfa çevrildiğinde pürüzsüz kuşe sayfa hissi
-        clone.setAttribute('data-density', 'hard')
-      } else if (idx === 0 || idx === templateItems.length - 1) {
+      // Kapaklar (ön ve arka) sert kuşe; iç sayfaların tamamı gerçekçi kıvrılan yumuşak kuşe sayfalardır (flipbook)
+      if (idx === 0 || idx === templateItems.length - 1) {
         clone.setAttribute('data-density', 'hard')
       } else {
         clone.setAttribute('data-density', 'soft')
@@ -545,7 +543,7 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
 
     // STPAGEFLIP YAPILANDIRMASI:
     // Masaüstünde: showCover: true, usePortrait: false (2 sayfa yan yana, açık kitap)
-    // Mobilde: usePortrait: true, showCover: false (ekranı tam kaplayan büyük tek sayfa)
+    // Mobilde: usePortrait: true, showCover: false (ekranı tam kaplayan büyük tek sayfa, yumuşak kıvrılan yapraklar)
     const pf = new PageFlip(bookWrapper, {
       width: pageWidth,
       height: pageHeight,
@@ -559,12 +557,12 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
       usePortrait: isMobile,
       mobileScrollSupport: false,
       useMouseEvents: true, // Fare ve parmakla tutup kıvırma/katlama desteği
-      disableFlipByClick: false, // Kenarlara tıklayarak veya dokunarak sayfa çevirme
-      clickEventForward: true,
-      swipeDistance: isMobile ? 24 : 20,
-      flippingTime: isMobile ? 420 : 480, // Doğal, akıcı yaprak çevirme süresi
-      showPageCorners: !isMobile,
-      maxShadowOpacity: isMobile ? 0.24 : 0.35,
+      disableFlipByClick: true, // Kendi click dinleyicimiz ile çakışmayı önle
+      clickEventForward: false,
+      swipeDistance: isMobile ? 16 : 20,
+      flippingTime: 480, // Doğal, akıcı yaprak çevirme süresi
+      showPageCorners: true, // Mobilde de köşelerin kıvrılıp sayfa çevirmeyi hissettirmesi
+      maxShadowOpacity: 0.32,
       drawShadow: true,
     })
 
@@ -767,8 +765,9 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [handleNext, handlePrev, isFullscreen, handleZoomIn, handleZoomOut, handleZoomReset, toggleLoupe, toggleFullscreen, zoomLevel])
 
-  // Mobilde Dokunmatik Swipe
+  // Mobilde Dokunmatik Swipe (Flipbook dışındaki kenarlara dokunulduğunda destek)
   const handleTouchStart = (e) => {
+    if (e.target.closest('.cilek-flipbook-host')) return // StPageFlip kendi sayfa kıvırma fiziğini işlesin
     if (e.touches && e.touches.length === 1) {
       touchStartXRef.current = e.touches[0].clientX
       touchStartYRef.current = e.touches[0].clientY
@@ -776,6 +775,11 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
   }
 
   const handleTouchEnd = (e) => {
+    if (e.target.closest('.cilek-flipbook-host')) {
+      touchStartXRef.current = null
+      touchStartYRef.current = null
+      return
+    }
     if (touchStartXRef.current === null) return
     const endX = e.changedTouches?.[0]?.clientX
     const endY = e.changedTouches?.[0]?.clientY
@@ -1213,7 +1217,7 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
           <div
             key={`page-node-${idx}`}
             className="flip-page-node flip-page-pdf"
-            data-density={isMobileMode ? 'hard' : (idx === 0 || idx === displayPages.length - 1 ? 'hard' : 'soft')}
+            data-density={idx === 0 || idx === displayPages.length - 1 ? 'hard' : 'soft'}
           >
             <div className="page-paper-sheet pdf-page-clean">
               <img
