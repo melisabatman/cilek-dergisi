@@ -304,73 +304,46 @@ export default function Home({ user, isAdmin }) {
           </section>
         )}
 
-        {/* ── 7. KURUCULARLA TANIŞ ─────────────────────────────────────── */}
-        <section className="home-founder-section" aria-label="Kurucularımızla Tanış">
+        {/* ── 7. KURUCUMUZLA TANIŞ ─────────────────────────────────────── */}
+        <section className="home-founder-section" aria-label="Kurucumuzla Tanış">
           <div className="container">
             <div className="home-founder-layout">
-              {/* Sol: İki Kurucu Yan Yana İki Görsel Kartı */}
+              {/* Sol: Kurucu Görsel Kartı */}
               <div className="home-founder-photo-wrap" aria-hidden="true">
-                <div className="home-founders-dual-wrap">
-                  {/* Kurucu 1: İrsel İnas */}
-                  <div className="home-founder-polaroid polaroid-1">
-                    {(mediaData.founder_photo || founders[0]?.photo_url) ? (
-                      <img
-                        src={mediaData.founder_photo || founders[0]?.photo_url}
-                        alt={founders[0]?.name || 'İrsel İnas'}
-                        className="home-founder-img"
-                      />
-                    ) : (
-                      <div className="home-founder-img-fallback">
-                        <img src="/icons/cilek-vintage.png" alt="" style={{ width: '55%' }} />
-                      </div>
-                    )}
-                    <div className="home-founder-polaroid-meta">
-                      <strong className="home-founder-polaroid-name">
-                        {founders[0]?.name || settings.about_founder_1_name || 'İrsel İnas'}
-                      </strong>
-                      <span className="home-founder-polaroid-sub">
-                        {founders[0]?.role || settings.about_founder_1_role || 'Genel Yayın Yönetmeni'}
-                      </span>
+                <div className="home-founder-polaroid polaroid-single">
+                  {(mediaData.founder_photo || founders[0]?.photo_url) ? (
+                    <img
+                      src={mediaData.founder_photo || founders[0]?.photo_url}
+                      alt="Kurucumuz"
+                      className="home-founder-img"
+                    />
+                  ) : (
+                    <div className="home-founder-img-fallback">
+                      <img src="/icons/cilek-vintage.png" alt="" style={{ width: '55%' }} />
                     </div>
-                  </div>
-
-                  {/* Kurucu 2: Burçak Şirin */}
-                  <div className="home-founder-polaroid polaroid-2">
-                    {(mediaData.founder_2_photo || settings.about_founder_2_photo_url || founders[1]?.photo_url) ? (
-                      <img
-                        src={mediaData.founder_2_photo || settings.about_founder_2_photo_url || founders[1]?.photo_url}
-                        alt={founders[1]?.name || 'Burçak Şirin'}
-                        className="home-founder-img"
-                      />
-                    ) : (
-                      <div className="home-founder-img-fallback">
-                        <img src="/icons/icon2.png" alt="" style={{ width: '55%' }} />
-                      </div>
-                    )}
-                    <div className="home-founder-polaroid-meta">
-                      <strong className="home-founder-polaroid-name">
-                        {founders[1]?.name || settings.about_founder_2_name || 'Burçak Şirin'}
-                      </strong>
-                      <span className="home-founder-polaroid-sub">
-                        {founders[1]?.role || settings.about_founder_2_role || 'Art Director'}
-                      </span>
-                    </div>
+                  )}
+                  <div className="home-founder-polaroid-meta">
+                    <strong className="home-founder-polaroid-name">
+                      Kurucumuz
+                    </strong>
+                    <span className="home-founder-polaroid-sub">
+                      Genel Yayın Yönetmeni
+                    </span>
                   </div>
                 </div>
               </div>
 
               {/* Sağ: Metin */}
               <div className="home-founder-content">
-                <span className="home-sec-eyebrow">Kurucularımızla Tanış</span>
+                <span className="home-sec-eyebrow">Kurucumuzla Tanış</span>
                 <h2 className="home-sec-title">
-                  {settings.about_founder_name || 'Kurucu Ortaklar'}
-                  <span className="home-sec-title-italic"> — İrsel İnas &amp; Burçak Şirin</span>
+                  Kurucumuzun <span className="home-sec-title-italic">Mesajı</span>
                 </h2>
                 <blockquote className="home-founder-quote">
                   {siteData.about_founder_quote || '“Gençliğin enerjisi, tutkusu ve anlatacak cesur hikâyeleri kalıplara sığmaz! Çilek Dergisi bu bağımsız kıvılcımı birlikte parlatmak için var!”'}
                 </blockquote>
                 <p className="home-founder-bio">
-                  {siteData.about_founder_bio || 'İki kurucu ortak olarak derginin editoryal kimliğini, dinamik görsel ruhunu ve bağımsız vizyonunu el ele büyütüyoruz. Her sayıda gençliğin coşkusunu ve özgür sesini sayfalarımıza taşımaktan büyük heyecan duyuyoruz!'}
+                  {siteData.about_founder_bio?.replace(/İki kurucu ortak olarak/gi, 'Bağımsız bir gençlik yayını olarak') || 'Bağımsız bir gençlik yayını olarak derginin editoryal kimliğini, dinamik görsel ruhunu ve bağımsız vizyonunu her sayıda büyütüyoruz. Gençliğin coşkusunu ve özgür sesini sayfalarımıza taşımaktan büyük heyecan duyuyoruz!'}
                 </p>
                 <Link to="/hakkimizda" className="btn-cilek-link" id="btn-founder-more">
                   Hakkımızda Daha Fazlası →

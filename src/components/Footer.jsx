@@ -85,7 +85,6 @@ export default function Footer({ showTicker = false }) {
           <nav className="footer-v2-nav" aria-label="Alt menü">
             <Link to="/dergiler">Dergiler</Link>
             <Link to="/hakkimizda">Hakkımızda</Link>
-            <Link to="/ekibimiz">Ekibimiz</Link>
             <Link to="/iletisim">Yazı Gönderin</Link>
             <Link to="/auth">Giriş Yap</Link>
           </nav>

@@ -151,11 +151,11 @@ export default function Hakkimizda({ user, isAdmin }) {
               </blockquote>
 
               <p className="about-v2-para">
-                {settings.about_founder_bio || 'Çilek Dergisi; iki yol arkadaşının ortak hayalinden, bağımsız gençlik kültürünü cesurca yansıtma arzusundan doğdu. Her sayıda bu ortak tutkuyu ve gençliğin saf enerjisini hissettirmek için birlikte üretiyoruz.'}
+                {settings.about_founder_bio || 'Çilek Dergisi; gençlerin bağımsız kültürünü cesurca yansıtma arzusundan doğdu. Her sayıda bu ortak tutkuyu ve gençliğin saf enerjisini hissettirmek için üretiyoruz.'}
               </p>
 
-              <Link to="/ekibimiz" className="btn-cilek-link" id="btn-about-meet-team">
-                Ekibin Tamamıyla Tanışın →
+              <Link to="/dergiler" className="btn-cilek-link" id="btn-about-meet-team">
+                Dergileri Keşfedin →
               </Link>
             </div>
           </div>

@@ -664,6 +664,7 @@ button {
 
 /* İpsiz Süzülen Objeler (Floating + Arkaları Parlayan Glow Efekti) */
 .hero-floating-objects {
+  display: none !important;
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -10867,7 +10868,6 @@ button {
   width: 80px;
   height: auto;
   filter: drop-shadow(0 8px 18px rgba(190, 38, 37, 0.2));
-  animation: float-freely 5s ease-in-out infinite;
 }
 
 .home-about-content {
@@ -12030,22 +12030,14 @@ button {
 
 .home-founder-layout {
   display: grid;
-  grid-template-columns: minmax(460px, 520px) 1fr;
+  grid-template-columns: minmax(260px, 320px) 1fr;
   gap: 56px;
   align-items: center;
 }
 
-/* Polaroid kart & İkili Kurucu Desteği - Yan Yana İki Görsel Alanı */
+/* Polaroid kart */
 .home-founder-photo-wrap {
   display: flex;
-  justify-content: center;
-  width: 100%;
-}
-
-.home-founders-dual-wrap {
-  display: flex;
-  gap: 24px;
-  align-items: stretch;
   justify-content: center;
   width: 100%;
 }
@@ -12056,23 +12048,17 @@ button {
   border: 2px solid var(--c-text);
   border-radius: 6px;
   padding: 12px 12px 54px;
-  width: 220px;
+  width: 100%;
+  max-width: 280px;
   box-shadow: 0 16px 36px var(--c-shadow-dark);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
+  transform: rotate(-2deg);
 }
 
-.home-founders-dual-wrap .home-founder-polaroid.polaroid-1 {
-  transform: rotate(-3deg);
-}
-
-.home-founders-dual-wrap .home-founder-polaroid.polaroid-2 {
-  transform: rotate(3deg);
-}
-
-.home-founders-dual-wrap .home-founder-polaroid:hover {
-  transform: rotate(0deg) translateY(-4px) scale(1.03);
+.home-founder-polaroid:hover {
+  transform: rotate(0deg) translateY(-4px) scale(1.02);
   box-shadow: 0 22px 48px rgba(190, 38, 37, 0.16);
   z-index: 5;
 }

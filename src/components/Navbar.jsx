@@ -6,7 +6,6 @@ import { useSiteContent } from '../lib/siteContent'
 const NAV_LINKS = [
   { to: '/dergiler',     label: 'DERGİLER'     },
   { to: '/hakkimizda',   label: 'HAKKIMIZDA'   },
-  { to: '/ekibimiz',     label: 'EKİBİMİZ'     },
   { to: '/yazi-gonderi', label: 'YAZI GÖNDERİ' },
 ]
 

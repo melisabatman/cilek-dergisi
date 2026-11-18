@@ -5,21 +5,6 @@ export default function Hero() {
   return (
     <section className="hero-intro" id="hero-intro" aria-label="Çilek Dergi Giriş Alanı">
       <div className="hero-frame">
-        {/* Sade 2 adet dekoratif obje */}
-        <div className="hero-floating-objects" aria-hidden="true">
-          <img
-            src="/icons/icon1.png"
-            alt=""
-            className="hero-object hero-obj-1"
-          />
-
-          <img
-            src="/icons/icon2.png"
-            alt=""
-            className="hero-object hero-obj-2"
-          />
-        </div>
-
         {/* Merkez: Çilek Logosu ve Butonlar Arası Sayfa Geçişleri */}
         <div className="hero-center">
           <div className="hero-logo-box">
@@ -37,9 +22,6 @@ export default function Hero() {
             <div className="hero-page-links" role="navigation" aria-label="Sayfa Geçişleri">
               <Link to="/hakkimizda" className="hero-pill-btn" id="btn-quick-hakkimizda">
                 Hakkımızda
-              </Link>
-              <Link to="/ekibimiz" className="hero-pill-btn" id="btn-quick-ekibimiz">
-                Ekibimiz
               </Link>
               <Link to="/iletisim" className="hero-pill-btn" id="btn-quick-iletisim">
                 Yazı Gönderin
