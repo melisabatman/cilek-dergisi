@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase, checkIsAdmin } from '../lib/supabase'
-import { uploadAsset, isR2Configured, getSafeMediaUrl } from '../lib/r2'
+import { uploadAsset, isR2Configured, getSafeMediaUrl, PDF_MAX_BYTES } from '../lib/r2'
 import { useSiteContent, DEFAULT_SITE_SETTINGS, DEFAULT_SITE_CONTENT } from '../lib/siteContent'
 import WelcomePostcardModal from '../components/WelcomePostcardModal'
 import { analyzeImageDimensions, optimizeCoverToA4, formatBytes } from '../lib/imageOptimizer'
@@ -59,6 +59,9 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
   const [magCoverUrl, setMagCoverUrl] = useState('')
   const [magPdfFile, setMagPdfFile] = useState(null)
   const [magPdfUrl, setMagPdfUrl] = useState('')
+  // Kapak ve PDF yüklemeleri birbirinden bağımsız izlenir
+  const [coverUpload, setCoverUpload] = useState({ status: 'idle', progress: 0, error: '' })
+  const [pdfUpload, setPdfUpload] = useState({ status: 'idle', progress: 0, error: '' })
   const [magCoverMeta, setMagCoverMeta] = useState(null)
   const [isOptimizingCover, setIsOptimizingCover] = useState(false)
   const [coverFitMode, setCoverFitMode] = useState('cover')
@@ -180,6 +183,8 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
     setMagCoverUrl('')
     setMagPdfFile(null)
     setMagPdfUrl('')
+    setCoverUpload({ status: 'idle', progress: 0, error: '' })
+    setPdfUpload({ status: 'idle', progress: 0, error: '' })
     setMagCoverMeta(null)
     setIsOptimizingCover(false)
     setIsA4AutoOptimized(false)
@@ -283,9 +288,20 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
 
   const handlePdfFileChange = (e) => {
     const file = e.target.files?.[0]
-    if (file) {
-      setMagPdfFile(file)
+    if (!file) return
+    const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name)
+    if (!isPdf) {
+      showFeedback('error', 'Lütfen yalnızca PDF dosyası seçin.')
+      e.target.value = ''
+      return
     }
+    if (file.size > PDF_MAX_BYTES) {
+      showFeedback('error', `PDF en fazla ${Math.round(PDF_MAX_BYTES / 1024 / 1024)} MB olabilir (seçilen: ${formatBytes(file.size)}).`)
+      e.target.value = ''
+      return
+    }
+    setMagPdfFile(file)
+    setPdfUpload({ status: 'idle', progress: 0, error: '' })
   }
 
   const handleSubmitMagazine = async (e) => {
@@ -306,18 +322,42 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
       let finalCoverUrl = magCoverUrl
       let finalPdfUrl = magPdfUrl
 
-      // 1. Kapak görseli yükle (covers bucket'ı)
+      // 1. Kapak görseli (bağımsız): başarılıysa URL state'e yazılır, tekrar yüklenmez
       if (magCoverFile) {
-        const { publicUrl, error: uploadErr } = await uploadAsset('covers', magCoverFile, `issue_${parsedIssueNumber}_cover`)
-        if (uploadErr) throw uploadErr
-        if (publicUrl) finalCoverUrl = publicUrl
+        setCoverUpload({ status: 'uploading', progress: 0, error: '' })
+        const { publicUrl, error: uploadErr } = await uploadAsset(
+          'covers', magCoverFile, `issue_${parsedIssueNumber}_cover`,
+          (pct) => setCoverUpload(s => ({ ...s, progress: pct }))
+        )
+        if (uploadErr) {
+          setCoverUpload({ status: 'error', progress: 0, error: uploadErr.message || 'Kapak yüklenemedi.' })
+          throw new Error(`Kapak görseli yüklenemedi: ${uploadErr.message}`)
+        }
+        if (publicUrl) {
+          finalCoverUrl = publicUrl
+          setMagCoverUrl(publicUrl)
+          setMagCoverFile(null)
+          setCoverUpload({ status: 'done', progress: 100, error: '' })
+        }
       }
 
-      // 2. PDF dosyası yükle (pdfs bucket'ı)
+      // 2. PDF (bağımsız, doğrudan R2'ye): başarılıysa tekrar yüklenmez
       if (magPdfFile) {
-        const { publicUrl, error: pdfErr } = await uploadAsset('pdfs', magPdfFile, `issue_${parsedIssueNumber}_doc`)
-        if (pdfErr) throw pdfErr
-        if (publicUrl) finalPdfUrl = publicUrl
+        setPdfUpload({ status: 'uploading', progress: 0, error: '' })
+        const { publicUrl, error: pdfErr } = await uploadAsset(
+          'pdfs', magPdfFile, `issue_${parsedIssueNumber}_doc`,
+          (pct) => setPdfUpload(s => ({ ...s, progress: pct }))
+        )
+        if (pdfErr) {
+          setPdfUpload({ status: 'error', progress: 0, error: pdfErr.message || 'PDF yüklenemedi.' })
+          throw new Error(`PDF yüklenemedi: ${pdfErr.message}`)
+        }
+        if (publicUrl) {
+          finalPdfUrl = publicUrl
+          setMagPdfUrl(publicUrl)
+          setMagPdfFile(null)
+          setPdfUpload({ status: 'done', progress: 100, error: '' })
+        }
       }
 
       // Boş olmayan TOC maddelerini filtrele
@@ -1185,6 +1225,30 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
                             className="file-hidden-input"
                           />
                         </div>
+                        {/* PDF yükleme ilerlemesi (doğrudan R2'ye) */}
+                        {pdfUpload.status === 'uploading' && (
+                          <div role="progressbar" aria-valuenow={pdfUpload.progress} aria-valuemin={0} aria-valuemax={100} style={{ marginTop: 8 }}>
+                            <div style={{ height: 8, borderRadius: 999, background: 'rgba(190,38,37,0.15)', overflow: 'hidden' }}>
+                              <div style={{ width: `${pdfUpload.progress}%`, height: '100%', background: '#BE2625', transition: 'width .2s' }} />
+                            </div>
+                            <small style={{ color: 'var(--text-muted)' }}>PDF doğrudan buluta yükleniyor… %{pdfUpload.progress}</small>
+                          </div>
+                        )}
+                        {pdfUpload.status === 'done' && (
+                          <small style={{ color: '#1a7f37', display: 'block', marginTop: 6 }}>✓ PDF yüklendi.</small>
+                        )}
+                        {pdfUpload.status === 'error' && (
+                          <small role="alert" style={{ color: '#BE2625', display: 'block', marginTop: 6 }}>
+                            ✕ {pdfUpload.error} — Tekrar "Kaydet"e basarak yeniden deneyebilirsiniz (kapak tekrar yüklenmez).
+                          </small>
+                        )}
+                        {/* Kapak yükleme durumu (PDF'ten bağımsız) */}
+                        {coverUpload.status === 'uploading' && (
+                          <small style={{ color: 'var(--text-muted)', display: 'block', marginTop: 6 }}>Kapak yükleniyor… %{coverUpload.progress}</small>
+                        )}
+                        {coverUpload.status === 'error' && (
+                          <small role="alert" style={{ color: '#BE2625', display: 'block', marginTop: 6 }}>✕ Kapak: {coverUpload.error}</small>
+                        )}
                         {/* Alternatif PDF linki */}
                         <input
                           type="url"

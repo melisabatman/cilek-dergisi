@@ -59,13 +59,26 @@ export async function handleUploadRequest(req, res) {
     }
 
     const file = formData.get('file')
-    const folder = (formData.get('folder') || 'covers').toString()
+    // PDF'ler artık Vercel'den geçmez: /api/presign ile doğrudan R2'ye yüklenir.
+    // Bu uç nokta yalnızca küçük görseller içindir; klasör sabit ve tür kısıtlıdır.
+    const folder = 'covers'
     const prefix = (formData.get('prefix') || 'asset').toString()
 
     if (!file || typeof file === 'string') {
       res.statusCode = 400
       res.setHeader('Content-Type', 'application/json')
       res.end(JSON.stringify({ error: 'Yüklenecek dosya bulunamadı.' }))
+      return
+    }
+
+    const lowerName = String(file.name || '').toLowerCase()
+    const isAllowedImage =
+      /^image\/(jpeg|png|webp|gif|svg\+xml)$/.test(file.type || '') ||
+      (!file.type && /\.(jpe?g|png|webp|gif|svg)$/.test(lowerName))
+    if (!isAllowedImage) {
+      res.statusCode = 415
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify({ error: 'Bu uç nokta yalnızca görsel yükler. PDF dosyaları doğrudan R2 yüklemesi kullanır.' }))
       return
     }
 
