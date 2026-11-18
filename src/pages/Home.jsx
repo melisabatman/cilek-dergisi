@@ -37,15 +37,6 @@ const cleanSparkles = (str) => {
   return String(str).replace(/[✦✧★]/g, '').trim()
 }
 
-// ─── "Her Sayıda Seni Bekleyenler" retro takvim içeriği ─────────────────────
-const CONTENT_PICKS = [
-  { num: '01', tag: 'YAZI', icon: '🖊', label: 'Bir Yazı', desc: 'Duyguların en yalın ve vurucu haliyle kaleme alınmış özgün bir deneme ya da kısa öykü.', time: 'Her Sayıda · Deneme' },
-  { num: '02', tag: 'SÖYLEŞİ', icon: '🎤', label: 'Bir Röportaj', desc: 'İlham veren genç bir yaratıcıyla samimi, dürüst ve derinlikli bir söyleşi.', time: 'Özel Seri · Söyleşi' },
-  { num: '03', tag: 'GÖRSEL', icon: '🎨', label: 'Bir Görsel', desc: 'Fotoğraf serisi, illüstrasyon veya kolaj; sayfayı aydınlatan rengârenk bir eser.', time: 'Sanat & Tasarım' },
-  { num: '04', tag: 'ÖNERİ', icon: '💡', label: 'Bir Öneri', desc: 'Ruhuna iyi gelecek bir kitap, müzik, film ya da taptaze bir ilham önerisi.', time: 'Kültür & Yaşam' },
-  { num: '05', tag: 'FİKİR', icon: '💭', label: 'Bir Düşünce', desc: 'Kafana takılan bir soru, yepyeni bir kavram veya zihnini açacak bir hayat notu.', time: 'Serbest Alan' },
-]
-
 // ─── TOC kart açıklamaları (varsa kullan, yoksa genel) ───────────────────────
 const TOC_DESC_MAP = {
   default: 'Bu sayının seçkin içeriklerinden biri sizi bekliyor.',
@@ -132,9 +123,6 @@ export default function Home({ user, isAdmin }) {
     if (Array.isArray(toc)) return toc
     try { return JSON.parse(toc) } catch { return [] }
   }
-
-  // Ekip şeridi için sonsuz döngü verisi
-  const teamLoop = [...teamMembers, ...teamMembers, ...teamMembers]
 
   return (
     <div className="home-v2-wrapper">
@@ -315,121 +303,6 @@ export default function Home({ user, isAdmin }) {
             </div>
           </section>
         )}
-
-        {/* ── 5. HER SAYIDA SENİ BEKLEYENLER (RETRO SPIRAL TAKVİM / BLOKNOT FORMATI) ── */}
-        <section className="home-calendar-section" aria-label="Her Sayıda Seni Bekleyenler">
-          <div className="container">
-            {/* Spiral Delikli Takvim Yaprağı (Calendar / Tear-off Notepad Sheet) */}
-            <div className="home-calendar-sheet">
-              {/* Spiral Cilt Halkaları (Spiral Perforated Edge) */}
-              <div className="calendar-spiral-binding" aria-hidden="true">
-                {Array.from({ length: 22 }).map((_, i) => (
-                  <div key={i} className="calendar-spiral-hole">
-                    <span className="calendar-spiral-loop" />
-                  </div>
-                ))}
-              </div>
-
-              {/* Takvim Üst Başlık */}
-              <div className="home-calendar-header">
-                <span className="home-calendar-eyebrow">ÇİLEK DERGİSİ · HER SAYIDA</span>
-                <h2 className="home-calendar-title">{settings.features_title || 'HER SAYIDA SENİ BEKLEYENLER'}</h2>
-                <p className="home-calendar-sub">
-                  {settings.features_subtitle || "Çilek Dergisi'nin her sayısında bulacağın beş temel içerik türü:"}
-                </p>
-              </div>
-
-              {/* 5 Sütunlu Takvim Çizelgesi (Calendar Grid) */}
-              <div className="home-calendar-grid">
-                {CONTENT_PICKS.map((pick, idx) => {
-                  const num = idx + 1
-                  const title = settings[`feature_${num}_title`] || pick.label
-                  const desc = settings[`feature_${num}_desc`] || pick.desc
-                  return (
-                    <div
-                      key={idx}
-                      className="calendar-col"
-                      tabIndex={0}
-                      role="article"
-                      aria-label={`${pick.num} ${title}`}
-                    >
-                      <div className="calendar-col-header">
-                        <span className="calendar-col-num">{pick.num}</span>
-                        <span className="calendar-col-tag">({pick.tag})</span>
-                      </div>
-                      <div className="calendar-col-body">
-                        <div className="calendar-col-icon-wrap">
-                          <span className="calendar-col-icon">{pick.icon}</span>
-                        </div>
-                        <h3 className="calendar-col-title">{title}</h3>
-                        <p className="calendar-col-desc">{desc}</p>
-                        <span className="calendar-col-time">{pick.time}</span>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-
-              {/* Takvim İçi Aksiyon Butonu (FIND US TODAY tarzı) */}
-              <div className="home-calendar-actions">
-                <Link to="/dergiler" className="calendar-sheet-btn" id="btn-calendar-discover">
-                  SAYILARI KEŞFET →
-                </Link>
-              </div>
-            </div>
-
-            {/* Alt Mor / Lavanta Şerit — Kayıt Ol */}
-            <div className="home-calendar-banner">
-              <span className="calendar-banner-text">
-                PSST! YENİ SAYILARI VE EDİTORYAL SEÇKİLERİ KAÇIRMA!
-              </span>
-              <Link
-                to="/auth?mode=register"
-                className="calendar-banner-btn"
-                id="btn-calendar-register"
-              >
-                KAYIT OL
-              </Link>
-            </div>
-          </div>
-
-          {/* Alt Kısım: Pembe ve Bordo Çizgili Tente / Şerit (Awning Bar) */}
-          <div className="home-calendar-awning" aria-hidden="true" />
-        </section>
-
-        {/* ── 6. KAYAN EKİP ŞERİDİ ────────────────────────────────────── */}
-        <section className="home-team-marquee-section" aria-label="Ekibimizle Tanışın">
-          <div className="home-team-marquee-header container">
-            <div>
-              <span className="home-sec-eyebrow">{settings.home_team_eyebrow || 'Ekibimiz'}</span>
-              <h2 className="home-sec-title">
-                {settings.home_team_title || 'Yaratıcı Ekibimizle Tanışın'}
-              </h2>
-            </div>
-            <Link to="/ekibimiz" className="home-btn-secondary" id="btn-team-marquee-all">
-              {settings.home_team_cta || 'Tümünü Gör →'}
-            </Link>
-          </div>
-
-          {/* Sonsuz Kayan Şerit */}
-          <div className="home-team-track-wrapper" aria-hidden="true">
-            <div className="home-team-track">
-              {teamLoop.map((member, idx) => (
-                <div key={`${member.id}-${idx}`} className="home-team-card">
-                  <div className="home-team-avatar">
-                    {member.photo_url ? (
-                      <img src={member.photo_url} alt={member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    ) : (
-                      <img src={`/icons/icon${(member.order_index % 6) + 1}.png`} alt="" style={{ width: '60%', height: 'auto' }} />
-                    )}
-                  </div>
-                  <strong className="home-team-name">{member.name}</strong>
-                  <span className="home-team-role">{member.role}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
 
         {/* ── 7. KURUCULARLA TANIŞ ─────────────────────────────────────── */}
         <section className="home-founder-section" aria-label="Kurucularımızla Tanış">

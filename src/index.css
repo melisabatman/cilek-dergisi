@@ -4983,8 +4983,26 @@ button {
 }
 
 .cilek-flipbook-host .stf__item {
-  box-shadow: 0 10px 40px rgba(61, 39, 48, 0.18) !important;
+  box-shadow: 0 10px 40px rgba(61, 39, 48, 0.20) !important;
+  background: #FFFFFF !important;
+  border-radius: 2px;
+  overflow: hidden;
+  cursor: url('/cursors/pixel-pink-star-pointer.png') 14 3, url('/cursors/pixel-pink-star-pointer.svg') 14 3, pointer !important;
+}
+
+.cilek-flipbook-host .page-paper-sheet {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
   background: #FFFFFF;
+}
+
+.cilek-flipbook-host .page-pdf-content-img {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  display: block;
 }
 
 /* PageFlip showCover modunda aktif olmayan/gizli sayfaların beyaz taşmasını engelle */

@@ -27,7 +27,7 @@ export default function PixelSparkleTrail() {
     window.addEventListener('resize', handleResize)
 
     const sparkles = []
-    const colors = ['#FF2E93', '#FFAFD7', '#FFFFFF', '#BE2625', '#FF69B4']
+    const colors = ['#BE2625', '#FFAFD7', '#FFFFFF', '#BE2625', '#BE2625']
     let lastTime = 0
     let animId
 
