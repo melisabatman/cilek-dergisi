@@ -78,16 +78,25 @@ export const DEFAULT_SITE_SETTINGS = {
   home_team_title: 'Yaratıcı Ekibimizle Tanışın',
   home_team_cta: 'Tümünü Gör →',
 
-  // ── 6. KURUCULAR KÖŞESİ (ANA SAYFA & HAKKIMIZDA) ───────────────
+  // ── 6. KURUCU KÖŞESİ (ANA SAYFA & HAKKIMIZDA) ───────────────
+  about_founder_name: 'Melisa Batman',
+  about_founder_role: 'Kurucu & Genel Yayın Yönetmeni',
   about_founder_quote: '“Gençliğin enerjisi, tutkusu ve anlatacak cesur hikâyeleri kalıplara sığmaz! Çilek Dergisi bu bağımsız kıvılcımı birlikte parlatmak için var!”',
-  about_founder_bio: 'İki kurucu ortak olarak derginin editoryal kimliğini, dinamik görsel ruhunu ve bağımsız vizyonunu el ele büyütüyoruz. Her sayıda okurlarımızla ve genç yeteneklerle buluşmanın heyecanını yaşıyoruz!',
-  about_founder_name: 'Kurucu Ortaklar',
-  about_founder_1_name: 'Genel Yayın Yönetmeni',
-  about_founder_1_role: 'Kreatif Direktör & Kurucu Ortak',
-  about_founder_2_name: 'Art Director',
-  about_founder_2_role: 'Görsel Tasarım & Kurucu Ortak',
-  about_founder_photo_url: '',
+  about_founder_bio: 'Bağımsız bir gençlik yayını olarak derginin editoryal kimliğini, dinamik görsel ruhunu ve bağımsız vizyonunu her sayıda büyütüyoruz. Gençliğin coşkusunu ve özgür sesini sayfalarımıza taşımaktan büyük heyecan duyuyoruz!',
+  about_founder_1_name: 'Melisa Batman',
+  about_founder_1_role: 'Kurucu & Genel Yayın Yönetmeni',
+  about_founder_photo_url: 'https://pub-f78a1a3cdd5a4aefae2d5638cdb54f87.r2.dev/covers/team_Melisa_Batman_1795021428975_whatsapp_image_2026_11_18_at_15.20.49.jpeg',
   about_founder_2_photo_url: '',
+
+  // ── GERİ SAYIM SAYACI (BİR SONRAKİ SAYI ÇIKIŞI) ───────────
+  countdown_is_active: true,
+  countdown_target_date: '2026-12-01T12:00',
+  countdown_badge: 'BİR SONRAKİ SAYI GELİYOR',
+  countdown_title: 'Sayı 02 — Kök & Bahar İçin Geri Sayım!',
+  countdown_subtitle: 'Yeni sayımız matbaada hazırlanıyor; taptaze röportajlar, cesur denemeler ve nakış nakış işlenmiş sayfalarla çok yakında dijital raflarda!',
+  countdown_completed_text: 'Yeni sayımız yayında! Hemen yukarıdaki raflardan keşfedebilirsiniz.',
+  countdown_btn_text: 'Bize Katıl / İçerik Gönder →',
+  countdown_btn_link: '/iletisim',
 
   // ── 7. KATILIM ÇAĞRISI / BANNER ────────────────────────────
   home_cta_title: 'Sayfalarda Yerini Al!',

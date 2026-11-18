@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase'
 import { useSiteContent } from '../lib/siteContent'
 import { getSafeMediaUrl } from '../lib/r2'
 import MagazineReader from '../components/MagazineReader'
+import CountdownSection from '../components/CountdownSection'
 
 // ─── Fallback dergi verisi ────────────────────────────────────────────────────
 const FEATURED_FALLBACKS = [
@@ -89,21 +90,20 @@ export default function Home({ user, isAdmin }) {
     supabase.from('team_members').select('*').order('order_index', { ascending: true })
       .then(({ data, error }) => {
         if (!error && data && data.length > 0) {
-          setTeamMembers(data)
-          // İki kurucu: rolünde 'kurucu' geçenler veya ilk 2 üye
-          const kurucular = data.filter(m =>
+          const mapped = data.map(m => ({
+            ...m,
+            photo_url: getSafeMediaUrl(m.photo_url)
+          }))
+          setTeamMembers(mapped)
+          const kurucular = mapped.filter(m =>
             m.role?.toLowerCase().includes('kurucu') ||
             m.role?.toLowerCase().includes('founder')
           )
-          const fList = kurucular.length >= 2
-            ? kurucular.slice(0, 2)
-            : (kurucular.length === 1
-                ? [kurucular[0], data.find(m => m.id !== kurucular[0].id) || data[1]].filter(Boolean)
-                : data.slice(0, 2))
+          const fList = kurucular.length > 0 ? kurucular : mapped
           setFounders(fList)
-          setFounder(fList[0] || data[0])
+          setFounder(fList[0] || mapped[0])
         } else {
-          setFounders(TEAM_FALLBACK.slice(0, 2))
+          setFounders(TEAM_FALLBACK.slice(0, 1))
           setFounder(TEAM_FALLBACK[0])
         }
       })
@@ -123,6 +123,15 @@ export default function Home({ user, isAdmin }) {
     if (Array.isArray(toc)) return toc
     try { return JSON.parse(toc) } catch { return [] }
   }
+
+  const founderPhoto = getSafeMediaUrl(
+    mediaData.founder_photo ||
+    founders[0]?.photo_url ||
+    founder?.photo_url ||
+    'https://pub-f78a1a3cdd5a4aefae2d5638cdb54f87.r2.dev/covers/team_Melisa_Batman_1795021428975_whatsapp_image_2026_11_18_at_15.20.49.jpeg'
+  )
+  const founderName = settings.about_founder_name || founders[0]?.name || founder?.name || 'Melisa Batman'
+  const founderRole = settings.about_founder_role || founders[0]?.role || founder?.role || 'Kurucu & Genel Yayın Yönetmeni'
 
   return (
     <div className="home-v2-wrapper">
@@ -208,41 +217,57 @@ export default function Home({ user, isAdmin }) {
           <div className="home-hero-wave" aria-hidden="true" />
         </section>
 
-        {/* ── 3. SON SAYI DETAY BLOĞU ─────────────────────────────────── */}
-        <section className="home-issue-band" aria-label="Son Sayı Detayı">
+        {/* ── 3. KURUCUMUZUN MESAJI (HERO BÖLÜMÜNDEN HEMEN SONRA) ───── */}
+        <section className="home-founder-section" aria-label="Kurucumuzla Tanış">
           <div className="container">
-            <div className="home-issue-layout">
-              <div className="home-issue-cover-wrap">
-                <div className="home-issue-cover-mini">
-                  {featuredMag?.cover_image_url ? (
-                    <img src={featuredMag.cover_image_url} alt={featuredMag.title} style={{ width: '100%', borderRadius: '10px', display: 'block' }} />
-                  ) : (
-                    <div className="home-issue-cover-fallback">
-                      <img src="/icons/cilek-vintage.png" alt="" style={{ width: '60%' }} />
-                    </div>
-                  )}
+            <div className="home-founder-layout">
+              {/* Sol: Kurucu Görsel Kartı */}
+              <div className="home-founder-photo-wrap" aria-hidden="true">
+                <div className="home-founder-polaroid polaroid-single">
+                  <img
+                    src={founderPhoto}
+                    alt={founderName}
+                    className="home-founder-img"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null
+                      e.currentTarget.src = '/icons/cilek-vintage.png'
+                    }}
+                  />
+                  <div className="home-founder-polaroid-meta">
+                    <strong className="home-founder-polaroid-name">
+                      {founderName}
+                    </strong>
+                    <span className="home-founder-polaroid-sub">
+                      {founderRole}
+                    </span>
+                  </div>
                 </div>
               </div>
-              <div className="home-issue-info">
-                <span className="home-sec-eyebrow">Son Sayı</span>
-                <h2 className="home-issue-title">{featuredMag?.title || 'Sayı 06 — Yaz Dönemi'}</h2>
-                <p className="home-issue-date">
-                  {featuredMag?.published_date
-                    ? new Date(featuredMag.published_date).toLocaleDateString('tr-TR', { year: 'numeric', month: 'long', day: 'numeric' })
-                    : 'Haziran 2024'}
+
+              {/* Sağ: Metin */}
+              <div className="home-founder-content">
+                <span className="home-sec-eyebrow">Kurucumuzla Tanış</span>
+                <h2 className="home-sec-title">
+                  Kurucumuzun <span className="home-sec-title-italic">Mesajı</span>
+                </h2>
+                <blockquote className="home-founder-quote">
+                  {siteData.about_founder_quote || '“Gençliğin enerjisi, tutkusu ve anlatacak cesur hikâyeleri kalıplara sığmaz! Çilek Dergisi bu bağımsız kıvılcımı birlikte parlatmak için var!”'}
+                </blockquote>
+                <p className="home-founder-bio">
+                  {siteData.about_founder_bio?.replace(/İki kurucu ortak olarak/gi, 'Bağımsız bir gençlik yayını olarak') || 'Bağımsız bir gençlik yayını olarak derginin editoryal kimliğini, dinamik görsel ruhunu ve bağımsız vizyonunu her sayıda büyütüyoruz. Gençliğin coşkusunu ve özgür sesini sayfalarımıza taşımaktan büyük heyecan duyuyoruz!'}
                 </p>
-                <p className="home-issue-desc">
-                  {featuredMag?.description || 'Yaz mevsiminin hafifliği ve sonsuzluk hissi. Uzak yollar, sıcak sokaklar, yeni başlangıçlar.'}
-                </p>
-                <button type="button" className="home-btn-primary" onClick={handleReadIssue} id="btn-issue-band-read">
-                  SAYIYI OKU →
-                </button>
+                <Link to="/hakkimizda" className="btn-cilek-link" id="btn-founder-more">
+                  Hakkımızda Daha Fazlası →
+                </Link>
               </div>
             </div>
           </div>
         </section>
 
-        {/* ── 4. BU SAYIDA SENİ NELER BEKLİYOR (TELLİ PANO FORMAT) ─────── */}
+        {/* ── 4. YENİ SAYI GERİ SAYIM SAYACI ─────────────────────────── */}
+        <CountdownSection settings={settings} />
+
+        {/* ── 5. BU SAYIDA SENİ NELER BEKLİYOR (TELLİ PANO FORMAT) ─────── */}
         {parseToc(featuredMag?.toc).length > 0 && (
           <section className="home-toc-section" aria-label="Bu Sayıda Neler Var">
             <div className="container">
@@ -304,55 +329,6 @@ export default function Home({ user, isAdmin }) {
             </div>
           </section>
         )}
-
-        {/* ── 7. KURUCUMUZLA TANIŞ ─────────────────────────────────────── */}
-        <section className="home-founder-section" aria-label="Kurucumuzla Tanış">
-          <div className="container">
-            <div className="home-founder-layout">
-              {/* Sol: Kurucu Görsel Kartı */}
-              <div className="home-founder-photo-wrap" aria-hidden="true">
-                <div className="home-founder-polaroid polaroid-single">
-                  {(mediaData.founder_photo || founders[0]?.photo_url) ? (
-                    <img
-                      src={mediaData.founder_photo || founders[0]?.photo_url}
-                      alt="Kurucumuz"
-                      className="home-founder-img"
-                    />
-                  ) : (
-                    <div className="home-founder-img-fallback">
-                      <img src="/icons/cilek-vintage.png" alt="" style={{ width: '55%' }} />
-                    </div>
-                  )}
-                  <div className="home-founder-polaroid-meta">
-                    <strong className="home-founder-polaroid-name">
-                      Kurucumuz
-                    </strong>
-                    <span className="home-founder-polaroid-sub">
-                      Genel Yayın Yönetmeni
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Sağ: Metin */}
-              <div className="home-founder-content">
-                <span className="home-sec-eyebrow">Kurucumuzla Tanış</span>
-                <h2 className="home-sec-title">
-                  Kurucumuzun <span className="home-sec-title-italic">Mesajı</span>
-                </h2>
-                <blockquote className="home-founder-quote">
-                  {siteData.about_founder_quote || '“Gençliğin enerjisi, tutkusu ve anlatacak cesur hikâyeleri kalıplara sığmaz! Çilek Dergisi bu bağımsız kıvılcımı birlikte parlatmak için var!”'}
-                </blockquote>
-                <p className="home-founder-bio">
-                  {siteData.about_founder_bio?.replace(/İki kurucu ortak olarak/gi, 'Bağımsız bir gençlik yayını olarak') || 'Bağımsız bir gençlik yayını olarak derginin editoryal kimliğini, dinamik görsel ruhunu ve bağımsız vizyonunu her sayıda büyütüyoruz. Gençliğin coşkusunu ve özgür sesini sayfalarımıza taşımaktan büyük heyecan duyuyoruz!'}
-                </p>
-                <Link to="/hakkimizda" className="btn-cilek-link" id="btn-founder-more">
-                  Hakkımızda Daha Fazlası →
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* ── 8. HAKKIMIZDA ÖZET + DEĞERLER ──────────────────────────── */}
         <section className="home-about-teaser" aria-label="Hakkımızda Özeti">
