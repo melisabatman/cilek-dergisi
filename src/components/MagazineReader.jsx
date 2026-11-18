@@ -85,7 +85,7 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
   const [isBookReady, setIsBookReady] = useState(false)
   const [activePdfTitle, setActivePdfTitle] = useState(null)
   const [singlePageWidth, setSinglePageWidth] = useState(400)
-  const [isMobileMode, setIsMobileMode] = useState(false)
+  const [isMobileMode, setIsMobileMode] = useState(getIsMobile)
 
   // PDF Doğal En-Boy Oranı (varsayılan ISO A4 210 × 297 mm)
   const [pdfMeta, setPdfMeta] = useState({ width: 210, height: 297, aspect: 210 / 297 })
@@ -193,7 +193,10 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
       const naturalAspect = naturalW / naturalH
       setPdfMeta({ width: naturalW, height: naturalH, aspect: naturalAspect })
 
-      const renderScale = Math.min(2.5, Math.max(1.8, 1600 / naturalW))
+      const isMobileDevice = typeof window !== 'undefined' && window.innerWidth < 768
+      const targetW = isMobileDevice ? 900 : 1400
+      const renderScale = Math.min(2.0, Math.max(1.0, targetW / naturalW))
+      const jpegQuality = isMobileDevice ? 0.86 : 0.92
       const renderedUrls = []
 
       for (let i = 1; i <= numPages; i++) {
@@ -204,7 +207,7 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
         canvas.height = viewport.height
         canvas.width = viewport.width
         await page.render({ canvasContext: context, viewport }).promise
-        renderedUrls.push(canvas.toDataURL('image/jpeg', 0.92))
+        renderedUrls.push(canvas.toDataURL('image/jpeg', jpegQuality))
         setPdfProgress(Math.round(45 + (i / numPages) * 50))
       }
 
@@ -212,10 +215,10 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
       setLoadingPdf(false)
       setPdfLoadError(false)
     } catch (err) {
-      console.error('PDF yükleme hatası:', err)
+      console.warn('PDF yükleme hatası, yedek sayfalara geçiliyor:', err)
       setLoadingPdf(false)
       setPdfPages([])
-      setPdfLoadError(true)
+      setPdfLoadError(false) // Hata ekranı yerine yedek sayfalarla derginin açılmasını sağla
     }
   }, [])
 
@@ -224,7 +227,7 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
       loadPdfSource(magazine.pdf_url)
     } else {
       setLoadingPdf(false)
-      setPdfLoadError(true)
+      setPdfLoadError(false)
     }
   }, [magazine?.pdf_url, loadPdfSource])
 
@@ -854,7 +857,7 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
           <div
             key={`page-node-${idx}`}
             className="flip-page-node flip-page-pdf"
-            data-density={idx === 0 || idx === displayPages.length - 1 ? 'hard' : 'soft'}
+            data-density={isMobileMode ? 'hard' : (idx === 0 || idx === displayPages.length - 1 ? 'hard' : 'soft')}
           >
             <div className="page-paper-sheet pdf-page-clean">
               <img
