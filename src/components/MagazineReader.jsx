@@ -260,7 +260,8 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
     const pf = flipbookRef.current
     if (!pf) return
     try {
-      pf.flipPrev('top')
+      if (pf.getState() === 'flipping') return
+      pf.flipPrev()
     } catch (err) {
       console.warn('flipPrev fallback:', err)
       try { pf.turnToPrevPage() } catch { }
@@ -271,7 +272,8 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
     const pf = flipbookRef.current
     if (!pf) return
     try {
-      pf.flipNext('top')
+      if (pf.getState() === 'flipping') return
+      pf.flipNext()
     } catch (err) {
       console.warn('flipNext fallback:', err)
       try { pf.turnToNextPage() } catch { }
@@ -346,8 +348,10 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
       clone.style.display = 'block'
       clone.style.width = `${pageWidth}px`
       clone.style.height = `${pageHeight}px`
-      // Ön ve arka kapak tekli sert kapak, iç sayfalar esnek kuşe kağıt
-      if (idx === 0 || idx === templateItems.length - 1) {
+      // Mobilde sayfaların köşeden yırtılır/kopuyor gibi görünmesini engellemek için solid kuşe sayfa modu
+      if (isMobile) {
+        clone.setAttribute('data-density', 'hard')
+      } else if (idx === 0 || idx === templateItems.length - 1) {
         clone.setAttribute('data-density', 'hard')
       } else {
         clone.setAttribute('data-density', 'soft')
@@ -380,10 +384,10 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
       useMouseEvents: true, // Fare ve parmakla tutup kıvırma/katlama desteği
       disableFlipByClick: false, // Kenarlara tıklayarak veya dokunarak sayfa çevirme
       clickEventForward: true,
-      swipeDistance: isMobile ? 18 : 25,
-      flippingTime: isMobile ? 380 : 520, // Akıcı yaprak çevirme süresi
-      showPageCorners: true,
-      maxShadowOpacity: 0.45,
+      swipeDistance: isMobile ? 24 : 25,
+      flippingTime: isMobile ? 420 : 520, // Akıcı yaprak çevirme süresi
+      showPageCorners: !isMobile, // Mobilde sayfa köşelerinin yırtılmış gibi katlanmasını engelle
+      maxShadowOpacity: isMobile ? 0.22 : 0.42, // Mobilde aşırı koyu kırılma gölgeleri yerine temiz kuşe gölgesi
       drawShadow: true,
     })
 
@@ -535,6 +539,16 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
       const diffX = endX - touchStartXRef.current
       const diffY = endY - touchStartYRef.current
       if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
+        const pf = flipbookRef.current
+        if (pf) {
+          try {
+            if (pf.getState() === 'flipping') {
+              touchStartXRef.current = null
+              touchStartYRef.current = null
+              return
+            }
+          } catch { }
+        }
         if (diffX < 0) {
           handleNext()
         } else {

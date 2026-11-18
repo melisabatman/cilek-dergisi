@@ -536,9 +536,16 @@ button {
 .mobile-menu-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(61, 39, 48, 0.45);
-  backdrop-filter: blur(4px);
-  z-index: 250;
+  background: rgba(26, 10, 14, 0.55);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  z-index: 10004;
+  animation: fadeInOverlay 0.22s ease;
+}
+
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .mobile-menu {
@@ -546,20 +553,29 @@ button {
   top: 0;
   right: 0;
   bottom: 0;
-  width: 280px;
-  background: var(--bg-card);
-  z-index: 260;
-  padding: 2rem;
+  height: 100%;
+  height: 100dvh;
+  width: min(320px, 85vw);
+  background: #FFF9F8;
+  z-index: 10005;
+  padding: 24px 20px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   transform: translateX(100%);
-  transition: transform 0.3s ease;
-  box-shadow: -8px 0 30px rgba(190, 38, 37, 0.15);
+  visibility: hidden;
+  pointer-events: none;
+  transition: transform 0.28s cubic-bezier(0.2, 0.9, 0.3, 1), visibility 0.28s ease;
+  box-shadow: -10px 0 35px rgba(61, 39, 48, 0.22);
+  border-left: 1px solid rgba(190, 38, 37, 0.15);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .mobile-menu.open {
   transform: translateX(0);
+  visibility: visible;
+  pointer-events: auto;
 }
 
 .mobile-menu-top {
@@ -10815,7 +10831,7 @@ button {
 
 .home-about-inner {
   display: grid;
-  grid-template-columns: 120px 1fr 1fr;
+  grid-template-columns: 1.15fr 1fr;
   gap: 48px;
   align-items: start;
 }
@@ -10830,13 +10846,23 @@ button {
 
 .home-about-content {
   min-width: 0;
+  width: 100%;
+}
+
+.home-about-content .home-sec-title {
+  line-height: 1.15 !important;
+  margin-bottom: 16px !important;
+  word-break: normal;
+  overflow-wrap: break-word;
 }
 
 .home-about-text {
   color: var(--c-text-muted);
   font-size: 15px;
-  line-height: 1.85;
+  line-height: 1.8;
   margin-bottom: 14px;
+  word-break: normal;
+  overflow-wrap: break-word;
 }
 
 .home-about-link {
@@ -16734,9 +16760,10 @@ p,
 
   /* Mobil Menü Çekmecesi */
   .mobile-menu {
-    width: min(310px, 86vw) !important;
+    width: min(320px, 85vw) !important;
     padding: 24px 20px !important;
-    background: #FAF6F0 !important;
+    background: #FFF9F8 !important;
+    z-index: 10005 !important;
     box-shadow: -10px 0 36px rgba(61, 39, 48, 0.28) !important;
   }
 
@@ -16908,16 +16935,7 @@ p,
   }
 
   .home-cover-mobile-tap-hint {
-    display: inline-block !important;
-    margin-top: 14px !important;
-    font-size: 12px !important;
-    color: var(--c-bordo) !important;
-    font-weight: 700 !important;
-    letter-spacing: 0.03em !important;
-    background: rgba(190, 38, 37, 0.08) !important;
-    padding: 6px 14px !important;
-    border-radius: 999px !important;
-    border: 1px dashed rgba(190, 38, 37, 0.3) !important;
+    display: none !important;
   }
 
   .home-hero-wave {
@@ -17042,18 +17060,26 @@ p,
   }
 
   .home-about-inner {
-    padding: 26px 16px !important;
+    grid-template-columns: 1fr !important;
+    padding: 24px 16px !important;
     border-radius: 18px !important;
-    gap: 20px !important;
+    gap: 24px !important;
   }
 
   .home-about-content {
-    text-align: center !important;
+    text-align: left !important;
+  }
+
+  .home-about-content .home-sec-title {
+    font-size: clamp(1.8rem, 6vw, 2.3rem) !important;
+    line-height: 1.2 !important;
+    margin-bottom: 14px !important;
   }
 
   .home-about-text {
-    font-size: 14px !important;
+    font-size: 14.5px !important;
     line-height: 1.7 !important;
+    text-align: left !important;
   }
 
   .home-values-grid {

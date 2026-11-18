@@ -20,6 +20,21 @@ export default function Navbar({ user, isAdmin: propIsAdmin, onOpenWelcomeLetter
     setMobileOpen(false)
   }, [location.pathname])
 
+  // Mobil menü açıkken arka plan kaymasını ve titremesini engelle
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden'
+      document.body.style.touchAction = 'none'
+    } else {
+      document.body.style.overflow = ''
+      document.body.style.touchAction = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+      document.body.style.touchAction = ''
+    }
+  }, [mobileOpen])
+
   useEffect(() => {
     if (propIsAdmin !== undefined) {
       setIsAdminState(propIsAdmin)
@@ -191,7 +206,7 @@ export default function Navbar({ user, isAdmin: propIsAdmin, onOpenWelcomeLetter
           aria-hidden="true"
         />
       )}
-      <aside className={`mobile-menu ${mobileOpen ? 'open' : ''}`} style={{ background: 'var(--c-cream)', borderLeft: '2px solid var(--c-bordo)' }}>
+      <aside className={`mobile-menu ${mobileOpen ? 'open' : ''}`} aria-hidden={!mobileOpen}>
         <div className="mobile-menu-top">
           <span className="cassius-logo-title" style={{ fontSize: '2.2rem' }}>Çilek</span>
           <button
