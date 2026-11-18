@@ -83,6 +83,12 @@
   --font-cover: 'Playfair Display', 'DM Serif Display', Georgia, serif;
   --font-serif: 'Playfair Display', 'DM Serif Display', Georgia, serif;
   --font-sans: 'Manrope', system-ui, -apple-system, sans-serif;
+  --font-body: 'Manrope', system-ui, -apple-system, sans-serif;
+
+  /* İkincil Vurgu & Efekt Değişkenleri */
+  --accent-gold: var(--color-seed);
+  --book-tilt: 0deg;
+  --tilt: 0deg;
 
   /* Gölgeler */
   --shadow-frame: 0 22px 55px var(--c-shadow), inset 0 0 30px rgba(255, 255, 255, 0.8);
@@ -678,16 +684,14 @@ button {
   object-fit: contain;
   pointer-events: auto;
   /* Arkalarında parlayan sıcak çilek ve altın çekirdek ışıltısı */
-  filter:
-    drop-shadow(0 12px 24px rgba(190, 38, 37, 0.38)) drop-shadow(0 0 25px rgba(232, 181, 77, 0.42));
+  filter: drop-shadow(0 12px 24px rgba(190, 38, 37, 0.38)) drop-shadow(0 0 25px rgba(232, 181, 77, 0.42));
   animation: float-freely 5s ease-in-out infinite;
   transition: transform 0.3s ease, filter 0.3s ease;
 }
 
 .hero-object:hover {
   transform: scale(1.1) !important;
-  filter:
-    drop-shadow(0 16px 30px rgba(190, 38, 37, 0.5)) drop-shadow(0 0 35px rgba(232, 181, 77, 0.6));
+  filter: drop-shadow(0 16px 30px rgba(190, 38, 37, 0.5)) drop-shadow(0 0 35px rgba(232, 181, 77, 0.6));
 }
 
 .hero-obj-1 {
@@ -11209,67 +11213,6 @@ button {
 
   .footer-v2-socials {
     justify-content: center;
-  }
-}
-
-@media (max-width: 768px) {
-  .home-hero-shell {
-    padding: 44px 20px 80px;
-  }
-
-  .home-hero-title {
-    letter-spacing: -1px;
-  }
-
-  .home-hero-visual {
-    min-height: 460px;
-    max-width: 360px;
-  }
-
-  .home-cover-frame {
-    width: 300px;
-    height: 440px;
-    top: 24px;
-    right: 50%;
-    transform: translateX(50%) rotate(2deg);
-  }
-
-  .home-cover-shadow {
-    width: 292px;
-    height: 424px;
-    top: 58px;
-    right: 50%;
-    transform: translateX(50%) rotate(4deg);
-  }
-
-  .home-issue-layout {
-    grid-template-columns: 1fr;
-    text-align: center;
-    gap: 28px;
-  }
-
-  .home-issue-cover-mini {
-    width: 200px;
-    margin: 0 auto;
-  }
-
-  .home-toc-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .home-archive-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-  }
-
-  .home-archive-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .footer-v2-links-group {
-    margin: 0 auto;
-    text-align: center;
   }
 }
 

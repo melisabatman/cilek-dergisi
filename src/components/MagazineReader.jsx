@@ -263,7 +263,7 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
       pf.flipPrev('top')
     } catch (err) {
       console.warn('flipPrev fallback:', err)
-      try { pf.turnToPrevPage() } catch {}
+      try { pf.turnToPrevPage() } catch { }
     }
   }, [])
 
@@ -274,7 +274,7 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
       pf.flipNext('top')
     } catch (err) {
       console.warn('flipNext fallback:', err)
-      try { pf.turnToNextPage() } catch {}
+      try { pf.turnToNextPage() } catch { }
     }
   }, [])
 
@@ -390,7 +390,7 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
       if (!pfInstance) return
       try {
         if (pfInstance.getState() === 'flipping') return
-      } catch {}
+      } catch { }
 
       const rect = bookWrapper.getBoundingClientRect()
       const clickX = e.clientX - rect.left
@@ -442,7 +442,7 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
           if (typeof cur === 'number' && !isNaN(cur)) {
             setCurrentPageIndex(cur)
           }
-        } catch {}
+        } catch { }
       })
 
       pf.on('init', () => {
@@ -495,7 +495,7 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
   useEffect(() => {
     return () => {
       if (flipbookRef.current) {
-        try { flipbookRef.current.destroy() } catch {}
+        try { flipbookRef.current.destroy() } catch { }
         flipbookRef.current = null
       }
     }
@@ -677,7 +677,7 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
           onClick={() => {
             const next = !soundEnabled
             setSoundEnabled(next)
-            try { localStorage.setItem('burnbook_sound', String(next)) } catch {}
+            try { localStorage.setItem('burnbook_sound', String(next)) } catch { }
           }}
           title={soundEnabled ? 'Sayfa Sesini Kapat' : 'Sayfa Sesini Aç'}
           aria-label={soundEnabled ? 'Sayfa Sesini Kapat' : 'Sayfa Sesini Aç'}
