@@ -1,94 +1,94 @@
 import React, { useEffect, useRef } from 'react'
 
 /**
- * Pixel Sparkle Trail (Y2K Aesthetic)
- * Fare hareket ettikçe imlecin ardından minik pixel pembe kıvılcım yıldızları bırakır.
+ * Pixel Sparkle Trail (Y2K / Indie Magazine Aesthetic)
+ * Fare hareket ettikçe imlecin ardından canlı, parıldayan pixel yıldız ve kıvılcımlar bırakır.
  */
 export default function PixelSparkleTrail() {
   const canvasRef = useRef(null)
 
   useEffect(() => {
-    // Sadece fare (mouse/trackpad) kullanan cihazlarda çalışsın, dokunmatikte batarya/performans yemez
     if (typeof window === 'undefined') return
-    if (!window.matchMedia('(pointer: fine)').matches) return
 
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    let width = (canvas.width = window.innerWidth)
-    let height = (canvas.height = window.innerHeight)
+    let dpr = window.devicePixelRatio || 1
+    let width = (canvas.width = window.innerWidth * dpr)
+    let height = (canvas.height = window.innerHeight * dpr)
+    ctx.scale(dpr, dpr)
 
     const handleResize = () => {
-      width = canvas.width = window.innerWidth
-      height = canvas.height = window.innerHeight
+      dpr = window.devicePixelRatio || 1
+      width = canvas.width = window.innerWidth * dpr
+      height = canvas.height = window.innerHeight * dpr
+      ctx.scale(dpr, dpr)
     }
     window.addEventListener('resize', handleResize)
 
     const sparkles = []
-    const colors = ['#BE2625', '#FFAFD7', '#FFFFFF', '#BE2625', '#BE2625']
+    // Çilek kırmızısı, neon pembe, altın yıldız, parlak eflatun ve beyaz kıvılcım
+    const colors = ['#BE2625', '#FF2E93', '#FF69B4', '#FFAFD7', '#FFD166', '#BE2625']
     let lastTime = 0
     let animId
 
-    // 5-kanatlı pixel yıldız (★) çizimi
-    const drawPixelStar = (context, x, y, size, color, alpha) => {
+    // 4-kanatlı parlak pixel yıldız (✦) çizimi
+    const drawSparkleStar = (context, x, y, size, color, alpha) => {
       context.save()
       context.globalAlpha = Math.max(0, Math.min(1, alpha))
       context.fillStyle = color
-      const s = Math.max(1, Math.round(size))
+      const s = Math.max(1.8, size)
       const px = Math.round(x)
       const py = Math.round(y)
 
-      // Merkez gövde
-      context.fillRect(px - s, py - s, s * 2, s * 2)
+      // Merkez çekirdek
+      context.fillRect(px - s * 0.6, py - s * 0.6, s * 1.2, s * 1.2)
 
-      // 1. Üst kanat (tepe noktası)
-      context.fillRect(px, Math.round(py - s * 2.2), s, Math.round(s * 1.4))
+      // 4 ana kanat (Yukarı, Aşağı, Sol, Sağ)
+      context.fillRect(px - s * 0.4, py - s * 2.2, s * 0.8, s * 1.6) // Tepe
+      context.fillRect(px - s * 0.4, py + s * 0.6, s * 0.8, s * 1.6) // Dip
+      context.fillRect(px - s * 2.2, py - s * 0.4, s * 1.6, s * 0.8) // Sol
+      context.fillRect(px + s * 0.6, py - s * 0.4, s * 1.6, s * 0.8) // Sağ
 
-      // 2. Sol üst kanat
-      context.fillRect(Math.round(px - s * 2.2), Math.round(py - s * 0.5), Math.round(s * 1.4), s)
-
-      // 3. Sağ üst kanat
-      context.fillRect(Math.round(px + s * 1.0), Math.round(py - s * 0.5), Math.round(s * 1.4), s)
-
-      // 4. Sol alt kanat
-      context.fillRect(Math.round(px - s * 1.6), Math.round(py + s * 1.2), Math.round(s * 1.1), Math.round(s * 1.1))
-
-      // 5. Sağ alt kanat
-      context.fillRect(Math.round(px + s * 0.7), Math.round(py + s * 1.2), Math.round(s * 1.1), Math.round(s * 1.1))
-
-      // Beyaz kıvılcım çekirdeği
+      // Parlak beyaz ışıltı merkezi
       context.fillStyle = '#FFFFFF'
-      context.fillRect(px, py, s, s)
+      context.fillRect(px - s * 0.3, py - s * 0.3, s * 0.6, s * 0.6)
+
       context.restore()
     }
 
-    const onMouseMove = (e) => {
+    const onPointerMove = (e) => {
+      const clientX = e.clientX ?? (e.touches && e.touches[0]?.clientX)
+      const clientY = e.clientY ?? (e.touches && e.touches[0]?.clientY)
+      if (clientX === undefined || clientY === undefined) return
+
       const now = performance.now()
-      if (now - lastTime < 35) return // Aşırı sık üretimi sınırla (~30fps spark)
+      if (now - lastTime < 18) return // 60fps akıcı üretim
       lastTime = now
 
-      // Fare pozisyonundan hafif rastgele sapma ile 1-2 kıvılcım üret
+      // Fare imlecinin arkasında 1-3 parıltılı yıldız üret
       const count = Math.random() > 0.4 ? 2 : 1
       for (let i = 0; i < count; i++) {
         sparkles.push({
-          x: e.clientX + (Math.random() * 8 - 4),
-          y: e.clientY + (Math.random() * 8 - 4),
-          size: Math.random() * 1.8 + 1.2,
-          vx: (Math.random() - 0.5) * 0.8,
-          vy: Math.random() * 0.6 + 0.3, // Hafifçe aşağı süzülme
+          x: clientX + (Math.random() * 12 - 6),
+          y: clientY + (Math.random() * 12 - 6),
+          size: Math.random() * 2.0 + 2.0, // 2px - 4px belirgin boyut
+          vx: (Math.random() - 0.5) * 0.9,
+          vy: Math.random() * 0.8 + 0.4, // Zarifçe aşağı süzülme
           color: colors[Math.floor(Math.random() * colors.length)],
           alpha: 1.0,
-          decay: Math.random() * 0.035 + 0.025,
+          decay: Math.random() * 0.02 + 0.016, // Tatlı bir sönüş süresi (~50 frame)
         })
       }
     }
 
-    window.addEventListener('mousemove', onMouseMove, { passive: true })
+    window.addEventListener('mousemove', onPointerMove, { passive: true })
+    window.addEventListener('pointermove', onPointerMove, { passive: true })
 
     const render = () => {
-      ctx.clearRect(0, 0, width, height)
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight)
 
       for (let i = sparkles.length - 1; i >= 0; i--) {
         const sp = sparkles[i]
@@ -99,7 +99,7 @@ export default function PixelSparkleTrail() {
         if (sp.alpha <= 0) {
           sparkles.splice(i, 1)
         } else {
-          drawPixelStar(ctx, sp.x, sp.y, sp.size, sp.color, sp.alpha)
+          drawSparkleStar(ctx, sp.x, sp.y, sp.size, sp.color, sp.alpha)
         }
       }
 
@@ -110,7 +110,8 @@ export default function PixelSparkleTrail() {
 
     return () => {
       window.removeEventListener('resize', handleResize)
-      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mousemove', onPointerMove)
+      window.removeEventListener('pointermove', onPointerMove)
       cancelAnimationFrame(animId)
     }
   }, [])

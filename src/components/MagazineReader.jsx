@@ -132,6 +132,28 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
   const [isCommentsOpen, setIsCommentsOpen] = useState(false)
   const [commentsCount, setCommentsCount] = useState(0)
 
+  // ─── BÜYÜTME (ZOOM) VE BÜYÜTEÇ (LOUPE) DURUMLARI ──────────────
+  const [zoomLevel, setZoomLevel] = useState(1.0)
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 })
+  const [isPanning, setIsPanning] = useState(false)
+  const panStartRef = useRef({ x: 0, y: 0, originX: 0, originY: 0 })
+  const didPanRef = useRef(false)
+
+  const [isLoupeActive, setIsLoupeActive] = useState(false)
+  const isLoupeActiveRef = useRef(isLoupeActive)
+  useEffect(() => { isLoupeActiveRef.current = isLoupeActive }, [isLoupeActive])
+
+  const [loupeState, setLoupeState] = useState({
+    visible: false,
+    x: 0,
+    y: 0,
+    bgX: 0,
+    bgY: 0,
+    bgW: 0,
+    bgH: 0,
+    imgUrl: '',
+  })
+
   // Swipe Dokunma Takibi
   const touchStartXRef = useRef(null)
   const touchStartYRef = useRef(null)
@@ -283,6 +305,159 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
     }
   }, [])
 
+  // ─── BÜYÜTME (ZOOM) VE BÜYÜTEÇ (LOUPE) FONKSİYONLARI ──────────
+  const handleZoomIn = useCallback(() => {
+    setZoomLevel(z => Math.min(2.25, Number((z + 0.25).toFixed(2))))
+  }, [])
+
+  const handleZoomOut = useCallback(() => {
+    setZoomLevel(z => {
+      const next = Math.max(1.0, Number((z - 0.25).toFixed(2)))
+      if (next === 1.0) setPanOffset({ x: 0, y: 0 })
+      return next
+    })
+  }, [])
+
+  const handleZoomReset = useCallback(() => {
+    setZoomLevel(1.0)
+    setPanOffset({ x: 0, y: 0 })
+  }, [])
+
+  const toggleLoupe = useCallback(() => {
+    setIsLoupeActive(prev => {
+      const next = !prev
+      if (!next) {
+        setLoupeState(s => ({ ...s, visible: false }))
+      }
+      return next
+    })
+  }, [])
+
+  const updateLoupe = useCallback((e) => {
+    if (!bookMountRef.current) return
+    const bookHost = bookMountRef.current.querySelector('.cilek-flipbook-host') || bookMountRef.current
+    const rect = bookHost.getBoundingClientRect()
+
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+
+    if (x < 0 || x > rect.width || y < 0 || y > rect.height) {
+      setLoupeState(s => (s.visible ? { ...s, visible: false } : s))
+      return
+    }
+
+    const totalW = rect.width
+    const hostH = rect.height
+    const halfW = totalW / 2
+
+    let targetPageIdx = 0
+    let relX = 0
+    let pageW = halfW
+
+    const cur = currentPageIndexRef.current || 0
+    const total = totalPagesCountRef.current || 1
+
+    if (cur === 0) {
+      targetPageIdx = 0
+      relX = Math.max(0, x - halfW)
+    } else if (cur >= total - 1) {
+      targetPageIdx = total - 1
+      relX = Math.min(halfW, x)
+    } else {
+      if (x < halfW) {
+        targetPageIdx = Math.max(0, cur)
+        relX = x
+      } else {
+        targetPageIdx = Math.min(total - 1, cur + 1)
+        relX = x - halfW
+      }
+    }
+
+    const imgUrl = displayPages[targetPageIdx] || displayPages[0] || ''
+    const zoomRatio = 2.6
+    const radius = 95 // 190px loupe lens diameter
+
+    const bgW = pageW * zoomRatio
+    const bgH = hostH * zoomRatio
+    const bgX = -(relX * zoomRatio - radius)
+    const bgY = -(y * zoomRatio - radius)
+
+    setLoupeState({
+      visible: true,
+      x: e.clientX,
+      y: e.clientY,
+      bgX,
+      bgY,
+      bgW,
+      bgH,
+      imgUrl: getSafeMediaUrl(imgUrl),
+    })
+  }, [displayPages])
+
+  const handleMouseMove = useCallback((e) => {
+    if (isLoupeActiveRef.current) {
+      updateLoupe(e)
+    }
+    if (isPanning && zoomLevel > 1.0) {
+      const dx = e.clientX - panStartRef.current.x
+      const dy = e.clientY - panStartRef.current.y
+      if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
+        didPanRef.current = true
+      }
+      const maxPanX = (singlePageWidth * 2 * (zoomLevel - 1)) / 1.4
+      const maxPanY = (singlePageWidth * 1.414 * (zoomLevel - 1)) / 1.4
+      setPanOffset({
+        x: Math.max(-maxPanX, Math.min(maxPanX, panStartRef.current.originX + dx)),
+        y: Math.max(-maxPanY, Math.min(maxPanY, panStartRef.current.originY + dy)),
+      })
+    }
+  }, [isPanning, zoomLevel, singlePageWidth, updateLoupe])
+
+  const handleMouseDown = useCallback((e) => {
+    if (isLoupeActiveRef.current || zoomLevel <= 1.0) return
+    if (e.target.closest('button') || e.target.closest('input')) return
+    setIsPanning(true)
+    didPanRef.current = false
+    panStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      originX: panOffset.x,
+      originY: panOffset.y,
+    }
+  }, [zoomLevel, panOffset])
+
+  const handleMouseUp = useCallback(() => {
+    setIsPanning(false)
+  }, [])
+
+  const handleMouseLeave = useCallback(() => {
+    if (isLoupeActiveRef.current) {
+      setLoupeState(s => ({ ...s, visible: false }))
+    }
+    setIsPanning(false)
+  }, [])
+
+  const handleDoubleClick = useCallback((e) => {
+    if (isLoupeActiveRef.current) return
+    if (e.target.closest('button') || e.target.closest('input')) return
+    if (zoomLevel > 1.0) {
+      handleZoomReset()
+    } else {
+      setZoomLevel(1.6)
+    }
+  }, [zoomLevel, handleZoomReset])
+
+  const handleWheel = useCallback((e) => {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault()
+      if (e.deltaY < 0) {
+        handleZoomIn()
+      } else {
+        handleZoomOut()
+      }
+    }
+  }, [handleZoomIn, handleZoomOut])
+
   // -------------------------------------------------------------
   // 3. FLIPBOOK OLUŞTURMA: GERÇEKÇİ ÇİFT SAYFA & TEK KAPAK (HTML RENDER)
   // -------------------------------------------------------------
@@ -394,6 +569,11 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
     // DERGİYE BASINCA FLIPBOOK ÇEVRİLME DİNLENMESİ (Click-to-Flip)
     bookWrapper.addEventListener('click', (e) => {
       if (e.target.closest('button') || e.target.closest('a')) return
+      if (isLoupeActiveRef.current) return
+      if (didPanRef.current) {
+        didPanRef.current = false
+        return
+      }
       const pfInstance = flipbookRef.current
       if (!pfInstance) return
       try {
@@ -511,17 +691,25 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
     }
   }, [])
 
-  // Klavye ile sayfa çevirme
+  // Klavye ile sayfa çevirme ve kısayollar (+/- zoom, M büyüteç)
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return
       if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); handleNext() }
       else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); handlePrev() }
-      else if (e.key === 'Escape' && isFullscreen) { document.exitFullscreen?.() }
+      else if (e.key === '+' || e.key === '=') { e.preventDefault(); handleZoomIn() }
+      else if (e.key === '-' || e.key === '_') { e.preventDefault(); handleZoomOut() }
+      else if (e.key === '0') { e.preventDefault(); handleZoomReset() }
+      else if (e.key.toLowerCase() === 'm' || e.key.toLowerCase() === 'b') { e.preventDefault(); toggleLoupe() }
+      else if (e.key === 'Escape') {
+        if (isLoupeActiveRef.current) { toggleLoupe() }
+        else if (zoomLevel > 1.0) { handleZoomReset() }
+        else if (isFullscreen) { document.exitFullscreen?.() }
+      }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [handleNext, handlePrev, isFullscreen])
+  }, [handleNext, handlePrev, isFullscreen, handleZoomIn, handleZoomOut, handleZoomReset, toggleLoupe, zoomLevel])
 
   // Mobilde Dokunmatik Swipe
   const handleTouchStart = (e) => {
@@ -579,6 +767,8 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
     if (loadingPdf) return 'Yükleniyor…'
     if (pdfLoadError) return 'PDF yüklenemedi'
     if (!isBookReady) return 'Hazırlanıyor…'
+    if (isLoupeActive) return '🔍 Büyüteç Aktif · Sayfa üzerinde gezdirin'
+    if (zoomLevel > 1.0) return `🔎 %${Math.round(zoomLevel * 100)} Yakınlaştırma · Sürükleyerek gezinin (Çift tık: sıfırla)`
     if (currentPageIndex === 0) return 'Ön Kapak'
     if (currentPageIndex >= totalPagesCount - 1) return 'Arka Kapak'
     if (activePages && activePages.length > 1) {
@@ -701,6 +891,74 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
           )}
         </button>
 
+        <div className="vbar-divider" aria-hidden="true" />
+
+        {/* Büyüteç (Magnifying Glass Loupe) */}
+        <button
+          type="button"
+          className={`btn-vbar-tool ${isLoupeActive ? 'active' : ''}`}
+          onClick={toggleLoupe}
+          title={isLoupeActive ? 'Büyüteci Kapat (M)' : 'Büyüteç (Sayfa Detayını Büyüt - M)'}
+          aria-label="Büyüteç"
+          id="btn-reader-loupe"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            <circle cx="11" cy="11" r="3" strokeWidth="1.5" />
+          </svg>
+        </button>
+
+        {/* Büyüt (+) */}
+        <button
+          type="button"
+          className={`btn-vbar-tool ${zoomLevel > 1.0 ? 'active' : ''}`}
+          onClick={handleZoomIn}
+          disabled={zoomLevel >= 2.25}
+          title="Sayfayı Büyüt (+)"
+          aria-label="Büyüt"
+          id="btn-reader-zoom-in"
+        >
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            <line x1="11" y1="8" x2="11" y2="14" />
+            <line x1="8" y1="11" x2="14" y2="11" />
+          </svg>
+        </button>
+
+        {/* Küçült (-) */}
+        <button
+          type="button"
+          className="btn-vbar-tool"
+          onClick={handleZoomOut}
+          disabled={zoomLevel <= 1.0}
+          title="Sayfayı Küçült (-)"
+          aria-label="Küçült"
+          id="btn-reader-zoom-out"
+        >
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            <line x1="8" y1="11" x2="14" y2="11" />
+          </svg>
+        </button>
+
+        {/* Büyütmeyi Sıfırla (% Göstergesi) */}
+        {zoomLevel > 1.0 && (
+          <button
+            type="button"
+            className="btn-vbar-tool btn-vbar-zoom-reset"
+            onClick={handleZoomReset}
+            title="Büyütmeyi Sıfırla (%100)"
+            aria-label="Büyütmeyi Sıfırla"
+          >
+            <span style={{ fontSize: '10.5px', fontWeight: 'bold' }}>%{Math.round(zoomLevel * 100)}</span>
+          </button>
+        )}
+
+        <div className="vbar-divider" aria-hidden="true" />
+
         {/* Ses Aç/Kapat */}
         <button
           type="button"
@@ -735,11 +993,17 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
 
       {/* ── ANA OKUMA ALANI: SAYFA DIŞINDA BÜYÜK OKLAR + MERKEZDE DERGİ ── */}
       <main
-        className="reader-stage-container modern-stage"
+        className={`reader-stage-container modern-stage ${isLoupeActive ? 'loupe-mode-active' : ''}`}
         onDragOver={(e) => e.preventDefault()}
         onDrop={handleDrop}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        onDoubleClick={handleDoubleClick}
+        onWheel={handleWheel}
       >
         {/* SOL ÇEVİRME OKU (Sayfanın DIŞINDA) */}
         <button
@@ -792,11 +1056,14 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
             </div>
           ) : (
             <div
-              className="flipbook-mount-wrapper"
+              className={`flipbook-mount-wrapper ${zoomLevel > 1.0 ? 'is-zoomed' : ''} ${isPanning ? 'is-panning' : ''}`}
               ref={bookMountRef}
               style={{
                 marginLeft: `${coverMarginLeft}px`,
-                transition: 'margin-left 0.42s cubic-bezier(0.22, 1, 0.36, 1)',
+                transform: `scale(${zoomLevel}) translate(${panOffset.x / zoomLevel}px, ${panOffset.y / zoomLevel}px)`,
+                transformOrigin: 'center center',
+                transition: isPanning ? 'none' : 'transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), margin-left 0.42s cubic-bezier(0.22, 1, 0.36, 1)',
+                cursor: isLoupeActive ? 'crosshair' : (zoomLevel > 1.0 ? (isPanning ? 'grabbing' : 'grab') : undefined),
               }}
             />
           )}
@@ -866,6 +1133,25 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
           </div>
         ))}
       </div>
+
+      {/* ── BÜYÜTEÇ LENSİ (MAGNIFYING GLASS LOUPE) ── */}
+      {isLoupeActive && loupeState.visible && loupeState.imgUrl && (
+        <div
+          className="reader-loupe-lens"
+          style={{
+            left: `${loupeState.x}px`,
+            top: `${loupeState.y}px`,
+            backgroundImage: `url("${loupeState.imgUrl}")`,
+            backgroundSize: `${loupeState.bgW}px ${loupeState.bgH}px`,
+            backgroundPosition: `${loupeState.bgX}px ${loupeState.bgY}px`,
+            backgroundRepeat: 'no-repeat',
+          }}
+        >
+          <div className="reader-loupe-glare" />
+          <div className="reader-loupe-crosshair" />
+          <span className="reader-loupe-badge">2.6x Büyüteç</span>
+        </div>
+      )}
 
     </div>
   )
