@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { getSafeMediaUrl } from '../lib/r2'
-import MagazineReader from './MagazineReader'
 
 const ALL_MAGAZINES_FALLBACK = [
   {
@@ -236,21 +236,11 @@ function CoverCard({ mag, index, isCenter }) {
 }
 
 export default function MagazineGrid({ user, isAdmin }) {
+  const navigate = useNavigate()
   const [magazines, setMagazines] = useState(ALL_MAGAZINES_FALLBACK)
   const [activeIdx, setActiveIdx] = useState(0)
-  const [openMag, setOpenMag] = useState(null)   // seçilen dergi — null ise kapalı
-  const [isClosing, setIsClosing] = useState(false) // kapanma animasyonu
   const dragStart = useRef(null)
   const isDragging = useRef(false)
-
-  // Kapanma animasyonlu kapat
-  const handleCloseReader = useCallback(() => {
-    setIsClosing(true)
-    setTimeout(() => {
-      setOpenMag(null)
-      setIsClosing(false)
-    }, 270)
-  }, [])
 
   const fetchMagazines = useCallback(async () => {
     try {
@@ -281,16 +271,6 @@ export default function MagazineGrid({ user, isAdmin }) {
 
   useEffect(() => { fetchMagazines() }, [fetchMagazines])
 
-  // Modal açıkken body scroll'unu kilitle
-  useEffect(() => {
-    if (openMag) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-    }
-    return () => { document.body.style.overflow = '' }
-  }, [openMag])
-
   const total = magazines.length
 
   const prev = useCallback(() => {
@@ -301,17 +281,15 @@ export default function MagazineGrid({ user, isAdmin }) {
     setActiveIdx(i => (i + 1) % total)
   }, [total])
 
-  // Klavye ok tuşları ile gezinme + Escape ile modalı kapat
+  // Klavye ok tuşları ile gezinme
   useEffect(() => {
     const handler = (e) => {
-      if (e.key === 'Escape') { handleCloseReader(); return }
-      if (openMag) return   // modal açıkken raf navigasyonunu durdur
       if (e.key === 'ArrowLeft') prev()
       if (e.key === 'ArrowRight') next()
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [prev, next, openMag, handleCloseReader])
+  }, [prev, next])
 
   // Fareyle sürükleme ve mobilde dokunarak kaydırma
   const onPointerDown = (e) => {
@@ -407,7 +385,7 @@ export default function MagazineGrid({ user, isAdmin }) {
                   onClick={() => {
                     if (isDragging.current) return
                     if (slot === 'center') {
-                      setOpenMag(mag)
+                      navigate(`/dergi/${mag.id || mag.issue_number}`)
                     } else if (slot === 'left') {
                       prev()
                     } else if (slot === 'right') {
@@ -416,7 +394,7 @@ export default function MagazineGrid({ user, isAdmin }) {
                   }}
                   aria-label={
                     slot === 'center'
-                      ? `${mag.title} — Dergiyi aç ve oku`
+                      ? `${mag.title} — Sayfaya git ve oku`
                       : slot === 'left'
                       ? `Önceki sayı: ${mag.title}`
                       : `Sonraki sayı: ${mag.title}`
@@ -477,7 +455,7 @@ export default function MagazineGrid({ user, isAdmin }) {
               type="button"
               className="draf-btn-read"
               onClick={() => {
-                setOpenMag(activeMag)
+                navigate(`/dergi/${activeMag.id || activeMag.issue_number}`)
               }}
               id="btn-draf-read-now"
             >
@@ -487,26 +465,6 @@ export default function MagazineGrid({ user, isAdmin }) {
               </svg>
               <span>Sayıyı Oku (Sayfaları Çevir) →</span>
             </button>
-          </div>
-        </div>
-      )}
-
-      {/* ── İnline Flipbook Okuyucu Modal ───────────────────────────── */}
-      {openMag && (
-        <div
-          className="draf-reader-modal-overlay"
-          role="dialog"
-          aria-modal="true"
-          aria-label={`${openMag.title} — Flipbook Okuyucu`}
-          onClick={(e) => { if (e.target === e.currentTarget) handleCloseReader() }}
-        >
-          <div className={`draf-reader-modal-inner${isClosing ? ' is-closing' : ''}`}>
-            <MagazineReader
-              magazine={openMag}
-              user={user}
-              isAdmin={isAdmin}
-              onClose={handleCloseReader}
-            />
           </div>
         </div>
       )}

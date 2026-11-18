@@ -6,7 +6,6 @@ import WelcomePostcardModal from '../components/WelcomePostcardModal'
 import { supabase } from '../lib/supabase'
 import { useSiteContent } from '../lib/siteContent'
 import { getSafeMediaUrl } from '../lib/r2'
-import MagazineReader from '../components/MagazineReader'
 import CountdownSection from '../components/CountdownSection'
 
 // ─── Fallback dergi verisi ────────────────────────────────────────────────────
@@ -49,7 +48,6 @@ export default function Home({ user, isAdmin }) {
   const [allMagazines, setAllMagazines] = useState(FEATURED_FALLBACKS)
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false)
   const [latestMag, setLatestMag] = useState(null)
-  const [openReaderMag, setOpenReaderMag] = useState(null)
   const [teamMembers, setTeamMembers] = useState(TEAM_FALLBACK)
   const [founders, setFounders] = useState(TEAM_FALLBACK.slice(0, 2))
   const [founder, setFounder] = useState(TEAM_FALLBACK[0])
@@ -113,7 +111,7 @@ export default function Home({ user, isAdmin }) {
 
   const handleReadIssue = () => {
     if (featuredMag) {
-      setOpenReaderMag(featuredMag)
+      navigate(`/dergi/${featuredMag.id || featuredMag.issue_number}`)
     }
   }
 
@@ -392,10 +390,10 @@ export default function Home({ user, isAdmin }) {
                   <article
                     key={mag.id}
                     className="home-flat-mag-card"
-                    onClick={() => setOpenReaderMag(mag)}
+                    onClick={() => navigate(`/dergi/${mag.id || mag.issue_number}`)}
                     tabIndex={0}
                     role="button"
-                    onKeyDown={(e) => e.key === 'Enter' && setOpenReaderMag(mag)}
+                    onKeyDown={(e) => e.key === 'Enter' && navigate(`/dergi/${mag.id || mag.issue_number}`)}
                     aria-label={`${mag.title} oku`}
                   >
                     <div className="home-flat-mag-cover-wrap">
@@ -440,18 +438,6 @@ export default function Home({ user, isAdmin }) {
       <Footer />
 
       <WelcomePostcardModal isOpen={isWelcomeModalOpen} onClose={() => setIsWelcomeModalOpen(false)} user={user} />
-
-      {/* ── SAYFA İÇİ DERGİ OKUYUCU MODALI (FLIPBOOK SİTEDE KALIR) ── */}
-      {openReaderMag && (
-        <div className="reader-site-modal-overlay">
-          <MagazineReader
-            magazine={openReaderMag}
-            user={user}
-            isAdmin={isAdmin}
-            onClose={() => setOpenReaderMag(null)}
-          />
-        </div>
-      )}
     </div>
   )
 }

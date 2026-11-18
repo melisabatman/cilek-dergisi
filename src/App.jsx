@@ -9,7 +9,7 @@ import Ekibimiz   from './pages/Ekibimiz'
 import Iletisim   from './pages/Iletisim'
 import Auth       from './pages/Auth'
 import Admin      from './pages/Admin'
-import ReaderPage from './pages/ReaderPage'
+import MagazinePage from './pages/MagazinePage'
 import PixelSparkleTrail from './components/PixelSparkleTrail'
 
 export default function App() {
@@ -56,7 +56,8 @@ export default function App() {
         <Route path="/iletisim"     element={<Iletisim   user={user} isAdmin={isAdmin} />} />
         <Route path="/auth"         element={<Auth       user={user} isAdmin={isAdmin} />} />
         <Route path="/admin"      element={<Admin      user={user} isAdmin={isAdmin} />} />
-        <Route path="/oku/:id"    element={<ReaderPage user={user} isAdmin={isAdmin} />} />
+        <Route path="/dergi/:id"  element={<MagazinePage user={user} isAdmin={isAdmin} />} />
+        <Route path="/oku/:id"    element={<MagazinePage user={user} isAdmin={isAdmin} />} />
       </Routes>
     </BrowserRouter>
   )

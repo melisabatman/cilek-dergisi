@@ -57,7 +57,7 @@ function playPageFlipSound() {
   }
 }
 
-export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
+export default function MagazineReader({ magazine, user, isAdmin, embedded = false, onPageChange, onClose }) {
   const navigate = useNavigate()
   const fileInputRef = useRef(null)
 
@@ -305,11 +305,14 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
 
     // Kullanılabilir alan (Oklar ve araç çubuğu dışarıda)
     const viewportRect = viewportEl.getBoundingClientRect()
-    const paddingX = isMobile ? 12 : 72
-    const paddingY = isMobile ? 16 : 32
+    const paddingX = isMobile ? 8 : (embedded ? 32 : 64)
+    const paddingY = isMobile ? 8 : (embedded ? 12 : 24)
 
-    const availableWidth = Math.max(120, (viewportRect.width || window.innerWidth) - paddingX * 2)
-    const availableHeight = Math.max(120, (viewportRect.height || (window.innerHeight - 100)) - paddingY * 2)
+    const containerW = viewportRect.width || viewportEl.clientWidth || window.innerWidth
+    const containerH = viewportRect.height || viewportEl.clientHeight || (window.innerHeight * 0.75)
+
+    const availableWidth = Math.max(120, containerW - paddingX * 2)
+    const availableHeight = Math.max(120, containerH - paddingY * 2)
 
     const naturalWidth = Math.max(1, pdfMeta.width || 210)
     const naturalHeight = Math.max(1, pdfMeta.height || 297)
@@ -360,7 +363,8 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
     setTotalPagesCount(clonedItems.length)
 
     // STPAGEFLIP YAPILANDIRMASI:
-    // showCover: true -> Ön kapak tek sayfa, iç sayfalar çiftli yan yana, arka kapak tek sayfa kapanır!
+    // showCover: !isMobile -> Masaüstünde ön ve arka kapak tek sayfa ortalanır, iç sayfalar çiftli.
+    // Mobilde ise showCover: false yapılır; böylece her sayfa tek sayfa akar ve sayfa yarıda kesilmez!
     const pf = new PageFlip(bookWrapper, {
       width: pageWidth,
       height: pageHeight,
@@ -370,14 +374,14 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
       minHeight: pageHeight,
       maxHeight: pageHeight,
       startPage: targetStartPage,
-      showCover: true, // ÖN VE ARKA KAPAK TEK, DİĞERLERİ İKİLİ!
-      usePortrait: useSinglePage,
-      mobileScrollSupport: true,
-      useMouseEvents: true, // Fare ile tutup kıvırma/katlama desteği
-      disableFlipByClick: true, // Tıklamayı aşağıdaki akıllı dinleyici yönetecek
+      showCover: !isMobile,
+      usePortrait: isMobile,
+      mobileScrollSupport: false, // Mobilde dokunmatik yaprak çevirmeyi engellemez
+      useMouseEvents: true, // Fare ve parmakla tutup kıvırma/katlama desteği
+      disableFlipByClick: false, // Kenarlara tıklayarak veya dokunarak sayfa çevirme
       clickEventForward: true,
-      swipeDistance: 15,
-      flippingTime: isMobile ? 420 : 550, // Akıcı yaprak çevirme süresi
+      swipeDistance: isMobile ? 18 : 25,
+      flippingTime: isMobile ? 380 : 520, // Akıcı yaprak çevirme süresi
       showPageCorners: true,
       maxShadowOpacity: 0.45,
       drawShadow: true,
@@ -419,6 +423,7 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
       pf.on('flip', (e) => {
         const pIndex = Number(e.data) || 0
         setCurrentPageIndex(pIndex)
+        onPageChange?.(pIndex + 1)
         if (soundEnabledRef.current) playPageFlipSound()
 
         try {
@@ -449,6 +454,7 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
         setIsBookReady(true)
         setTotalPagesCount(pf.getPageCount())
         setCurrentPageIndex(targetStartPage)
+        onPageChange?.(targetStartPage + 1)
 
         try {
           const pageCollection = pf.getPageCollection()
@@ -590,7 +596,7 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
   }
 
   return (
-    <div className={`magazine-reader-root modern-editorial-layout ${isFullscreen ? 'is-fullscreen' : ''}`} ref={bookStageRef}>
+    <div className={`magazine-reader-root ${embedded ? 'reader-embedded-mode' : ''} modern-editorial-layout ${isFullscreen ? 'is-fullscreen' : ''}`} ref={bookStageRef}>
 
       {/* Gizli dosya seçici */}
       <input
@@ -601,33 +607,44 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
         onChange={handleLocalPdfUpload}
       />
 
-      {/* ── SOL ALT: VINTAGE DERGİ AMBLEMİ & BAŞLIK ── */}
-      <aside className="reader-corner-brand" aria-label="Dergi Bilgisi">
-        <div className="reader-brand-emblem-wrap">
-          <img src="/icons/cilek-vintage.png" alt="" className="reader-corner-berry" />
-          <div className="reader-corner-texts">
-            <span className="reader-corner-title">Çilek</span>
-            <span className="reader-corner-sub">{magazine?.issue_number ? `Sayı #${magazine.issue_number}` : 'Koleksiyon'}</span>
+      {/* ── SOL ALT: VINTAGE DERGİ AMBLEMİ & BAŞLIK (Modal veya Tam Ekran Açıkken) ── */}
+      {(!embedded || isFullscreen) && (
+        <aside className="reader-corner-brand" aria-label="Dergi Bilgisi">
+          <div className="reader-brand-emblem-wrap">
+            <img src="/icons/cilek-vintage.png" alt="" className="reader-corner-berry" />
+            <div className="reader-corner-texts">
+              <span className="reader-corner-title">Çilek</span>
+              <span className="reader-corner-sub">{magazine?.issue_number ? `Sayı #${magazine.issue_number}` : 'Koleksiyon'}</span>
+            </div>
           </div>
-        </div>
-      </aside>
+        </aside>
+      )}
 
       {/* ── SAĞ KENAR: DİKEY YÜZEN ARAÇ ÇUBUĞU ── */}
       <aside className="reader-floating-vbar" aria-label="Okuma Araçları">
-        {/* Yorumlar Butonu */}
-        <button
-          type="button"
-          className={`btn-vbar-tool ${isCommentsOpen ? 'active' : ''}`}
-          onClick={() => setIsCommentsOpen(v => !v)}
-          title="Sayfa Yorumları"
-          aria-label="Sayfa Yorumları"
-        >
-          <span className="vbar-icon">💬</span>
-          {commentsCount > 0 && <span className="vbar-badge">{commentsCount}</span>}
-        </button>
+        {/* Yorumlar Butonu (Sadece Modal veya Tam Ekran Açıkken) */}
+        {(!embedded || isFullscreen) && (
+          <button
+            type="button"
+            className={`btn-vbar-tool ${isCommentsOpen ? 'active' : ''}`}
+            onClick={() => {
+              const el = document.getElementById('issue-comments-section')
+              if (el) {
+                el.scrollIntoView({ behavior: 'smooth' })
+              } else {
+                setIsCommentsOpen(v => !v)
+              }
+            }}
+            title="Okur Yorumları"
+            aria-label="Okur Yorumları"
+          >
+            <span className="vbar-icon">💬</span>
+            {commentsCount > 0 && <span className="vbar-badge">{commentsCount}</span>}
+          </button>
+        )}
 
-        {/* PDF İndir (Varsa - Güvenli Proxy Linki ile) */}
-        {magazine?.pdf_url && (
+        {/* PDF İndir (Sadece Modal veya Tam Ekran Açıkken - Normal sayfada başlık altında mevcut) */}
+        {(!embedded || isFullscreen) && magazine?.pdf_url && (
           <a
             href={getSafeMediaUrl(magazine.pdf_url)}
             download
@@ -648,7 +665,7 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
         {/* Tam Ekran */}
         <button
           type="button"
-          className="btn-vbar-tool desktop-only-tool"
+          className="btn-vbar-tool"
           onClick={toggleFullscreen}
           title={isFullscreen ? 'Tam Ekrandan Çık' : 'Tam Ekran'}
           aria-label="Tam Ekran"
@@ -685,18 +702,21 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
           {soundEnabled ? '🔊' : '🔇'}
         </button>
 
-        <div className="vbar-divider" aria-hidden="true" />
-
-        {/* Kapat (✕) Butonu */}
-        <button
-          type="button"
-          className="btn-vbar-tool btn-vbar-close"
-          onClick={handleClose}
-          title="Okuyucuyu Kapat (Esc)"
-          aria-label="Kapat"
-        >
-          ✕
-        </button>
+        {/* Kapat (✕) Butonu (Sadece modal modunda) */}
+        {!embedded && (
+          <>
+            <div className="vbar-divider" aria-hidden="true" />
+            <button
+              type="button"
+              className="btn-vbar-tool btn-vbar-close"
+              onClick={handleClose}
+              title="Okuyucuyu Kapat (Esc)"
+              aria-label="Kapat"
+            >
+              ✕
+            </button>
+          </>
+        )}
       </aside>
 
       {/* ── ANA OKUMA ALANI: SAYFA DIŞINDA BÜYÜK OKLAR + MERKEZDE DERGİ ── */}
@@ -801,16 +821,18 @@ export default function MagazineReader({ magazine, user, isAdmin, onClose }) {
         </div>
       </footer>
 
-      {/* ── YORUMLAR ÇEKMECESİ ── */}
-      <PageCommentsDrawer
-        magazineId={magazine?.id}
-        activePages={activePages}
-        user={user}
-        isAdmin={isAdmin}
-        isOpen={isCommentsOpen}
-        onClose={() => setIsCommentsOpen(false)}
-        onCommentCountChange={setCommentsCount}
-      />
+      {/* ── YORUMLAR ÇEKMECESİ (Yalnızca Modal / Bağımsız Modda) ── */}
+      {!embedded && (
+        <PageCommentsDrawer
+          magazineId={magazine?.id}
+          activePages={activePages}
+          user={user}
+          isAdmin={isAdmin}
+          isOpen={isCommentsOpen}
+          onClose={() => setIsCommentsOpen(false)}
+          onCommentCountChange={setCommentsCount}
+        />
+      )}
 
       {/* ── GİZLİ ŞABLON SAYFALAR (HTML FLIPBOOK ÇEVİRİMİ İÇİN) ── */}
       <div ref={pagesTemplateRef} style={{ display: 'none' }} aria-hidden="true">
