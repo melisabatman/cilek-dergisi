@@ -121,8 +121,8 @@ export default function QuizClub({ user, isAdmin }) {
   // Paylaşım fonksiyonları
   const shareUrl = typeof window !== 'undefined' ? window.location.href : 'https://www.cilekdergi.com/testler'
   const shareText = finalResult && activeQuiz
-    ? `Çilek Dergisi HEY GIRL QUIZ CLUB'da "${activeQuiz.title}" testini çözdüm ve sonucum: ${finalResult.name}! ✨ Sen de kendini keşfet:`
-    : 'Çilek Dergisi HEY GIRL QUIZ CLUB testlerini hemen keşfet!'
+    ? `Çilek Dergisi Quiz Club'da "${activeQuiz.title}" testini çözdüm ve sonucum: ${finalResult.name}! ✨ Sen de kendini keşfet:`
+    : 'Çilek Dergisi Quiz Club testlerini hemen keşfet!'
 
   const handleNativeShare = async () => {
     if (navigator.share) {
@@ -166,7 +166,7 @@ export default function QuizClub({ user, isAdmin }) {
               </div>
 
               <h1 className="quiz-club-main-title">
-                HEY GIRL <span className="title-serif-italic">QUIZ CLUB</span>
+                ÇİLEK <span className="title-serif-italic">QUIZ CLUB</span>
               </h1>
 
               <p className="quiz-club-subtitle">

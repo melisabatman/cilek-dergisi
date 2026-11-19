@@ -368,13 +368,13 @@ export default function Home({ user, isAdmin }) {
           </div>
         </section>
 
-        {/* ── 8.5. HEY GIRL QUIZ CLUB (TESTLER & KEŞİF KULÜBÜ) ────────── */}
-        <section className="home-quiz-teaser-section" aria-label="Hey Girl Quiz Club">
+        {/* ── 8.5. ÇİLEK QUIZ CLUB (TESTLER & KEŞİF KULÜBÜ) ────────── */}
+        <section className="home-quiz-teaser-section" aria-label="Çilek Quiz Club">
           <div className="container">
             <div className="home-quiz-teaser-header">
               <span className="home-quiz-teaser-eyebrow">✦ ÇİLEK DERGİSİ ÖZEL KULÜBÜ ✦</span>
               <h2 className="home-quiz-teaser-title">
-                HEY GIRL <span className="serif-italic">QUIZ CLUB</span>
+                ÇİLEK <span className="serif-italic">QUIZ CLUB</span>
               </h2>
               <p className="home-quiz-teaser-sub">
                 Kendini ne kadar tanıyorsun? Hadi birlikte keşfedelim!

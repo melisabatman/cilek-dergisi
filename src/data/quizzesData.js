@@ -1,5 +1,5 @@
 /**
- * HEY GIRL QUIZ CLUB — Çilek Dergisi Kişilik & Kültür Testleri
+ * ÇİLEK DERGİSİ QUIZ CLUB — Kişilik & Kültür Testleri
  * 
  * 1. Hangi Gossip Girl Kızısın?
  * 2. Hangi Dönemin Kızısın?

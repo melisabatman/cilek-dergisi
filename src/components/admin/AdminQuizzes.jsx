@@ -282,7 +282,7 @@ export default function AdminQuizzes({
       <div className="admin-cms-header-row">
         <div>
           <span className="admin-strawberry-badge">🎀 QUIZ CLUB KONTROLÜ</span>
-          <h2 className="admin-card-title">Hey Girl Quiz Club Yönetimi</h2>
+          <h2 className="admin-card-title">Quiz Club Yönetimi</h2>
           <p className="admin-card-subtitle">
             Kişilik testlerini, her sonucun karakter fotoğraflarını, sorularını ve yakında çıkacak testleri buradan kolayca yönetin.
           </p>
