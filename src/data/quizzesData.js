@@ -594,3 +594,22 @@ export const UPCOMING_QUIZZES = [
     color: '#E8B54D'
   }
 ]
+
+/**
+ * Dinamik CMS veya yerel ayarları varsayılanlarla birleştiren yardımcı fonksiyonlar.
+ * Admin panelinden yapılan tüm düzenlemeler bu fonksiyonlar sayesinde sitede anında görünür.
+ */
+export function getEffectiveQuizzes(customQuizzes) {
+  if (Array.isArray(customQuizzes) && customQuizzes.length > 0) {
+    return customQuizzes
+  }
+  return QUIZZES
+}
+
+export function getEffectiveUpcomingQuizzes(customUpcoming) {
+  if (Array.isArray(customUpcoming) && customUpcoming.length > 0) {
+    return customUpcoming
+  }
+  return UPCOMING_QUIZZES
+}
+

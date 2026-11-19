@@ -7,7 +7,7 @@ import { supabase } from '../lib/supabase'
 import { useSiteContent } from '../lib/siteContent'
 import { getSafeMediaUrl } from '../lib/r2'
 import CountdownSection from '../components/CountdownSection'
-import { QUIZZES } from '../data/quizzesData'
+import { QUIZZES, getEffectiveQuizzes } from '../data/quizzesData'
 
 // ─── Fallback dergi verisi ────────────────────────────────────────────────────
 const FEATURED_FALLBACKS = [
@@ -382,7 +382,7 @@ export default function Home({ user, isAdmin }) {
             </div>
 
             <div className="quiz-cards-grid">
-              {QUIZZES.slice(0, 3).map((quiz, idx) => (
+              {getEffectiveQuizzes(settings?.quizzes_custom).slice(0, 3).map((quiz, idx) => (
                 <article key={quiz.id} className="quiz-card-item">
                   <div className="quiz-card-cover-wrap">
                     <img

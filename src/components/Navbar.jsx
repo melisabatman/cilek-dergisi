@@ -93,7 +93,7 @@ export default function Navbar({ user, isAdmin: propIsAdmin, onOpenWelcomeLetter
           </div>
 
           <p className="announcement-center-text">
-            Hey Chaps! Welcome to Çilek Dergisi 🍓
+            {settings.announcement_text || 'Hey Chaps! Welcome to Çilek Dergisi 🍓'}
           </p>
 
           <div className="announcement-socials-spacer" aria-hidden="true" />

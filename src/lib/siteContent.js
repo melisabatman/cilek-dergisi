@@ -20,6 +20,22 @@ export const DEFAULT_SITE_SETTINGS = {
   contact_phone: '+90 555 000 00 00',
   contact_address: 'Kadıköy, İstanbul',
 
+  // ── SEO & GENEL SİTE META ─────────────────────────────────
+  site_seo_title: 'Çilek Dergisi — Bağımsız Dijital Gençlik, Kültür & Edebiyat Dergisi',
+  site_seo_desc: '15-25 yaş kuşağı için sınırları kaldıran bağımsız dijital kültür, sanat, edebiyat ve estetik durağı.',
+
+  // ── ÖNE ÇIKAN / AKTİF SAYI ────────────────────────────────
+  featured_issue_number: '', // Boşsa en büyük sayı_number'a sahip olan otomatik seçilir
+
+  // ── DUYURU BANDI (ÜST ANNOUNCEMENT BAR) ───────────────────
+  announcement_is_active: false,
+  announcement_text: '✨ Yeni sayımız yayında! Sayfaları çevirmek için hemen tıkla.',
+  announcement_link: '/dergiler',
+
+  // ── QUIZ CLUB TESTLERİ VERİSİ (CUSTOM QUIZZES & UPCOMING) ─
+  quizzes_custom: null,
+  upcoming_quizzes_custom: null,
+
   // ── 1. ANA SAYFA HERO & MANŞET ────────────────────────────
   hero_eyebrow: 'Çilek Dergisi',
   hero_title_line1: 'Kendi sesini',

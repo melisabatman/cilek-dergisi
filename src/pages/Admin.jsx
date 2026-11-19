@@ -5,14 +5,21 @@ import { uploadAsset, isR2Configured, getSafeMediaUrl, PDF_MAX_BYTES } from '../
 import { useSiteContent, DEFAULT_SITE_SETTINGS, DEFAULT_SITE_CONTENT } from '../lib/siteContent'
 import WelcomePostcardModal from '../components/WelcomePostcardModal'
 import { analyzeImageDimensions, optimizeCoverToA4, formatBytes } from '../lib/imageOptimizer'
+import AdminDashboard from '../components/admin/AdminDashboard'
+import AdminQuizzes from '../components/admin/AdminQuizzes'
+import AdminComments from '../components/admin/AdminComments'
+import AdminTeam from '../components/admin/AdminTeam'
+import AdminAnnouncements from '../components/admin/AdminAnnouncements'
+import AdminGeneralSettings from '../components/admin/AdminGeneralSettings'
+import { QUIZZES } from '../data/quizzesData'
 
 export default function Admin({ user, isAdmin: propIsAdmin }) {
   const navigate = useNavigate()
   const [isAdmin, setIsAdmin] = useState(propIsAdmin ?? false)
   const [authChecking, setAuthChecking] = useState(propIsAdmin === undefined)
 
-  // Aktif Tab: 'magazines' (Sayılar) | 'team' (Ekip)
-  const [activeTab, setActiveTab] = useState('magazines')
+  // Aktif Tab: 'dashboard' | 'magazines' | 'quizzes' | 'comments' | 'team' | 'content' | 'letter' | 'announcement' | 'media' | 'settings'
+  const [activeTab, setActiveTab] = useState('dashboard')
 
   // Bildirim mesajları (Toast / Alert)
   const [feedback, setFeedback] = useState({ type: '', message: '' })
@@ -161,12 +168,50 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
     }
   }, [])
 
+  // -------------------------------------------------------------
+  // OKUR YORUMLARI (PAGE COMMENTS)
+  // -------------------------------------------------------------
+  const [comments, setComments] = useState([])
+  const [loadingComments, setLoadingComments] = useState(false)
+
+  const fetchComments = useCallback(async () => {
+    setLoadingComments(true)
+    try {
+      const { data, error } = await supabase
+        .from('page_comments')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (!error && data) {
+        setComments(data)
+      }
+    } catch (err) {
+      console.warn('Comments fetch error:', err)
+    } finally {
+      setLoadingComments(false)
+    }
+  }, [])
+
+  const handleDeleteComment = async (commentId) => {
+    const { error } = await supabase
+      .from('page_comments')
+      .delete()
+      .eq('id', commentId)
+
+    if (!error) {
+      setComments(prev => prev.filter(c => c.id !== commentId))
+    } else {
+      throw error
+    }
+  }
+
   useEffect(() => {
     if (isAdmin) {
       fetchMagazines()
       fetchTeamMembers()
+      fetchComments()
     }
-  }, [isAdmin, fetchMagazines, fetchTeamMembers])
+  }, [isAdmin, fetchMagazines, fetchTeamMembers, fetchComments])
 
   // -------------------------------------------------------------
   // SAYI (MAGAZINE) FORM İŞLEMLERİ
@@ -851,8 +896,18 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
 
       {/* Ana Gövde */}
       <div className="admin-main-container">
-        {/* Sekmeler (Tab Bar) */}
+        {/* Sekmeler (Tab Bar) - Tüm Yönetim Sekmeleri */}
         <div className="admin-tabs-nav" role="tablist">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'dashboard'}
+            className={`admin-tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
+            onClick={() => setActiveTab('dashboard')}
+            id="tab-btn-dashboard"
+          >
+            📊 Genel Bakış
+          </button>
           <button
             type="button"
             role="tab"
@@ -866,12 +921,42 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
           <button
             type="button"
             role="tab"
+            aria-selected={activeTab === 'quizzes'}
+            className={`admin-tab-btn ${activeTab === 'quizzes' ? 'active' : ''}`}
+            onClick={() => setActiveTab('quizzes')}
+            id="tab-btn-quizzes"
+          >
+            🎀 Quiz Club (Testler)
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'comments'}
+            className={`admin-tab-btn ${activeTab === 'comments' ? 'active' : ''}`}
+            onClick={() => setActiveTab('comments')}
+            id="tab-btn-comments"
+          >
+            💬 Okur Yorumları ({comments.length})
+          </button>
+          <button
+            type="button"
+            role="tab"
             aria-selected={activeTab === 'team'}
             className={`admin-tab-btn ${activeTab === 'team' ? 'active' : ''}`}
             onClick={() => setActiveTab('team')}
             id="tab-btn-team"
           >
-            👥 Ekip Yönetimi ({teamMembers.length})
+            👥 Ekip &amp; Kurucu ({teamMembers.length + 1})
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'content'}
+            className={`admin-tab-btn ${activeTab === 'content' ? 'active' : ''}`}
+            onClick={() => setActiveTab('content')}
+            id="tab-btn-content"
+          >
+            ✍️ Site Metinleri (CMS)
           </button>
           <button
             type="button"
@@ -886,12 +971,12 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
           <button
             type="button"
             role="tab"
-            aria-selected={activeTab === 'content'}
-            className={`admin-tab-btn ${activeTab === 'content' ? 'active' : ''}`}
-            onClick={() => setActiveTab('content')}
-            id="tab-btn-content"
+            aria-selected={activeTab === 'announcement'}
+            className={`admin-tab-btn ${activeTab === 'announcement' ? 'active' : ''}`}
+            onClick={() => setActiveTab('announcement')}
+            id="tab-btn-announcement"
           >
-            ✍️ Site Metinleri
+            📢 Geri Sayım &amp; Duyuru
           </button>
           <button
             type="button"
@@ -901,15 +986,103 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
             onClick={() => setActiveTab('media')}
             id="tab-btn-media"
           >
-            🖼️ Medya & Fotoğraflar ({mediaState?.gallery?.length || 0})
+            🖼️ Medya Galerisi ({mediaState?.gallery?.length || 0})
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'settings'}
+            className={`admin-tab-btn ${activeTab === 'settings' ? 'active' : ''}`}
+            onClick={() => setActiveTab('settings')}
+            id="tab-btn-settings"
+          >
+            ⚙️ Genel Ayarlar &amp; SEO
           </button>
         </div>
+
+        {/* -------------------------------------------------------------
+            TAB 0: GENEL BAKIŞ (DASHBOARD)
+        ------------------------------------------------------------- */}
+        {activeTab === 'dashboard' && (
+          <div className="admin-tab-content">
+            <AdminDashboard
+              magazines={magazines}
+              teamMembers={teamMembers}
+              quizzes={siteState?.quizzes_custom || QUIZZES}
+              comments={comments}
+              siteState={siteState}
+              setActiveTab={setActiveTab}
+            />
+          </div>
+        )}
+
+        {/* -------------------------------------------------------------
+            TAB: QUIZ CLUB (TESTLER VE KARAKTER FOTOĞRAFLARI)
+        ------------------------------------------------------------- */}
+        {activeTab === 'quizzes' && (
+          <div className="admin-tab-content">
+            <AdminQuizzes
+              settings={siteState}
+              onSave={updateSettings}
+              showFeedback={showFeedback}
+            />
+          </div>
+        )}
+
+        {/* -------------------------------------------------------------
+            TAB: OKUR YORUMLARI MODERASYONU
+        ------------------------------------------------------------- */}
+        {activeTab === 'comments' && (
+          <div className="admin-tab-content">
+            <AdminComments
+              comments={comments}
+              magazines={magazines}
+              onDeleteComment={handleDeleteComment}
+              onRefresh={fetchComments}
+              showFeedback={showFeedback}
+            />
+          </div>
+        )}
 
         {/* -------------------------------------------------------------
             TAB 1: SAYI YÖNETİMİ
         ------------------------------------------------------------- */}
         {activeTab === 'magazines' && (
           <div className="admin-tab-content">
+            {/* Öne Çıkan / Aktif Sayı Seçimi */}
+            <div className="admin-cms-section-card" style={{ marginBottom: '1.8rem', background: '#FFFDF9', border: '1.5px solid #E8B54D' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                <div>
+                  <strong style={{ display: 'block', color: 'var(--burgundy)', fontSize: '1.1rem', fontWeight: 900 }}>
+                    ⭐ Ana Sayfada Öne Çıkan / Yayındaki Sayı
+                  </strong>
+                  <small style={{ color: '#666', fontSize: '0.88rem' }}>
+                    Ana sayfadaki "Son Sayıyı Oku" ve "Yayında" vitrininde hangi sayının gösterileceğini seçin.
+                  </small>
+                </div>
+                <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
+                  <select
+                    className="admin-select"
+                    value={siteState.featured_issue_number || ''}
+                    onChange={(e) => {
+                      const val = e.target.value
+                      handleSiteChange('featured_issue_number', val)
+                      saveSiteSettings({ featured_issue_number: val })
+                      showFeedback('success', val ? `Sayı #${val} öne çıkan sayı olarak ayarlandı.` : 'Otomatik son sayı seçildi.')
+                    }}
+                    style={{ minWidth: '240px', fontWeight: 700 }}
+                  >
+                    <option value="">Otomatik (En Son Yayınlanan Sayı)</option>
+                    {magazines.map((m) => (
+                      <option key={m.id} value={m.issue_number}>
+                        Sayı #{m.issue_number} — {m.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
             <div className="admin-two-col-grid">
               
               {/* SOL SÜTUN: FORM (YENİ SAYI EKLE VEYA DÜZENLE) */}
@@ -1395,248 +1568,42 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
         )}
 
         {/* -------------------------------------------------------------
-            TAB 2: EKİP YÖNETİMİ
+            TAB: EKİP & KURUCU YÖNETİMİ
         ------------------------------------------------------------- */}
         {activeTab === 'team' && (
           <div className="admin-tab-content">
-            <div className="admin-two-col-grid">
-
-              {/* SOL SÜTUN: FORM (EKİP ÜYESİ EKLE / DÜZENLE) */}
-              <div className="admin-form-card">
-                <div className="admin-card-header">
-                  <div>
-                    <h2 className="admin-card-title">
-                      {editingMemberId ? `Ekip Üyesini Düzenle (${memberName})` : 'Yeni Ekip Üyesi Ekle'}
-                    </h2>
-                    <p className="admin-card-subtitle">
-                      Ekip sayfasındaki kaydırmalı kartlarda görüntülenecek yaratıcı kadro üyeleri.
-                    </p>
-                  </div>
-                  {editingMemberId && (
-                    <button
-                      type="button"
-                      className="btn-cancel-edit"
-                      onClick={resetTeamForm}
-                      id="btn-cancel-edit-member"
-                    >
-                      İptal / Yeni Üye
-                    </button>
-                  )}
-                </div>
-
-                <form className="admin-form" onSubmit={handleSubmitMember} id="form-team-admin">
-                  <div className="admin-form-row">
-                    <div className="admin-field-group" style={{ flex: 1 }}>
-                      <label htmlFor="member-name" className="admin-label">İsim Soyisim *</label>
-                      <input
-                        id="member-name"
-                        type="text"
-                        className="admin-input"
-                        placeholder="Örn: Melisa Batman"
-                        value={memberName}
-                        onChange={(e) => setMemberName(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="admin-field-group" style={{ flex: '0 0 110px' }}>
-                      <label htmlFor="member-order" className="admin-label">Sıra No</label>
-                      <input
-                        id="member-order"
-                        type="number"
-                        min="1"
-                        className="admin-input"
-                        placeholder="1"
-                        value={memberOrder}
-                        onChange={(e) => setMemberOrder(e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="admin-field-group">
-                    <label htmlFor="member-role" className="admin-label">Rol / Görev *</label>
-                    <input
-                      id="member-role"
-                      type="text"
-                      className="admin-input"
-                      placeholder="Örn: Genel Yayın Yönetmeni & Editör"
-                      value={memberRole}
-                      onChange={(e) => setMemberRole(e.target.value)}
-                      required
-                    />
-                  </div>
-
-                  <div className="admin-field-group">
-                    <label htmlFor="member-bio" className="admin-label">Kısa Biyografi / Açıklama</label>
-                    <textarea
-                      id="member-bio"
-                      rows={3}
-                      className="admin-textarea"
-                      placeholder="Dergideki sorumluluğu, editoryal tutkusu veya kısa tanıtımı…"
-                      value={memberBio}
-                      onChange={(e) => setMemberBio(e.target.value)}
-                    />
-                  </div>
-
-                  {/* Fotoğraf Yükleme */}
-                  <div className="admin-field-group">
-                    <label className="admin-label">Fotoğraf (Cloudflare R2: covers)</label>
-                    <div className="admin-dropzone" style={{ minHeight: '130px' }}>
-                      {memberPhotoPreview ? (
-                        <div className="upload-preview-wrap">
-                          <img src={memberPhotoPreview} alt="Fotoğraf Önizleme" className="member-avatar-preview" />
-                          <button
-                            type="button"
-                            className="btn-remove-preview"
-                            onClick={() => { setMemberPhotoFile(null); setMemberPhotoPreview(''); setMemberPhotoUrl(''); }}
-                          >
-                            Fotoğrafı Kaldır
-                          </button>
-                        </div>
-                      ) : (
-                        <label htmlFor="member-photo-file" className="dropzone-label">
-                          <span className="dropzone-icon">📸</span>
-                          <span className="dropzone-text">Fotoğraf Seç veya Sürükle</span>
-                          <span className="dropzone-sub">Kare veya portre görsel</span>
-                        </label>
-                      )}
-                      <input
-                        id="member-photo-file"
-                        type="file"
-                        accept="image/*"
-                        onChange={handlePhotoFileChange}
-                        className="file-hidden-input"
-                      />
-                    </div>
-                    <input
-                      type="url"
-                      className="admin-input-sm"
-                      placeholder="Veya profil fotoğrafı URL'si girin"
-                      value={memberPhotoUrl}
-                      onChange={(e) => {
-                        setMemberPhotoUrl(e.target.value)
-                        if (!memberPhotoFile) setMemberPhotoPreview(e.target.value)
-                      }}
-                    />
-                  </div>
-
-                  <div className="admin-form-actions">
-                    <button
-                      type="submit"
-                      disabled={submittingMember}
-                      className="btn-admin-submit"
-                      id="btn-save-member"
-                    >
-                      {submittingMember
-                        ? 'Kaydediliyor…'
-                        : editingMemberId
-                        ? 'Üyeyi Güncelle'
-                        : 'Ekibe Ekle'}
-                    </button>
-                    {editingMemberId && (
-                      <button
-                        type="button"
-                        className="btn-admin-secondary"
-                        onClick={resetTeamForm}
-                      >
-                        Vazgeç
-                      </button>
-                    )}
-                  </div>
-                </form>
-              </div>
-
-              {/* SAĞ SÜTUN: EKİP LİSTESİ */}
-              <div className="admin-list-card">
-                <div className="admin-card-header">
-                  <h2 className="admin-card-title">Ekip Kadrosu</h2>
-                  <span className="admin-count-pill">{teamMembers.length} Üye</span>
-                </div>
-
-                {loadingTeam ? (
-                  <div className="admin-loading-state">
-                    <div className="admin-spinner" />
-                    <span>Ekip listesi yükleniyor…</span>
-                  </div>
-                ) : teamMembers.length === 0 ? (
-                  <div className="admin-empty-state">
-                    <span className="empty-emoji">👥</span>
-                    <p>Henüz veritabanında ekip üyesi bulunmuyor.</p>
-                    <small>Soldaki formu kullanarak ekip üyelerini sırayla ekleyebilirsiniz.</small>
-                  </div>
-                ) : (
-                  <div className="admin-items-list" role="list">
-                    {teamMembers.map((member) => (
-                      <div
-                        key={member.id}
-                        className={`admin-item-row ${editingMemberId === member.id ? 'is-editing' : ''}`}
-                        role="listitem"
-                      >
-                        {/* Fotoğraf */}
-                        <div className="admin-member-avatar-box">
-                          {member.photo_url ? (
-                            <img src={member.photo_url} alt={member.name} />
-                          ) : (
-                            <span>🍓</span>
-                          )}
-                        </div>
-
-                        {/* Bilgiler */}
-                        <div className="admin-item-details">
-                          <div className="admin-item-headline">
-                            <span className="admin-order-pill">#{member.order_index}</span>
-                            <h3 className="admin-item-title">{member.name}</h3>
-                          </div>
-                          <p className="admin-member-role-tag">{member.role}</p>
-                          {member.bio && <p className="admin-member-bio-preview">{member.bio}</p>}
-                        </div>
-
-                        {/* Aksiyonlar */}
-                        <div className="admin-item-actions">
-                          <button
-                            type="button"
-                            className="btn-item-edit"
-                            onClick={() => handleStartEditMember(member)}
-                            id={`btn-edit-member-${member.id}`}
-                          >
-                            Düzenle
-                          </button>
-
-                          {deleteConfirmMemberId === member.id ? (
-                            <div className="delete-confirm-group">
-                              <button
-                                type="button"
-                                className="btn-confirm-delete"
-                                onClick={() => handleDeleteMember(member.id)}
-                                id={`btn-confirm-del-member-${member.id}`}
-                              >
-                                Evet, Sil
-                              </button>
-                              <button
-                                type="button"
-                                className="btn-cancel-delete"
-                                onClick={() => setDeleteConfirmMemberId(null)}
-                              >
-                                Vazgeç
-                              </button>
-                            </div>
-                          ) : (
-                            <button
-                              type="button"
-                              className="btn-item-delete"
-                              onClick={() => setDeleteConfirmMemberId(member.id)}
-                              id={`btn-del-member-${member.id}`}
-                            >
-                              Sil
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-            </div>
+            <AdminTeam
+              siteState={siteState}
+              handleSiteChange={handleSiteChange}
+              handleSaveSiteContent={handleSaveSiteContent}
+              savingSite={savingSite}
+              teamMembers={teamMembers}
+              editingMemberId={editingMemberId}
+              submittingMember={submittingMember}
+              deleteConfirmMemberId={deleteConfirmMemberId}
+              setDeleteConfirmMemberId={setDeleteConfirmMemberId}
+              memberName={memberName}
+              setMemberName={setMemberName}
+              memberRole={memberRole}
+              setMemberRole={setMemberRole}
+              memberBio={memberBio}
+              setMemberBio={setMemberBio}
+              memberOrder={memberOrder}
+              setMemberOrder={setMemberOrder}
+              memberPhotoFile={memberPhotoFile}
+              setMemberPhotoFile={setMemberPhotoFile}
+              memberPhotoPreview={memberPhotoPreview}
+              setMemberPhotoPreview={setMemberPhotoPreview}
+              memberPhotoUrl={memberPhotoUrl}
+              setMemberPhotoUrl={setMemberPhotoUrl}
+              handleSubmitMember={handleSubmitMember}
+              handleStartEditMember={handleStartEditMember}
+              resetTeamForm={resetTeamForm}
+              handleDeleteMember={handleDeleteMember}
+              uploadingImageKey={uploadingImageKey}
+              handleUploadImageForField={handleUploadImageForField}
+              showFeedback={showFeedback}
+            />
           </div>
         )}
 
@@ -3471,6 +3438,36 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
               </div>
 
             </div>
+          </div>
+        )}
+
+        {/* -------------------------------------------------------------
+            TAB: GERİ SAYIM & DUYURU YÖNETİMİ
+        ------------------------------------------------------------- */}
+        {activeTab === 'announcement' && (
+          <div className="admin-tab-content">
+            <AdminAnnouncements
+              siteState={siteState}
+              handleSiteChange={handleSiteChange}
+              handleSaveSiteContent={handleSaveSiteContent}
+              savingSite={savingSite}
+              showFeedback={showFeedback}
+            />
+          </div>
+        )}
+
+        {/* -------------------------------------------------------------
+            TAB: GENEL & SEO AYARLARI
+        ------------------------------------------------------------- */}
+        {activeTab === 'settings' && (
+          <div className="admin-tab-content">
+            <AdminGeneralSettings
+              siteState={siteState}
+              handleSiteChange={handleSiteChange}
+              handleSaveSiteContent={handleSaveSiteContent}
+              savingSite={savingSite}
+              showFeedback={showFeedback}
+            />
           </div>
         )}
 

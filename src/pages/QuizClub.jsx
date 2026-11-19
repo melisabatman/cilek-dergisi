@@ -1,17 +1,23 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
-import { QUIZZES, UPCOMING_QUIZZES } from '../data/quizzesData'
+import { QUIZZES, UPCOMING_QUIZZES, getEffectiveQuizzes, getEffectiveUpcomingQuizzes } from '../data/quizzesData'
+import { useSiteContent } from '../lib/siteContent'
 
 export default function QuizClub({ user, isAdmin }) {
   const { slug } = useParams()
   const navigate = useNavigate()
+  const { settings } = useSiteContent()
+
+  // Admin panelinden kaydedilen özel testler varsa onları kullan, yoksa varsayılanları
+  const allQuizzes = useMemo(() => getEffectiveQuizzes(settings?.quizzes_custom), [settings?.quizzes_custom])
+  const upcomingList = useMemo(() => getEffectiveUpcomingQuizzes(settings?.upcoming_quizzes_custom), [settings?.upcoming_quizzes_custom])
 
   // Seçili test
   const activeQuiz = useMemo(() => {
     if (!slug) return null
-    return QUIZZES.find(q => q.slug === slug || q.id === slug) || null
-  }, [slug])
+    return allQuizzes.find(q => q.slug === slug || q.id === slug) || null
+  }, [slug, allQuizzes])
 
   // Test içi durumlar
   const [currentStep, setCurrentStep] = useState('intro') // 'intro' | 'question' | 'result'
@@ -189,7 +195,7 @@ export default function QuizClub({ user, isAdmin }) {
                 {/* 3 Ana Test Kartı */}
                 <section className="quiz-cards-grid-section" aria-label="Popüler Testler">
                   <div className="quiz-cards-grid">
-                    {QUIZZES.map((quiz, idx) => (
+                    {allQuizzes.map((quiz, idx) => (
                       <article key={quiz.id} className="quiz-card-item">
                         <div className="quiz-card-cover-wrap">
                           <img
@@ -247,7 +253,7 @@ export default function QuizClub({ user, isAdmin }) {
 
                     {/* Yakında gelecek testler minyatür kartları */}
                     <div className="quiz-upcoming-previews-grid">
-                      {UPCOMING_QUIZZES.map((item) => (
+                      {upcomingList.map((item) => (
                         <div key={item.id} className="upcoming-preview-item">
                           <span className="upcoming-badge">{item.badge}</span>
                           <span className="upcoming-tag">{item.tag}</span>
@@ -505,7 +511,7 @@ export default function QuizClub({ user, isAdmin }) {
                     <div className="quiz-result-recommendations">
                       <span className="recom-title">Sıradaki Keşfin Ne Olsun?</span>
                       <div className="recom-grid">
-                        {QUIZZES.filter(q => q.id !== activeQuiz.id).map(q => (
+                        {allQuizzes.filter(q => q.id !== activeQuiz.id).map(q => (
                           <Link key={q.id} to={`/testler/${q.slug}`} className="recom-card">
                             <img src={q.coverImage} alt={q.title} className="recom-img" />
                             <div className="recom-meta">
