@@ -6,6 +6,13 @@
  * 3. Hayatının Başrol Karakteri Nasıl Biri?
  */
 
+import blairImg from './blair.jpg'
+import serenaImg from './serena.jpg'
+import jennyImg from './jenny.jpg'
+import vanessaImg from './vanessa.jpg'
+import lilyImg from './lily.jpg'
+import gossipGirlCover from './gossip girl.jpg'
+
 export const QUIZZES = [
   // ── TEST 1: GOSSIP GIRL ──────────────────────────────────────
   {
@@ -15,7 +22,7 @@ export const QUIZZES = [
     subtitle: "Blair'in hırsı mı, Serena'nın enerjisi mi, Jenny'nin cesareti mi? Yoksa bambaşka biri misin?",
     badge: 'POPÜLER TEST · DİZİ & KARAKTER',
     readingTime: '3 dk',
-    coverImage: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1000&q=80',
+    coverImage: gossipGirlCover,
     accentColor: '#BE2625',
     questionsCount: 9,
     description: "New York sokakları, Met basamakları, gizli sırlar ve asla eskimeyen Upper East Side cazibesi... Blair'in tavizsiz hırsı mı, Serena'nın çabasız ışıltısı mı, Jenny'nin asi yeteneği mi, Vanessa'nın bağımsız sanatsal ruhu mu yoksa Lily'nin asil gücü mü? Hadi hangi Gossip Girl kızı olduğunu keşfedelim!",
@@ -26,7 +33,7 @@ export const QUIZZES = [
         role: "Upper East Side'ın Hükümdarı",
         tagline: 'Kraliçe Arı & Strateji Dehası',
         quote: '“İstediklerimi şansa bırakmam, onları elde ederim.”',
-        image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1000&q=80',
+        image: blairImg,
         color: '#8A1C2C',
         traits: ['Lider', 'Stratejik', 'Sadık', 'Kusursuz Tarz', 'Klasik Zarafet'],
         description: 'Sen tam anlamıyla bir vizyon ve irade abidesisin! Hayatında hiçbir şeyi tesadüflere bırakmazsın; bir planın her zaman A, B ve Z planı hazırdır. İkonik taçların ve inci kolyelerin arkasında sevdiklerine son derece sadık, kırılgan ama çelik gibi güçlü bir kalp saklı. Hedeflerine ulaşırken zarafetinden ve yüksek standartlarından asla ödün vermezsin.',
@@ -38,7 +45,7 @@ export const QUIZZES = [
         role: 'Zahmetsizce Büyüleyen Işıltı',
         tagline: 'Manyetik Karizma & Özgür Ruh',
         quote: '“Güneş parıldarken hayatı kutlamamak elde mi?”',
-        image: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1000&q=80',
+        image: serenaImg,
         color: '#D49B55',
         traits: ['Manyetik', 'Sıcakkanlı', 'Çabasız Şık', 'Özgür Ruh', 'Affedici'],
         description: 'Sen odaya girdiğin anda odadaki bütün ışıklar sana döner, hem de sen bunun için parmağını bile kıpırdatmadan! Doğal bir auran, insanları anında saran sıcacık bir enerjin var. Geçmişe takılı kalmaz, daima kalbinin sesini dinlersin. Hata yapmaktan korkmaz, hayatı bir macera gibi yaşamayı seversin. Çabasız şıklığın ve neşen senin süper gücün.',
@@ -50,7 +57,7 @@ export const QUIZZES = [
         role: 'Cesur & Sınırları Aşan Yaratıcı',
         tagline: 'Gözü Pek Tasarımcı & İsyankar Kalp',
         quote: '“Kuralları onlar koyduysa, ben de kendi sahnemi yaratırım.”',
-        image: 'https://images.unsplash.com/photo-1509967419530-da38b4704bc6?auto=format&fit=crop&w=1000&q=80',
+        image: jennyImg,
         color: '#2B2B2B',
         traits: ['Yaratıcı', 'Cesur', 'Özgün', 'Azimli', 'Yenilikçi'],
         description: 'Sen kalıplara sığmayan, kendi yolunu sıfırdan çizen gerçek bir yaratıcısın! Bir dikiş makinesi ve cesaretle dünyayı değiştirebilecek vizyona sahipsin. Başkalarının koyduğu sınırları sorgular, kendi özgün stilini gururla taşırsın. Düştüğün zaman daha da güçlü ayağa kalkar, her yenilgiyi ilhama dönüştürürsün.',
@@ -62,7 +69,7 @@ export const QUIZZES = [
         role: 'Özgün & Bağımsız Entelektüel',
         tagline: 'Sanatçı Gözü & Derin Düşünceler',
         quote: '“Popüler olmak değil, sahici kalmak önemli.”',
-        image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1000&q=80',
+        image: vanessaImg,
         color: '#4B6B58',
         traits: ['Entelektüel', 'Sahici', 'Gözlemci', 'Sanatsever', 'Bağımsız'],
         description: 'Sen gösterişten uzak, derinliği ve anlamı arayan bağımsız bir ruha sahipsin. Popüler olanın peşinden koşmaz; kendi doğrularının, sanatının ve değerlerinin arkasında dimdik durursun. Eski bir plakçı, bağımsız bir film gösterimi veya sabaha kadar süren edebiyat sohbetleri senin evindir.',
@@ -74,7 +81,7 @@ export const QUIZZES = [
         role: 'Zarafetin ve Gücün Sembolü',
         tagline: 'Sessiz Lüks & Sarsılmaz Asalet',
         quote: '“Her fırtınanın ortasında bile duruşunu korumalısın.”',
-        image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=1000&q=80',
+        image: lilyImg,
         color: '#6E4D5A',
         traits: ['Asil', 'Korumacı', 'Sakin Güç', 'Zevk Sahibi', 'Vizyoner'],
         description: 'Sen fırtınaların ortasında bile zarafetini kaybetmeyen, sessiz bir gücün temsilcisisin. Geçmişinde belki biraz rock’n roll gizlidir ama bugün girdiğin her ortamda asil duruşunla saygı uyandırırsın. Sevdiklerini korumak için elinden geleni yapar, kriz anlarını inanılmaz bir soğukkanlılıkla çözersin.',
