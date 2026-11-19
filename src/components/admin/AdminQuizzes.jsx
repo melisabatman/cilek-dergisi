@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { QUIZZES, UPCOMING_QUIZZES } from '../../data/quizzesData'
+import { QUIZZES, UPCOMING_QUIZZES, getEffectiveQuizzes, resolveQuizImage } from '../../data/quizzesData'
 import { uploadAsset, isR2Configured } from '../../lib/r2'
 
 export default function AdminQuizzes({
@@ -9,10 +9,7 @@ export default function AdminQuizzes({
 }) {
   // Aktif testler ve yakında listesi state'i
   const [quizzes, setQuizzes] = useState(() => {
-    if (Array.isArray(settings?.quizzes_custom) && settings.quizzes_custom.length > 0) {
-      return JSON.parse(JSON.stringify(settings.quizzes_custom))
-    }
-    return JSON.parse(JSON.stringify(QUIZZES))
+    return getEffectiveQuizzes(settings?.quizzes_custom)
   })
 
   const [upcoming, setUpcoming] = useState(() => {
@@ -24,8 +21,8 @@ export default function AdminQuizzes({
 
   // Dışarıdan gelen güncel ayarları yerel duruma senkronize et
   useEffect(() => {
-    if (Array.isArray(settings?.quizzes_custom) && settings.quizzes_custom.length > 0) {
-      setQuizzes(settings.quizzes_custom)
+    if (settings?.quizzes_custom) {
+      setQuizzes(getEffectiveQuizzes(settings.quizzes_custom))
     }
   }, [settings?.quizzes_custom])
 
@@ -455,7 +452,7 @@ export default function AdminQuizzes({
                       <div style={{ position: 'relative', width: '90px', height: '110px', flexShrink: 0, borderRadius: '12px', overflow: 'hidden', border: '2px solid rgba(0,0,0,0.1)', background: '#F8E9EB' }}>
                         {resObj.image ? (
                           <img
-                            src={resObj.image}
+                            src={resolveQuizImage(resObj.image)}
                             alt={resObj.name}
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                           />

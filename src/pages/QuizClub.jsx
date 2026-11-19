@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
-import { QUIZZES, UPCOMING_QUIZZES, getEffectiveQuizzes, getEffectiveUpcomingQuizzes } from '../data/quizzesData'
+import { QUIZZES, UPCOMING_QUIZZES, getEffectiveQuizzes, getEffectiveUpcomingQuizzes, resolveQuizImage, QUIZ_CHARACTER_MAP } from '../data/quizzesData'
 import { useSiteContent } from '../lib/siteContent'
 
 export default function QuizClub({ user, isAdmin }) {
@@ -199,10 +199,16 @@ export default function QuizClub({ user, isAdmin }) {
                       <article key={quiz.id} className="quiz-card-item">
                         <div className="quiz-card-cover-wrap">
                           <img
-                            src={quiz.coverImage}
+                            src={resolveQuizImage(quiz.coverImage)}
                             alt={quiz.title}
                             className="quiz-card-cover-img"
                             loading="lazy"
+                            onError={(e) => {
+                              if (!e.target.dataset.triedFallback) {
+                                e.target.dataset.triedFallback = 'true'
+                                e.target.src = '/gossip-girl.jpg'
+                              }
+                            }}
                           />
                           <div className="quiz-card-cover-overlay" />
                           <span className="quiz-card-badge">{quiz.badge}</span>
@@ -410,9 +416,15 @@ export default function QuizClub({ user, isAdmin }) {
                       <div className="quiz-result-visual-col">
                         <div className="quiz-result-polaroid">
                           <img
-                            src={finalResult.image}
+                            src={resolveQuizImage(finalResult.image, QUIZ_CHARACTER_MAP[finalResult.id])}
                             alt={finalResult.name}
                             className="quiz-result-img"
+                            onError={(e) => {
+                              if (!e.target.dataset.triedFallback) {
+                                e.target.dataset.triedFallback = 'true'
+                                e.target.src = QUIZ_CHARACTER_MAP[finalResult.id] || `/${finalResult.id}.jpg`
+                              }
+                            }}
                           />
                           <div className="quiz-result-polaroid-caption">
                             <strong className="caption-name">{finalResult.name}</strong>

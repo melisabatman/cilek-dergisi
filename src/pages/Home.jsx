@@ -7,7 +7,7 @@ import { supabase } from '../lib/supabase'
 import { useSiteContent } from '../lib/siteContent'
 import { getSafeMediaUrl } from '../lib/r2'
 import CountdownSection from '../components/CountdownSection'
-import { QUIZZES, getEffectiveQuizzes } from '../data/quizzesData'
+import { QUIZZES, getEffectiveQuizzes, resolveQuizImage } from '../data/quizzesData'
 
 // ─── Fallback dergi verisi ────────────────────────────────────────────────────
 const FEATURED_FALLBACKS = [
@@ -386,10 +386,16 @@ export default function Home({ user, isAdmin }) {
                 <article key={quiz.id} className="quiz-card-item">
                   <div className="quiz-card-cover-wrap">
                     <img
-                      src={quiz.coverImage}
+                      src={resolveQuizImage(quiz.coverImage)}
                       alt={quiz.title}
                       className="quiz-card-cover-img"
                       loading="lazy"
+                      onError={(e) => {
+                        if (!e.target.dataset.triedFallback) {
+                          e.target.dataset.triedFallback = 'true'
+                          e.target.src = '/gossip-girl.jpg'
+                        }
+                      }}
                     />
                     <div className="quiz-card-cover-overlay" />
                     <span className="quiz-card-badge">{quiz.badge}</span>

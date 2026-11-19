@@ -11,7 +11,46 @@ import serenaImg from './serena.jpg'
 import jennyImg from './jenny.jpg'
 import vanessaImg from './vanessa.jpg'
 import lilyImg from './lily.jpg'
-import gossipGirlCover from './gossip girl.jpg'
+import gossipGirlCover from './gossip-girl.jpg'
+
+export const QUIZ_CHARACTER_MAP = {
+  blair: blairImg,
+  serena: serenaImg,
+  jenny: jennyImg,
+  vanessa: vanessaImg,
+  lily: lilyImg,
+  'gossip-girl': gossipGirlCover,
+  'gossip girl': gossipGirlCover
+}
+
+export function resolveQuizImage(imgSrc, fallback = '') {
+  if (!imgSrc) return fallback
+  if (typeof imgSrc === 'string') {
+    const clean = imgSrc.trim()
+    // Eski veya bozuk unsplash URL'si ise ve elimizde hazır yerel görsel varsa yerel görseli tercih et
+    if (clean.includes('unsplash.com') && fallback && !fallback.includes('unsplash.com')) {
+      return fallback
+    }
+    // Derlenmiş Vite asset'i ise
+    if (clean.startsWith('/assets/')) return clean
+    // Dosya adı bazlı eşleştirme (blair.jpg, ./blair.jpg, /data/blair.jpg vb.)
+    const base = clean.split('/').pop().replace(/\?.*$/, '').toLowerCase()
+    if (base === 'blair.jpg') return blairImg
+    if (base === 'serena.jpg') return serenaImg
+    if (base === 'jenny.jpg') return jennyImg
+    if (base === 'vanessa.jpg') return vanessaImg
+    if (base === 'lily.jpg') return lilyImg
+    if (base === 'gossip girl.jpg' || base === 'gossip-girl.jpg') return gossipGirlCover
+    // Eğer doğrudan /blair.jpg veya /data/blair.jpg gibi bir public URL verilmişse
+    if (clean.startsWith('/')) return clean
+    // Başında / yoksa public köküne yönlendir
+    if (clean.endsWith('.jpg') || clean.endsWith('.png') || clean.endsWith('.webp')) {
+      return '/' + clean.replace(/^\.\//, '')
+    }
+    return clean
+  }
+  return imgSrc || fallback
+}
 
 export const QUIZZES = [
   // ── TEST 1: GOSSIP GIRL ──────────────────────────────────────
@@ -598,12 +637,37 @@ export const UPCOMING_QUIZZES = [
 /**
  * Dinamik CMS veya yerel ayarları varsayılanlarla birleştiren yardımcı fonksiyonlar.
  * Admin panelinden yapılan tüm düzenlemeler bu fonksiyonlar sayesinde sitede anında görünür.
+ * Ayrıca eski yerel depolama verileri veya eksik görsel yolları yerel görsellerle otomatik kurtarılır.
  */
 export function getEffectiveQuizzes(customQuizzes) {
-  if (Array.isArray(customQuizzes) && customQuizzes.length > 0) {
-    return customQuizzes
+  if (!Array.isArray(customQuizzes) || customQuizzes.length === 0) {
+    return QUIZZES
   }
-  return QUIZZES
+
+  // Her varsayılan testi al ve custom verilerle akıllıca harmanla
+  return QUIZZES.map(defaultQuiz => {
+    const customQuiz = customQuizzes.find(cq => cq.id === defaultQuiz.id)
+    if (!customQuiz) return defaultQuiz
+
+    const mergedResults = { ...defaultQuiz.results }
+    if (customQuiz.results) {
+      Object.entries(customQuiz.results).forEach(([resKey, resObj]) => {
+        const defaultRes = defaultQuiz.results?.[resKey] || {}
+        mergedResults[resKey] = {
+          ...defaultRes,
+          ...resObj,
+          image: resolveQuizImage(resObj?.image, defaultRes.image || QUIZ_CHARACTER_MAP[resKey])
+        }
+      })
+    }
+
+    return {
+      ...defaultQuiz,
+      ...customQuiz,
+      coverImage: resolveQuizImage(customQuiz.coverImage, defaultQuiz.coverImage),
+      results: mergedResults
+    }
+  })
 }
 
 export function getEffectiveUpcomingQuizzes(customUpcoming) {

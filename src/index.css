@@ -4983,38 +4983,80 @@ button {
 }
 
 @media (max-width: 768px) {
+  /* Mobilde araç çubuğu sayfa üstüne taşınır, alt kontrollerle ve çevirme oklarıyla asla çakışmaz */
   .reader-floating-vbar {
-    right: 8px;
-    padding: 4px;
-    border-radius: 10px;
-    transform: translateY(-50%) scale(0.92);
+    top: 10px !important;
+    bottom: auto !important;
+    right: 10px !important;
+    left: auto !important;
+    transform: none !important;
+    flex-direction: row !important;
+    padding: 3px 6px !important;
+    gap: 4px !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(8px) !important;
+    border: 1px solid rgba(190, 38, 37, 0.16) !important;
+    border-radius: 999px !important;
+    box-shadow: 0 4px 16px rgba(61, 39, 48, 0.15) !important;
+    z-index: 60 !important;
+  }
+
+  .btn-vbar-tool {
+    width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+  }
+
+  /* Mobilde fare gerektiren büyüteç çakışmayı önlemek için gizlenir, doğrudan + Büyüt kullanılır */
+  #btn-reader-loupe {
+    display: none !important;
   }
 
   .btn-stage-arrow {
-    width: 38px;
-    height: 38px;
-    font-size: 1.7rem;
+    width: 38px !important;
+    height: 38px !important;
+    font-size: 1.7rem !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    z-index: 40 !important;
   }
 
   .btn-stage-prev {
-    left: 8px;
+    left: 4px !important;
   }
 
   .btn-stage-next {
-    right: 56px;
+    right: 4px !important;
   }
 
   .reader-stage-container.modern-stage {
-    padding: 8px 48px 36px 12px;
+    padding: 36px 6px 42px 6px !important;
   }
 
   .reader-corner-brand {
-    bottom: 36px;
-    left: 12px;
+    display: none !important;
+  }
+
+  .reader-bottom-minimal-nav {
+    padding: 4px 8px 10px 8px !important;
+    gap: 2px !important;
   }
 
   .reader-minimal-slider-wrap {
-    width: 94vw;
+    width: 92vw !important;
+  }
+
+  /* Mobilde alt kısımdaki yinelenen butonlar gizlenerek sayfa numarası ferahlatılır */
+  .reader-minimal-status .status-title,
+  .reader-minimal-status .status-separator,
+  .reader-minimal-status .status-quick-actions {
+    display: none !important;
+  }
+
+  .reader-minimal-status {
+    font-size: 0.72rem !important;
+    justify-content: center !important;
+    width: 100% !important;
   }
 }
 
@@ -17565,17 +17607,18 @@ p,
     right: 4px !important;
   }
 
-  /* Mobilde dikey araç çubuğunu gizle veya sayfa altına yatay al */
+  /* Mobilde araç çubuğu sayfa üst sağında kalır, alt butonlarla asla üst üste binmez */
   .reader-floating-vbar {
-    top: auto !important;
-    bottom: 50px !important;
-    right: 12px !important;
+    top: 10px !important;
+    bottom: auto !important;
+    right: 10px !important;
     transform: none !important;
     flex-direction: row !important;
-    background: rgba(255, 249, 248, 0.96) !important;
-    padding: 4px 8px !important;
+    background: rgba(255, 255, 255, 0.96) !important;
+    padding: 3px 6px !important;
     border-radius: 999px !important;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.22) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16) !important;
+    z-index: 60 !important;
   }
 
   .reader-corner-brand {
@@ -17583,8 +17626,8 @@ p,
   }
 
   .reader-minimal-slider-wrap {
-    width: 90vw !important;
-    bottom: 12px !important;
+    width: 92vw !important;
+    bottom: 8px !important;
   }
 }
 
@@ -18805,12 +18848,21 @@ p,
     width: 100%;
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
   }
 
   .btn-magazine-download-pdf,
   .btn-magazine-scroll-comments {
     justify-content: center;
     width: 100%;
+    box-sizing: border-box;
+  }
+
+  .btn-exit-fullscreen-floating {
+    top: 10px !important;
+    right: 10px !important;
+    padding: 7px 14px !important;
+    font-size: 0.78rem !important;
   }
 
   .magazine-toc-grid {
