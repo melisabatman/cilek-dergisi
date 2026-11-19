@@ -4877,38 +4877,44 @@ button {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 52px;
-  height: 52px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   background: #FFFFFF;
-  border: 1px solid rgba(61, 39, 48, 0.16);
-  color: #3D2730;
-  font-size: 2.3rem;
-  line-height: 1;
+  border: 2px solid #BE2625;
+  color: #BE2625;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 45;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 18px rgba(61, 39, 48, 0.12);
+  z-index: 300;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 0 4px 18px rgba(190, 38, 37, 0.25), 0 2px 6px rgba(0, 0, 0, 0.08);
   user-select: none;
-  padding-bottom: 3px;
+  pointer-events: auto;
+}
+
+.btn-stage-arrow svg {
+  display: block;
+  pointer-events: none;
 }
 
 .btn-stage-arrow:hover:not(.disabled) {
   background: #BE2625;
   color: #FFFFFF;
   border-color: #BE2625;
-  transform: translateY(-50%) scale(1.1);
-  box-shadow: 0 6px 24px rgba(190, 38, 37, 0.38);
+  transform: translateY(-50%) scale(1.08);
+  box-shadow: 0 6px 24px rgba(190, 38, 37, 0.45);
 }
 
 .btn-stage-arrow.disabled {
-  opacity: 0.18;
-  cursor: not-allowed;
-  pointer-events: none;
-  box-shadow: none;
+  opacity: 0.35 !important;
+  border-color: rgba(190, 38, 37, 0.25) !important;
+  color: rgba(190, 38, 37, 0.4) !important;
+  background: rgba(255, 255, 255, 0.85) !important;
+  box-shadow: none !important;
+  cursor: default !important;
+  pointer-events: none !important;
 }
 
 .btn-stage-prev {
@@ -4990,7 +4996,7 @@ button {
 }
 
 @media (max-width: 768px) {
-  /* Mobilde araç çubuğu sayfa üstüne taşınır, alt kontrollerle ve çevirme oklarıyla asla çakışmaz */
+  /* Mobilde araç çubuğu sayfa üst sağında kalır, alt kontrollerle asla çakışmaz */
   .reader-floating-vbar {
     top: 10px !important;
     bottom: auto !important;
@@ -4998,20 +5004,36 @@ button {
     left: auto !important;
     transform: none !important;
     flex-direction: row !important;
+    align-items: center !important;
     padding: 3px 6px !important;
     gap: 4px !important;
-    background: rgba(255, 255, 255, 0.95) !important;
+    background: rgba(255, 255, 255, 0.96) !important;
     backdrop-filter: blur(8px) !important;
-    border: 1px solid rgba(190, 38, 37, 0.16) !important;
+    border: 1.5px solid rgba(190, 38, 37, 0.22) !important;
     border-radius: 999px !important;
-    box-shadow: 0 4px 16px rgba(61, 39, 48, 0.15) !important;
-    z-index: 60 !important;
+    box-shadow: 0 4px 16px rgba(61, 39, 48, 0.16) !important;
+    z-index: 550 !important;
   }
 
   .btn-vbar-tool {
-    width: 32px !important;
-    height: 32px !important;
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
     padding: 0 !important;
+    border-radius: 8px !important;
+  }
+
+  .vbar-divider {
+    width: 1px !important;
+    height: 18px !important;
+    margin: 0 2px !important;
+  }
+
+  /* Mobilde üst araç çubuğunu ferah tut: PDF ve Yorum butonları sayfa altında olduğu için üstte gizlenir */
+  .reader-floating-vbar a.btn-vbar-tool,
+  .reader-floating-vbar .btn-vbar-tool[title*="Yorum"],
+  .reader-floating-vbar .btn-vbar-tool[title*="PDF"] {
+    display: none !important;
   }
 
   /* Mobilde fare gerektiren büyüteç çakışmayı önlemek için gizlenir, doğrudan + Büyüt kullanılır */
@@ -5020,20 +5042,48 @@ button {
   }
 
   .btn-stage-arrow {
-    width: 38px !important;
-    height: 38px !important;
-    font-size: 1.7rem !important;
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    border-radius: 50% !important;
+    background: #FFFFFF !important;
+    border: 2px solid #BE2625 !important;
+    color: #BE2625 !important;
+    box-shadow: 0 4px 18px rgba(190, 38, 37, 0.35), 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
     top: 50% !important;
     transform: translateY(-50%) !important;
-    z-index: 40 !important;
+    z-index: 500 !important;
+    pointer-events: auto !important;
+  }
+
+  .btn-stage-arrow:active {
+    background: #BE2625 !important;
+    color: #FFFFFF !important;
+    transform: translateY(-50%) scale(0.92) !important;
   }
 
   .btn-stage-prev {
-    left: 4px !important;
+    left: 8px !important;
+    right: auto !important;
   }
 
   .btn-stage-next {
-    right: 4px !important;
+    right: 8px !important;
+    left: auto !important;
+  }
+
+  .btn-stage-arrow.disabled {
+    opacity: 0.32 !important;
+    border-color: rgba(190, 38, 37, 0.22) !important;
+    color: rgba(190, 38, 37, 0.35) !important;
+    background: rgba(255, 255, 255, 0.85) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+    cursor: default !important;
+    pointer-events: none !important;
   }
 
   .reader-stage-container.modern-stage {
@@ -17499,18 +17549,44 @@ p,
   }
 
   .magazine-reader-root.reader-embedded-mode .btn-stage-arrow {
-    width: 34px !important;
-    height: 34px !important;
-    font-size: 1.5rem !important;
-    background: rgba(255, 255, 255, 0.92) !important;
-    box-shadow: 0 4px 14px rgba(61, 39, 48, 0.18) !important;
-    z-index: 40 !important;
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    border-radius: 50% !important;
+    background: #FFFFFF !important;
+    border: 2px solid #BE2625 !important;
+    color: #BE2625 !important;
+    box-shadow: 0 4px 18px rgba(190, 38, 37, 0.35), 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+    z-index: 500 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    pointer-events: auto !important;
+  }
+  .magazine-reader-root.reader-embedded-mode .btn-stage-arrow:active {
+    background: #BE2625 !important;
+    color: #FFFFFF !important;
+    transform: translateY(-50%) scale(0.92) !important;
   }
   .magazine-reader-root.reader-embedded-mode .btn-stage-prev {
-    left: 4px !important;
+    left: 8px !important;
+    right: auto !important;
   }
   .magazine-reader-root.reader-embedded-mode .btn-stage-next {
-    right: 4px !important;
+    right: 8px !important;
+    left: auto !important;
+  }
+  .magazine-reader-root.reader-embedded-mode .btn-stage-arrow.disabled {
+    opacity: 0.32 !important;
+    border-color: rgba(190, 38, 37, 0.22) !important;
+    color: rgba(190, 38, 37, 0.35) !important;
+    background: rgba(255, 255, 255, 0.85) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+    cursor: default !important;
+    pointer-events: none !important;
   }
 
   .home-archive-header {
@@ -17611,17 +17687,46 @@ p,
   .btn-stage-arrow {
     width: 44px !important;
     height: 44px !important;
-    font-size: 1.8rem !important;
-    z-index: 100 !important;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28) !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    border-radius: 50% !important;
+    background: #FFFFFF !important;
+    border: 2px solid #BE2625 !important;
+    color: #BE2625 !important;
+    box-shadow: 0 4px 18px rgba(190, 38, 37, 0.35), 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+    z-index: 500 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    pointer-events: auto !important;
+  }
+
+  .btn-stage-arrow:active {
+    background: #BE2625 !important;
+    color: #FFFFFF !important;
+    transform: translateY(-50%) scale(0.92) !important;
   }
 
   .btn-stage-prev {
-    left: 4px !important;
+    left: 8px !important;
+    right: auto !important;
   }
 
   .btn-stage-next {
-    right: 4px !important;
+    right: 8px !important;
+    left: auto !important;
+  }
+
+  .btn-stage-arrow.disabled {
+    opacity: 0.32 !important;
+    border-color: rgba(190, 38, 37, 0.22) !important;
+    color: rgba(190, 38, 37, 0.35) !important;
+    background: rgba(255, 255, 255, 0.85) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+    cursor: default !important;
+    pointer-events: none !important;
   }
 
   /* Mobilde araç çubuğu sayfa üst sağında kalır, alt butonlarla asla üst üste binmez */
@@ -17629,13 +17734,16 @@ p,
     top: 10px !important;
     bottom: auto !important;
     right: 10px !important;
+    left: auto !important;
     transform: none !important;
     flex-direction: row !important;
+    align-items: center !important;
     background: rgba(255, 255, 255, 0.96) !important;
     padding: 3px 6px !important;
     border-radius: 999px !important;
+    border: 1.5px solid rgba(190, 38, 37, 0.22) !important;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16) !important;
-    z-index: 60 !important;
+    z-index: 550 !important;
   }
 
   .reader-corner-brand {
@@ -18877,9 +18985,13 @@ p,
 
   .btn-exit-fullscreen-floating {
     top: 10px !important;
-    right: 10px !important;
+    left: 10px !important;
+    right: auto !important;
     padding: 7px 14px !important;
-    font-size: 0.78rem !important;
+    font-size: 0.76rem !important;
+    border-radius: 999px !important;
+    z-index: 600 !important;
+    background: rgba(30, 20, 25, 0.9) !important;
   }
 
   .magazine-toc-grid {

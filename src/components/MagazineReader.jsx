@@ -296,10 +296,43 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
     const pf = flipbookRef.current
     if (!pf) return
     try {
-      if (pf.getState() === 'flipping') return
-      pf.flipPrev()
+      const state = pf.getState ? pf.getState() : null
+      if (state === 'flipping') return
+
+      const cur = pf.getCurrentPageIndex ? pf.getCurrentPageIndex() : (currentPageIndexRef.current || 0)
+      if (cur <= 0) return
+
+      const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
+      if (isMobile) {
+        // Mobilde tek sayfa dikey modda en kararlı sayfa geçişi
+        try {
+          pf.turnToPrevPage()
+        } catch {
+          try { pf.flipPrev() } catch { }
+        }
+      } else {
+        try {
+          pf.flipPrev()
+        } catch {
+          try { pf.turnToPrevPage() } catch { }
+        }
+        setTimeout(() => {
+          if (flipbookRef.current && flipbookRef.current.getCurrentPageIndex() === cur) {
+            try { flipbookRef.current.turnToPrevPage() } catch { }
+          }
+        }, 150)
+      }
+
+      setTimeout(() => {
+        if (flipbookRef.current) {
+          const newIdx = flipbookRef.current.getCurrentPageIndex?.()
+          if (typeof newIdx === 'number' && !isNaN(newIdx)) {
+            setCurrentPageIndex(newIdx)
+          }
+        }
+      }, 50)
     } catch (err) {
-      console.warn('flipPrev fallback:', err)
+      console.warn('handlePrev error:', err)
       try { pf.turnToPrevPage() } catch { }
     }
   }, [])
@@ -308,10 +341,29 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
     const pf = flipbookRef.current
     if (!pf) return
     try {
-      if (pf.getState() === 'flipping') return
-      pf.flipNext()
+      const state = pf.getState ? pf.getState() : null
+      if (state === 'flipping') return
+
+      const cur = pf.getCurrentPageIndex ? pf.getCurrentPageIndex() : (currentPageIndexRef.current || 0)
+      const total = pf.getPageCount ? pf.getPageCount() : (totalPagesCountRef.current || 0)
+      if (total > 0 && cur >= total - 1) return
+
+      try {
+        pf.flipNext()
+      } catch {
+        try { pf.turnToNextPage() } catch { }
+      }
+      setTimeout(() => {
+        if (flipbookRef.current && flipbookRef.current.getCurrentPageIndex() === cur) {
+          try { flipbookRef.current.turnToNextPage() } catch { }
+        }
+        const newIdx = flipbookRef.current?.getCurrentPageIndex?.()
+        if (typeof newIdx === 'number' && !isNaN(newIdx)) {
+          setCurrentPageIndex(newIdx)
+        }
+      }, 450)
     } catch (err) {
-      console.warn('flipNext fallback:', err)
+      console.warn('handleNext error:', err)
       try { pf.turnToNextPage() } catch { }
     }
   }, [])
@@ -568,7 +620,7 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
       usePortrait: isMobile,
       mobileScrollSupport: false,
       useMouseEvents: true, // Fare ve parmakla tutup kıvırma/katlama desteği
-      disableFlipByClick: true, // Kendi click dinleyicimiz ile çakışmayı önle
+      disableFlipByClick: false, // Dahili köşe çevirme ve API tetiklemelerini kilitleme
       clickEventForward: false,
       swipeDistance: isMobile ? 16 : 20,
       flippingTime: 480, // Doğal, akıcı yaprak çevirme süresi
@@ -1181,7 +1233,9 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
           title="Önceki Sayfa (Sol Ok)"
           aria-label="Önceki Sayfa"
         >
-          ‹
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
         </button>
 
         {/* ORTA SAYFA ALANI */}
@@ -1245,7 +1299,9 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
           title="Sonraki Sayfa (Sağ Ok)"
           aria-label="Sonraki Sayfa"
         >
-          ›
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
         </button>
       </main>
 
@@ -1301,7 +1357,7 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
         </div>
       </footer>
 
-      {/* ── TAM SAYFA MODU ÇIKIŞ BUTONU (Ekranın sağ üstünde belirgin) ── */}
+      {/* ── TAM SAYFA MODU ÇIKIŞ BUTONU (Ekranın sol üstünde belirgin) ── */}
       {isFullscreen && (
         <button
           type="button"
@@ -1310,7 +1366,11 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
           title="Tam Sayfadan Çık (F veya Esc)"
           aria-label="Tam Sayfadan Çık"
         >
-          ✕ Tam Sayfadan Çık (Esc)
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+          <span>Tam Sayfadan Çık</span>
         </button>
       )}
 
