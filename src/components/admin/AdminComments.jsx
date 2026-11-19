@@ -152,7 +152,7 @@ export default function AdminComments({
                     {getMagTitle(comment.magazine_id)} · {comment.page_number === 0 ? 'Genel Yorum' : `Sayfa #${comment.page_number}`}
                   </span>
                   <span style={{ fontSize: '0.8rem', color: '#999', marginLeft: 'auto' }}>
-                    {new Date(comment.created_at).toLocaleString('tr-TR')}
+                    {comment.created_at ? new Date(comment.created_at).toLocaleString('tr-TR') : 'Tarih yok'}
                   </span>
                 </div>
 

@@ -12,6 +12,7 @@ import Admin      from './pages/Admin'
 import MagazinePage from './pages/MagazinePage'
 import QuizClub     from './pages/QuizClub'
 import PixelSparkleTrail from './components/PixelSparkleTrail'
+import ErrorBoundary from './components/ErrorBoundary'
 
 export default function App() {
   const [user, setUser] = useState(undefined) // undefined = loading, null = unauthenticated
@@ -48,22 +49,24 @@ export default function App() {
   return (
     <BrowserRouter>
       <PixelSparkleTrail />
-      <Routes>
-        <Route path="/"           element={<Home       user={user} isAdmin={isAdmin} />} />
-        <Route path="/dergiler"   element={<Dergiler   user={user} isAdmin={isAdmin} />} />
-        <Route path="/hakkimizda" element={<Hakkimizda user={user} isAdmin={isAdmin} />} />
-        <Route path="/ekibimiz"     element={<Ekibimiz   user={user} isAdmin={isAdmin} />} />
-        <Route path="/yazi-gonderi" element={<Iletisim   user={user} isAdmin={isAdmin} />} />
-        <Route path="/iletisim"     element={<Iletisim   user={user} isAdmin={isAdmin} />} />
-        <Route path="/auth"         element={<Auth       user={user} isAdmin={isAdmin} />} />
-        <Route path="/admin"      element={<Admin      user={user} isAdmin={isAdmin} />} />
-        <Route path="/dergi/:id"  element={<MagazinePage user={user} isAdmin={isAdmin} />} />
-        <Route path="/oku/:id"    element={<MagazinePage user={user} isAdmin={isAdmin} />} />
-        <Route path="/testler"        element={<QuizClub     user={user} isAdmin={isAdmin} />} />
-        <Route path="/testler/:slug"  element={<QuizClub     user={user} isAdmin={isAdmin} />} />
-        <Route path="/quiz"           element={<QuizClub     user={user} isAdmin={isAdmin} />} />
-        <Route path="/quiz/:slug"     element={<QuizClub     user={user} isAdmin={isAdmin} />} />
-      </Routes>
+      <ErrorBoundary>
+        <Routes>
+          <Route path="/"           element={<Home       user={user} isAdmin={isAdmin} />} />
+          <Route path="/dergiler"   element={<Dergiler   user={user} isAdmin={isAdmin} />} />
+          <Route path="/hakkimizda" element={<Hakkimizda user={user} isAdmin={isAdmin} />} />
+          <Route path="/ekibimiz"     element={<Ekibimiz   user={user} isAdmin={isAdmin} />} />
+          <Route path="/yazi-gonderi" element={<Iletisim   user={user} isAdmin={isAdmin} />} />
+          <Route path="/iletisim"     element={<Iletisim   user={user} isAdmin={isAdmin} />} />
+          <Route path="/auth"         element={<Auth       user={user} isAdmin={isAdmin} />} />
+          <Route path="/admin"      element={<Admin      user={user} isAdmin={isAdmin} />} />
+          <Route path="/dergi/:id"  element={<MagazinePage user={user} isAdmin={isAdmin} />} />
+          <Route path="/oku/:id"    element={<MagazinePage user={user} isAdmin={isAdmin} />} />
+          <Route path="/testler"        element={<QuizClub     user={user} isAdmin={isAdmin} />} />
+          <Route path="/testler/:slug"  element={<QuizClub     user={user} isAdmin={isAdmin} />} />
+          <Route path="/quiz"           element={<QuizClub     user={user} isAdmin={isAdmin} />} />
+          <Route path="/quiz/:slug"     element={<QuizClub     user={user} isAdmin={isAdmin} />} />
+        </Routes>
+      </ErrorBoundary>
     </BrowserRouter>
   )
 }

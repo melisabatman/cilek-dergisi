@@ -7,7 +7,11 @@
  * uç noktasına iletilir ve yükleme sunucuda gerçekleştirilir.
  */
 
-export const isR2Configured = true
+// isR2Configured hem boolean hem de fonksiyon olarak güvenle kullanılabilir
+export const isR2Configured = Object.assign(
+  function () { return true },
+  { valueOf: () => true, toString: () => 'true' }
+)
 
 /**
  * Sunucu tarafındaki R2 yapılandırma durumunu kontrol eder.

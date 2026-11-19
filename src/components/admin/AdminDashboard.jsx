@@ -11,7 +11,7 @@ export default function AdminDashboard({
 }) {
   const latestMagazine = magazines[0]
   const latestComment = comments[0]
-  const isR2Ready = isR2Configured()
+  const isR2Ready = Boolean(typeof isR2Configured === 'function' ? isR2Configured() : isR2Configured)
 
   return (
     <div className="admin-dashboard-view">
@@ -44,7 +44,7 @@ export default function AdminDashboard({
           <div className="stat-card-icon">📚</div>
           <div className="stat-card-info">
             <span className="stat-card-label">Toplam Sayı</span>
-            <strong className="stat-card-value">{magazines.length}</strong>
+            <strong className="stat-card-value">{Array.isArray(magazines) ? magazines.length : 0}</strong>
             <span className="stat-card-sub">
               {latestMagazine ? `Son Sayı: #${latestMagazine.issue_number} (${latestMagazine.title})` : 'Henüz sayı yok'}
             </span>
@@ -57,7 +57,7 @@ export default function AdminDashboard({
           <div className="stat-card-icon">🎀</div>
           <div className="stat-card-info">
             <span className="stat-card-label">Quiz Club Testleri</span>
-            <strong className="stat-card-value">{quizzes.length}</strong>
+            <strong className="stat-card-value">{Array.isArray(quizzes) ? quizzes.length : 3}</strong>
             <span className="stat-card-sub">Kişilik testleri & karakter fotoğrafları</span>
           </div>
           <span className="stat-card-arrow">→</span>
@@ -68,7 +68,7 @@ export default function AdminDashboard({
           <div className="stat-card-icon">💬</div>
           <div className="stat-card-info">
             <span className="stat-card-label">Okur Yorumları</span>
-            <strong className="stat-card-value">{comments.length}</strong>
+            <strong className="stat-card-value">{Array.isArray(comments) ? comments.length : 0}</strong>
             <span className="stat-card-sub">
               {latestComment ? `Son yorum: ${latestComment.user_name || 'Okur'}` : 'Henüz yorum yok'}
             </span>
@@ -81,9 +81,9 @@ export default function AdminDashboard({
           <div className="stat-card-icon">👥</div>
           <div className="stat-card-info">
             <span className="stat-card-label">Ekip & Kurucu</span>
-            <strong className="stat-card-value">{teamMembers.length + 1}</strong>
+            <strong className="stat-card-value">{(Array.isArray(teamMembers) ? teamMembers.length : 0) + 1}</strong>
             <span className="stat-card-sub">
-              Kurucu: {siteState.about_founder_name || 'Melisa Batman'}
+              Kurucu: {siteState?.about_founder_name || 'Melisa Batman'}
             </span>
           </div>
           <span className="stat-card-arrow">→</span>
@@ -234,7 +234,7 @@ export default function AdminDashboard({
                   <div className="dash-comment-head">
                     <span className="dash-comment-author">{c.user_name || 'Gizli Okur'}</span>
                     <span className="dash-comment-date">
-                      {new Date(c.created_at).toLocaleDateString('tr-TR')}
+                      {c.created_at ? new Date(c.created_at).toLocaleDateString('tr-TR') : 'Tarih yok'}
                     </span>
                   </div>
                   <p className="dash-comment-body">

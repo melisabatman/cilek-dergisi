@@ -15,8 +15,8 @@ import { QUIZZES } from '../data/quizzesData'
 
 export default function Admin({ user, isAdmin: propIsAdmin }) {
   const navigate = useNavigate()
-  const [isAdmin, setIsAdmin] = useState(propIsAdmin ?? false)
-  const [authChecking, setAuthChecking] = useState(propIsAdmin === undefined)
+  const [isAdmin, setIsAdmin] = useState(Boolean(propIsAdmin))
+  const [authChecking, setAuthChecking] = useState(user === undefined)
 
   // Aktif Tab: 'dashboard' | 'magazines' | 'quizzes' | 'comments' | 'team' | 'content' | 'letter' | 'announcement' | 'media' | 'settings'
   const [activeTab, setActiveTab] = useState('dashboard')
@@ -32,19 +32,43 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
   // YETKİ KONTROLÜ
   // -------------------------------------------------------------
   useEffect(() => {
+    if (propIsAdmin !== undefined) {
+      setIsAdmin(Boolean(propIsAdmin))
+    }
+  }, [propIsAdmin])
+
+  useEffect(() => {
+    let isMounted = true
     async function verifyAdmin() {
-      if (user === undefined) return
-      if (!user) {
-        setIsAdmin(false)
-        setAuthChecking(false)
+      if (user === undefined) {
+        if (isMounted) setAuthChecking(true)
         return
       }
-      const adminVerified = await checkIsAdmin(user)
-      setIsAdmin(adminVerified)
-      setAuthChecking(false)
+      if (!user) {
+        if (isMounted) {
+          setIsAdmin(false)
+          setAuthChecking(false)
+        }
+        return
+      }
+      try {
+        const adminVerified = await checkIsAdmin(user)
+        if (isMounted) {
+          setIsAdmin(Boolean(adminVerified))
+          setAuthChecking(false)
+        }
+      } catch (err) {
+        if (isMounted) {
+          setIsAdmin(false)
+          setAuthChecking(false)
+        }
+      }
     }
     verifyAdmin()
+    return () => { isMounted = false }
   }, [user])
+
+  const hasAdminAccess = Boolean(propIsAdmin || isAdmin)
 
   // -------------------------------------------------------------
   // 1. DERGİ / SAYI YÖNETİMİ DURUMU (MAGAZINES)
@@ -771,7 +795,7 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
     )
   }
 
-  if (!user || !isAdmin) {
+  if (!user || !hasAdminAccess) {
     return (
       <div className="admin-gate-page">
         <div className="admin-gate-box">
@@ -1067,7 +1091,7 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
                     onChange={(e) => {
                       const val = e.target.value
                       handleSiteChange('featured_issue_number', val)
-                      saveSiteSettings({ featured_issue_number: val })
+                      updateSettings({ featured_issue_number: val })
                       showFeedback('success', val ? `Sayı #${val} öne çıkan sayı olarak ayarlandı.` : 'Otomatik son sayı seçildi.')
                     }}
                     style={{ minWidth: '240px', fontWeight: 700 }}
