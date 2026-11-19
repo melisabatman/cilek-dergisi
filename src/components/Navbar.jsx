@@ -127,12 +127,12 @@ export default function Navbar({ user, isAdmin: propIsAdmin, onOpenWelcomeLetter
         </nav>
 
 
-        {/* Merkez: Fiyonklu Monogram Logo */}
+        {/* Merkez: Logo & Çilek Yazısı */}
         <div className="cassius-nav-center">
           <Link to="/" className="cassius-logo-wrap" aria-label="Çilek Dergi Ana Sayfa">
             <img
-              src="/icons/ribbon-monogram-logo.svg"
-              alt="Çilek Monogram Logo"
+              src="/logo1.png"
+              alt="Çilek Logo"
               className="cassius-monogram-img"
             />
             <span className="cassius-logo-title">Çilek</span>
