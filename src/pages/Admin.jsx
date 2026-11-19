@@ -654,7 +654,8 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
       } else {
         const safeUrl = getSafeMediaUrl(publicUrl)
         setSiteState(prev => ({ ...prev, [fieldKey]: safeUrl }))
-        showFeedback('success', 'Fotoğraf Cloudflare R2\'ye yüklendi! "Tüm Değişiklikleri Kaydet" butonuna basarak kalıcı yapabilirsiniz.')
+        await updateSettings({ [fieldKey]: safeUrl })
+        showFeedback('success', '✨ Fotoğraf başarıyla yüklendi ve anında sisteme kaydedildi!')
       }
     } catch (err) {
       showFeedback('error', 'Hata: ' + err.message)
@@ -664,16 +665,26 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
   }
 
   const handleSaveSite = async (e) => {
-    if (e) e.preventDefault()
+    if (e && typeof e.preventDefault === 'function') e.preventDefault()
     setSavingSite(true)
     try {
-      await updateSettings(siteState)
-      showFeedback('success', 'Site içeriği ve ayarları başarıyla kaydedildi! Canlı sitede anında güncellendi.')
+      const res = await updateSettings(siteState)
+      showFeedback('success', '✨ Değişiklikler başarıyla kaydedildi ve tüm sitede güncellendi!')
+      return res
     } catch (err) {
       showFeedback('error', 'Ayarlar kaydedilirken hata oluştu: ' + (err?.message || err))
     } finally {
       setSavingSite(false)
     }
+  }
+
+  // Alt bileşenler için alias fonksiyon
+  const handleSaveSiteContent = handleSaveSite
+
+  // Quiz Club testlerini kaydetme işleyicisi (siteState ile tam senkronizasyon)
+  const handleSaveQuizzes = async (quizzesPayload) => {
+    setSiteState(prev => ({ ...prev, ...quizzesPayload }))
+    return await updateSettings(quizzesPayload)
   }
 
   const handleResetSite = () => {
@@ -1047,7 +1058,7 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
           <div className="admin-tab-content">
             <AdminQuizzes
               settings={siteState}
-              onSave={updateSettings}
+              onSave={handleSaveQuizzes}
               showFeedback={showFeedback}
             />
           </div>

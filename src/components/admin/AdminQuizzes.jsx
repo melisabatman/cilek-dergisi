@@ -22,6 +22,19 @@ export default function AdminQuizzes({
     return JSON.parse(JSON.stringify(UPCOMING_QUIZZES))
   })
 
+  // Dışarıdan gelen güncel ayarları yerel duruma senkronize et
+  useEffect(() => {
+    if (Array.isArray(settings?.quizzes_custom) && settings.quizzes_custom.length > 0) {
+      setQuizzes(settings.quizzes_custom)
+    }
+  }, [settings?.quizzes_custom])
+
+  useEffect(() => {
+    if (Array.isArray(settings?.upcoming_quizzes_custom) && settings.upcoming_quizzes_custom.length > 0) {
+      setUpcoming(settings.upcoming_quizzes_custom)
+    }
+  }, [settings?.upcoming_quizzes_custom])
+
   // Hangi test seçili: slug / id veya 'upcoming' veya 'new'
   const [selectedQuizId, setSelectedQuizId] = useState(quizzes[0]?.id || 'gossip-girl')
   // Hangi alt sekme: 'general' | 'results' | 'questions'

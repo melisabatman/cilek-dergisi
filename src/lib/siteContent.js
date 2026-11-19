@@ -269,7 +269,19 @@ export async function fetchSiteSettings() {
         }
       })
 
-      const merged = { ...DEFAULT_SITE_SETTINGS, ...localData, ...dbSettings }
+      // Zaman damgası kontrolü: Yerel değişiklikler veritabanındaki eski verilerden yeniyse yerel veri korunur
+      const dbTimestamp = Number(dbSettings._last_saved) || (dbSettings.updated_at ? new Date(dbSettings.updated_at).getTime() : 0)
+      const localTimestamp = Number(localData._last_saved) || 0
+
+      let merged
+      if (localTimestamp && localTimestamp >= dbTimestamp) {
+        // Yerel ayarlar daha güncel: veritabanı boşlukları doldurur, yerel değişiklikler ezilmez
+        merged = { ...DEFAULT_SITE_SETTINGS, ...dbSettings, ...localData }
+      } else {
+        // Veritabanı daha güncel veya ilk yükleme
+        merged = { ...DEFAULT_SITE_SETTINGS, ...localData, ...dbSettings }
+      }
+
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(merged))
       } catch (_) {}
@@ -286,7 +298,13 @@ export async function fetchSiteSettings() {
  * Ayarları hem yerel belleğe hem de Supabase site_settings tablosuna kaydeder
  */
 export async function saveSiteSettings(newSettings) {
-  const merged = { ...DEFAULT_SITE_SETTINGS, ...getLocalSiteSettings(), ...newSettings }
+  const currentLocal = getLocalSiteSettings()
+  const merged = {
+    ...DEFAULT_SITE_SETTINGS,
+    ...currentLocal,
+    ...newSettings,
+    _last_saved: Date.now()
+  }
 
   // 1. Önce anında yerel belleğe kaydet (kullanıcı bekletilmez)
   try {
@@ -301,37 +319,66 @@ export async function saveSiteSettings(newSettings) {
   // 3. Supabase'e kalıcı olarak kaydet
   let dbSuccess = false
   try {
-    // Hem 'all_settings' toplu kaydı hem de tek tek anahtar kayıtları oluştur
-    const rows = [
+    // A) Önce tek ve birleşik ana ayar JSON nesnesini kaydet
+    const nowIso = new Date().toISOString()
+    const masterRecords = [
       {
         key: 'all_settings',
         value: merged,
-        updated_at: new Date().toISOString()
+        updated_at: nowIso
       },
       {
         key: 'main_content',
         value: merged,
-        updated_at: new Date().toISOString()
+        updated_at: nowIso
       }
     ]
 
-    // İstenen anahtarları tek tek de ekle (bireysel sorgulamalar için)
-    for (const [k, v] of Object.entries(merged)) {
-      rows.push({
-        key: k,
-        value: typeof v === 'object' ? v : { val: v },
-        updated_at: new Date().toISOString()
-      })
-    }
-
-    const { error } = await supabase
+    const { error: masterErr } = await supabase
       .from('site_settings')
-      .upsert(rows, { onConflict: 'key' })
+      .upsert(masterRecords, { onConflict: 'key' })
 
-    if (!error) {
+    if (!masterErr) {
       dbSuccess = true
     } else {
-      console.warn('[saveSiteSettings supabase warn]:', error.message)
+      console.warn('[saveSiteSettings master upsert warn]:', masterErr.message)
+    }
+
+    // B) Kritik tekil anahtarları ayrı ayrı kaydet (birinin hata vermesi ana kaydı bozmaz)
+    const criticalKeys = [
+      'quizzes_custom',
+      'upcoming_quizzes_custom',
+      'about_founder_name',
+      'about_founder_role',
+      'about_founder_photo_url',
+      'about_founder_quote',
+      'about_founder_bio',
+      'featured_issue_number',
+      'countdown_is_active',
+      'countdown_target_date',
+      'countdown_title',
+      'countdown_subtitle',
+      'hero_marquee',
+      'announcement_text',
+      'contact_email',
+      'contact_phone',
+      'brand_name'
+    ]
+
+    const individualRows = criticalKeys
+      .filter(k => k in merged && merged[k] !== undefined)
+      .map(k => ({
+        key: k,
+        value: typeof merged[k] === 'object' ? merged[k] : { val: merged[k] },
+        updated_at: nowIso
+      }))
+
+    if (individualRows.length > 0) {
+      try {
+        await supabase
+          .from('site_settings')
+          .upsert(individualRows, { onConflict: 'key' })
+      } catch (_) {}
     }
   } catch (err) {
     console.warn('[saveSiteSettings supabase error]:', err)
