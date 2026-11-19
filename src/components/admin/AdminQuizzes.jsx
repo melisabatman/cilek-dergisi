@@ -57,10 +57,15 @@ export default function AdminQuizzes({
     if (!file) return
     setUploadingTarget('cover')
     try {
-      const res = await uploadAsset(file, 'covers')
-      if (res && res.url) {
-        handleUpdateQuizField('coverImage', res.url)
-        showFeedback('success', 'Test kapağı başarıyla yüklendi!')
+      const { publicUrl, error: uploadErr } = await uploadAsset('covers', file, `quiz_cover_${currentQuiz?.id || 'new'}`)
+      if (uploadErr) throw uploadErr
+      if (publicUrl) {
+        handleUpdateQuizField('coverImage', publicUrl)
+        if (typeof onSave === 'function') {
+          const updatedQuizzes = quizzes.map(q => q.id === currentQuiz.id ? { ...q, coverImage: publicUrl } : q)
+          await onSave({ quizzes_custom: updatedQuizzes, upcoming_quizzes_custom: upcoming })
+        }
+        showFeedback('success', 'Test kapağı başarıyla yüklendi ve anında kaydedildi!')
       } else {
         showFeedback('error', 'Görsel yüklenemedi. Lütfen tekrar deneyin.')
       }
@@ -76,10 +81,24 @@ export default function AdminQuizzes({
     if (!file) return
     setUploadingTarget(`result_${resKey}`)
     try {
-      const res = await uploadAsset(file, 'covers')
-      if (res && res.url) {
-        handleUpdateResultField(resKey, 'image', res.url)
-        showFeedback('success', `Fotoğraf başarıyla yüklendi! (${resKey})`)
+      const { publicUrl, error: uploadErr } = await uploadAsset('covers', file, `quiz_${currentQuiz?.id || 'res'}_${resKey}`)
+      if (uploadErr) throw uploadErr
+      if (publicUrl) {
+        handleUpdateResultField(resKey, 'image', publicUrl)
+        if (typeof onSave === 'function') {
+          const updatedQuizzes = quizzes.map(q => {
+            if (q.id === currentQuiz.id) {
+              const updatedResults = { ...q.results }
+              if (updatedResults[resKey]) {
+                updatedResults[resKey] = { ...updatedResults[resKey], image: publicUrl }
+              }
+              return { ...q, results: updatedResults }
+            }
+            return q
+          })
+          await onSave({ quizzes_custom: updatedQuizzes, upcoming_quizzes_custom: upcoming })
+        }
+        showFeedback('success', `Fotoğraf başarıyla yüklendi ve kaydedildi! (${resKey})`)
       } else {
         showFeedback('error', 'Fotoğraf yüklenemedi.')
       }

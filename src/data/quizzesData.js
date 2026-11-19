@@ -27,6 +27,16 @@ export function resolveQuizImage(imgSrc, fallback = '') {
   if (!imgSrc) return fallback
   if (typeof imgSrc === 'string') {
     const clean = imgSrc.trim()
+    // R2 URL'si ise ISP engellerine takılmaması için /api/file proxy yönlendirmesi
+    if (clean.includes('.r2.dev')) {
+      try {
+        const u = new URL(clean)
+        const key = u.pathname.replace(/^\/+/, '')
+        return `/api/file?key=${encodeURIComponent(key)}`
+      } catch {
+        return clean
+      }
+    }
     // Eski veya bozuk unsplash URL'si ise ve elimizde hazır yerel görsel varsa yerel görseli tercih et
     if (clean.includes('unsplash.com') && fallback && !fallback.includes('unsplash.com')) {
       return fallback
