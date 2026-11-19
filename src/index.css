@@ -8432,7 +8432,8 @@ button {
 }
 
 .cassius-monogram-img {
-  width: 54px;
+  width: auto;
+  max-width: 90px;
   height: 42px;
   object-fit: contain;
 }
@@ -10292,7 +10293,9 @@ button {
   }
 
   .cassius-monogram-img {
-    width: 32px !important;
+    width: auto !important;
+    max-width: 60px !important;
+    height: 32px !important;
   }
 
   /* 3. İllüstrasyon Bölümü */
@@ -17042,7 +17045,8 @@ p,
   }
 
   .cassius-monogram-img {
-    width: 26px !important;
+    width: auto !important;
+    max-width: 50px !important;
     height: 26px !important;
   }
 

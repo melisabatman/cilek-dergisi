@@ -131,7 +131,7 @@ export default function Navbar({ user, isAdmin: propIsAdmin, onOpenWelcomeLetter
         <div className="cassius-nav-center">
           <Link to="/" className="cassius-logo-wrap" aria-label="Çilek Dergi Ana Sayfa">
             <img
-              src="/logo1.png"
+              src="/logo2.png"
               alt="Çilek Logo"
               className="cassius-monogram-img"
             />

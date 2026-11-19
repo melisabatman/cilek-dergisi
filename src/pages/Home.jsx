@@ -474,7 +474,7 @@ export default function Home({ user, isAdmin }) {
                       ) : (
                         <div className="home-flat-mag-fallback">
                           <img
-                            src="/logo1.png"
+                            src="/logo2.png"
                             alt="Çilek Dergisi"
                             className="home-flat-mag-logo"
                           />
