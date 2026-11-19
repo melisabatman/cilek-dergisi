@@ -478,7 +478,6 @@ export default function Home({ user, isAdmin }) {
                             alt="Çilek Dergisi"
                             className="home-flat-mag-logo"
                           />
-                          <span className="home-flat-mag-brand">Çilek</span>
                           {mag.issue_number && (
                             <span className="home-flat-mag-badge">Sayı #{mag.issue_number}</span>
                           )}
