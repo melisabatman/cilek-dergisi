@@ -4845,9 +4845,16 @@ button {
 /* ── Büyütme (Zoom) ve Sürükleme Stilleri ── */
 .flipbook-mount-wrapper.is-zoomed {
   user-select: none;
+  touch-action: none !important;
 }
+
+.flipbook-mount-wrapper.is-zoomed .cilek-flipbook-host {
+  pointer-events: none !important;
+}
+
 .flipbook-mount-wrapper.is-panning {
   cursor: grabbing !important;
+  user-select: none !important;
 }
 
 /* ── Ana Sahne (Modern Stage) ── */
@@ -5084,6 +5091,7 @@ button {
   justify-content: center;
   position: relative;
   overflow: visible;
+  touch-action: none !important;
 }
 
 .flipbook-mount-wrapper {

@@ -154,7 +154,18 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
     imgUrl: '',
   })
 
-  // Swipe Dokunma Takibi
+  // ─── Mobil Dokunmatik (Pinch-to-zoom, Pan, Double-tap, Swipe) Takip Refleri ───
+  const zoomLevelRef = useRef(zoomLevel)
+  useEffect(() => { zoomLevelRef.current = zoomLevel }, [zoomLevel])
+
+  const panOffsetRef = useRef(panOffset)
+  useEffect(() => { panOffsetRef.current = panOffset }, [panOffset])
+
+  const pinchStartDistRef = useRef(null)
+  const pinchStartZoomRef = useRef(1.0)
+  const isTouchPanningRef = useRef(false)
+  const touchPanStartRef = useRef({ x: 0, y: 0, originX: 0, originY: 0 })
+  const lastTapTimeRef = useRef(0)
   const touchStartXRef = useRef(null)
   const touchStartYRef = useRef(null)
 
@@ -765,48 +776,155 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [handleNext, handlePrev, isFullscreen, handleZoomIn, handleZoomOut, handleZoomReset, toggleLoupe, toggleFullscreen, zoomLevel])
 
-  // Mobilde Dokunmatik Swipe (Flipbook dışındaki kenarlara dokunulduğunda destek)
-  const handleTouchStart = (e) => {
-    if (e.target.closest('.cilek-flipbook-host')) return // StPageFlip kendi sayfa kıvırma fiziğini işlesin
-    if (e.touches && e.touches.length === 1) {
-      touchStartXRef.current = e.touches[0].clientX
-      touchStartYRef.current = e.touches[0].clientY
-    }
-  }
+  // ─── MOBİL DOKUNMATİK: 2 PARMAKLA PINCH-TO-ZOOM, PAN, ÇİFT DOKUNMA, SWIPE ───
+  useEffect(() => {
+    const el = viewportRef.current
+    if (!el) return
 
-  const handleTouchEnd = (e) => {
-    if (e.target.closest('.cilek-flipbook-host')) {
-      touchStartXRef.current = null
-      touchStartYRef.current = null
-      return
-    }
-    if (touchStartXRef.current === null) return
-    const endX = e.changedTouches?.[0]?.clientX
-    const endY = e.changedTouches?.[0]?.clientY
-    if (endX !== undefined && endY !== undefined) {
-      const diffX = endX - touchStartXRef.current
-      const diffY = endY - touchStartYRef.current
-      if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
-        const pf = flipbookRef.current
-        if (pf) {
-          try {
-            if (pf.getState() === 'flipping') {
-              touchStartXRef.current = null
-              touchStartYRef.current = null
-              return
-            }
-          } catch { }
+    const onTouchStart = (e) => {
+      // 1) İKİ PARMAK İLE SIKIŞTIRMA / BÜYÜTME (PINCH-TO-ZOOM) BAŞLANGICI
+      if (e.touches && e.touches.length === 2) {
+        if (e.cancelable) e.preventDefault()
+        const dist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        )
+        pinchStartDistRef.current = dist
+        pinchStartZoomRef.current = zoomLevelRef.current
+        isTouchPanningRef.current = false
+        touchStartXRef.current = null
+        touchStartYRef.current = null
+        setIsPanning(true)
+        return
+      }
+
+      // 2) TEK PARMAK İLE DOKUNMA
+      if (e.touches && e.touches.length === 1) {
+        const touch = e.touches[0]
+
+        // Çift Dokunma (Double Tap) ile Hızlı Büyüt/Küçült
+        const now = Date.now()
+        const diff = now - lastTapTimeRef.current
+        if (diff > 40 && diff < 320) {
+          if (e.cancelable) e.preventDefault()
+          if (zoomLevelRef.current > 1.0) {
+            handleZoomReset()
+          } else {
+            setZoomLevel(1.8)
+          }
+          lastTapTimeRef.current = 0
+          return
         }
-        if (diffX < 0) {
-          handleNext()
+        lastTapTimeRef.current = now
+
+        // Eğer sayfa zaten büyütülmüşse (> 1.0), tek parmakla sayfa içinde serbestçe gezin (Pan)
+        if (zoomLevelRef.current > 1.0) {
+          isTouchPanningRef.current = true
+          setIsPanning(true)
+          touchPanStartRef.current = {
+            x: touch.clientX,
+            y: touch.clientY,
+            originX: panOffsetRef.current.x,
+            originY: panOffsetRef.current.y
+          }
         } else {
-          handlePrev()
+          // Büyütülmemişse (1.0), kenar veya sayfa üzerinde yatay kaydırma takibi
+          touchStartXRef.current = touch.clientX
+          touchStartYRef.current = touch.clientY
         }
       }
     }
-    touchStartXRef.current = null
-    touchStartYRef.current = null
-  }
+
+    const onTouchMove = (e) => {
+      // 1) İKİ PARMAKLA BÜYÜTME / KÜÇÜLTME (PINCH-TO-ZOOM)
+      if (e.touches && e.touches.length === 2 && pinchStartDistRef.current) {
+        if (e.cancelable) e.preventDefault()
+        const currentDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        )
+        const scale = currentDist / pinchStartDistRef.current
+        const rawZoom = pinchStartZoomRef.current * scale
+        const nextZoom = Math.min(3.0, Math.max(1.0, Number(rawZoom.toFixed(2))))
+        setZoomLevel(nextZoom)
+        if (nextZoom === 1.0) {
+          setPanOffset({ x: 0, y: 0 })
+        }
+        return
+      }
+
+      // 2) BÜYÜTÜLMÜŞ SAYFAYI PARMAKLA SÜRÜKLEME (PANNING)
+      if (e.touches && e.touches.length === 1 && isTouchPanningRef.current && zoomLevelRef.current > 1.0) {
+        if (e.cancelable) e.preventDefault()
+        const touch = e.touches[0]
+        const dx = touch.clientX - touchPanStartRef.current.x
+        const dy = touch.clientY - touchPanStartRef.current.y
+
+        const maxPanX = (singlePageWidth * 2 * (zoomLevelRef.current - 1)) / 1.3
+        const maxPanY = (singlePageWidth * 1.414 * (zoomLevelRef.current - 1)) / 1.3
+
+        setPanOffset({
+          x: Math.max(-maxPanX, Math.min(maxPanX, touchPanStartRef.current.originX + dx)),
+          y: Math.max(-maxPanY, Math.min(maxPanY, touchPanStartRef.current.originY + dy))
+        })
+      }
+    }
+
+    const onTouchEnd = (e) => {
+      // Pinch sonlandı
+      if (pinchStartDistRef.current) {
+        pinchStartDistRef.current = null
+        setIsPanning(false)
+        if (zoomLevelRef.current <= 1.05) {
+          setZoomLevel(1.0)
+          setPanOffset({ x: 0, y: 0 })
+        }
+      }
+
+      // Touch pan sonlandı
+      if (isTouchPanningRef.current) {
+        isTouchPanningRef.current = false
+        setIsPanning(false)
+      }
+
+      // Normal boyuttayken (1.0x) yatay swipe ile sayfa çevirme
+      if (zoomLevelRef.current === 1.0 && touchStartXRef.current !== null && e.changedTouches && e.changedTouches.length === 1) {
+        const endX = e.changedTouches[0].clientX
+        const endY = e.changedTouches[0].clientY
+        const diffX = endX - touchStartXRef.current
+        const diffY = endY - touchStartYRef.current
+
+        if (Math.abs(diffX) > 44 && Math.abs(diffX) > Math.abs(diffY) * 1.4) {
+          const pf = flipbookRef.current
+          if (pf) {
+            try {
+              if (pf.getState() === 'flipping') return
+            } catch { }
+          }
+          if (diffX < 0) {
+            handleNext()
+          } else {
+            handlePrev()
+          }
+        }
+      }
+
+      touchStartXRef.current = null
+      touchStartYRef.current = null
+    }
+
+    el.addEventListener('touchstart', onTouchStart, { passive: false })
+    el.addEventListener('touchmove', onTouchMove, { passive: false })
+    el.addEventListener('touchend', onTouchEnd, { passive: false })
+    el.addEventListener('touchcancel', onTouchEnd, { passive: false })
+
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart)
+      el.removeEventListener('touchmove', onTouchMove)
+      el.removeEventListener('touchend', onTouchEnd)
+      el.removeEventListener('touchcancel', onTouchEnd)
+    }
+  }, [singlePageWidth, handleNext, handlePrev, handleZoomReset])
 
   const handlePageSliderChange = (e) => {
     if (!flipbookRef.current) return
@@ -1047,8 +1165,6 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
         className={`reader-stage-container modern-stage ${isLoupeActive ? 'loupe-mode-active' : ''}`}
         onDragOver={(e) => e.preventDefault()}
         onDrop={handleDrop}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         onMouseDown={handleMouseDown}
