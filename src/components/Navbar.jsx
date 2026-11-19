@@ -5,6 +5,7 @@ import { useSiteContent } from '../lib/siteContent'
 
 const NAV_LINKS = [
   { to: '/dergiler',     label: 'DERGİLER'     },
+  { to: '/testler',      label: 'TESTLER'      },
   { to: '/hakkimizda',   label: 'HAKKIMIZDA'   },
   { to: '/yazi-gonderi', label: 'YAZI GÖNDERİ' },
 ]
@@ -55,6 +56,7 @@ export default function Navbar({ user, isAdmin: propIsAdmin, onOpenWelcomeLetter
   const isLinkActive = (to) => {
     if (location.pathname === to) return true
     if (to === '/yazi-gonderi' && location.pathname === '/iletisim') return true
+    if (to === '/testler' && (location.pathname.startsWith('/testler') || location.pathname.startsWith('/quiz'))) return true
     return false
   }
 

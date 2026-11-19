@@ -10,6 +10,7 @@ import Iletisim   from './pages/Iletisim'
 import Auth       from './pages/Auth'
 import Admin      from './pages/Admin'
 import MagazinePage from './pages/MagazinePage'
+import QuizClub     from './pages/QuizClub'
 import PixelSparkleTrail from './components/PixelSparkleTrail'
 
 export default function App() {
@@ -58,6 +59,10 @@ export default function App() {
         <Route path="/admin"      element={<Admin      user={user} isAdmin={isAdmin} />} />
         <Route path="/dergi/:id"  element={<MagazinePage user={user} isAdmin={isAdmin} />} />
         <Route path="/oku/:id"    element={<MagazinePage user={user} isAdmin={isAdmin} />} />
+        <Route path="/testler"        element={<QuizClub     user={user} isAdmin={isAdmin} />} />
+        <Route path="/testler/:slug"  element={<QuizClub     user={user} isAdmin={isAdmin} />} />
+        <Route path="/quiz"           element={<QuizClub     user={user} isAdmin={isAdmin} />} />
+        <Route path="/quiz/:slug"     element={<QuizClub     user={user} isAdmin={isAdmin} />} />
       </Routes>
     </BrowserRouter>
   )

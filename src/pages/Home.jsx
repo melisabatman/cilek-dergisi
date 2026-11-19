@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase'
 import { useSiteContent } from '../lib/siteContent'
 import { getSafeMediaUrl } from '../lib/r2'
 import CountdownSection from '../components/CountdownSection'
+import { QUIZZES } from '../data/quizzesData'
 
 // ─── Fallback dergi verisi ────────────────────────────────────────────────────
 const FEATURED_FALLBACKS = [
@@ -363,6 +364,64 @@ export default function Home({ user, isAdmin }) {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── 8.5. HEY GIRL QUIZ CLUB (TESTLER & KEŞİF KULÜBÜ) ────────── */}
+        <section className="home-quiz-teaser-section" aria-label="Hey Girl Quiz Club">
+          <div className="container">
+            <div className="home-quiz-teaser-header">
+              <span className="home-quiz-teaser-eyebrow">✦ ÇİLEK DERGİSİ ÖZEL KULÜBÜ ✦</span>
+              <h2 className="home-quiz-teaser-title">
+                HEY GIRL <span className="serif-italic">QUIZ CLUB</span>
+              </h2>
+              <p className="home-quiz-teaser-sub">
+                Kendini ne kadar tanıyorsun? Hadi birlikte keşfedelim!
+              </p>
+            </div>
+
+            <div className="quiz-cards-grid">
+              {QUIZZES.slice(0, 3).map((quiz, idx) => (
+                <article key={quiz.id} className="quiz-card-item">
+                  <div className="quiz-card-cover-wrap">
+                    <img
+                      src={quiz.coverImage}
+                      alt={quiz.title}
+                      className="quiz-card-cover-img"
+                      loading="lazy"
+                    />
+                    <div className="quiz-card-cover-overlay" />
+                    <span className="quiz-card-badge">{quiz.badge}</span>
+                    <span className="quiz-card-time">{quiz.readingTime}</span>
+                  </div>
+
+                  <div className="quiz-card-body">
+                    <span className="quiz-card-number">TEST #{String(idx + 1).padStart(2, '0')}</span>
+                    <h3 className="quiz-card-title">{quiz.title}</h3>
+                    <p className="quiz-card-desc">{quiz.subtitle || quiz.description}</p>
+
+                    <div className="quiz-card-footer">
+                      <span className="quiz-card-qcount">
+                        🍓 {quiz.questionsCount} Özel Soru
+                      </span>
+                      <Link
+                        to={`/testler/${quiz.slug}`}
+                        className="btn-cilek-quiz-start"
+                        id={`btn-home-start-${quiz.slug}`}
+                      >
+                        Testi Çöz →
+                      </Link>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            <div className="home-quiz-teaser-cta-wrap">
+              <Link to="/testler" className="btn-home-quiz-explore-all" id="btn-home-explore-quiz-club">
+                <span>✨</span> Tüm Testleri & Quiz Club'ı Keşfet →
+              </Link>
             </div>
           </div>
         </section>
