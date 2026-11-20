@@ -3,11 +3,11 @@ import Layout from '../components/Layout'
 import { useSiteContent } from '../lib/siteContent'
 
 const CATEGORIES = [
-  { value: 'deneme', label: '📖 Deneme & Anlatı', desc: '15-25 yaş deneyimleri, büyüme sancıları, şehir gözlemleri.' },
-  { value: 'siir', label: '🪶 Şiir & Edebi Metin', desc: 'Serbest, ritmik veya deneysel dizeler; hislerin en yalın hali.' },
-  { value: 'kultur', label: '🎨 Kültür & Sanat İncelemesi', desc: 'Kitap, albüm, sinema, sergi üzerine özgün eleştiriler.' },
-  { value: 'fotografya', label: '📸 Fotoğraf & Görsel Seri', desc: 'Öyküsü olan fotoğraf serileri ve özgün illüstrasyonlar.' },
-  { value: 'diger', label: '✨ Diğer', desc: 'Genel iletişim, öneri veya başka bir tür.' },
+  { value: 'deneme', label: 'Deneme & Anlatı', desc: '15-25 yaş deneyimleri, büyüme sancıları, şehir gözlemleri.' },
+  { value: 'siir', label: 'Şiir & Edebi Metin', desc: 'Serbest, ritmik veya deneysel dizeler; hislerin en yalın hali.' },
+  { value: 'kultur', label: 'Kültür & Sanat İncelemesi', desc: 'Kitap, albüm, sinema, sergi üzerine özgün eleştiriler.' },
+  { value: 'fotografya', label: 'Fotoğraf & Görsel Seri', desc: 'Öyküsü olan fotoğraf serileri ve özgün illüstrasyonlar.' },
+  { value: 'diger', label: 'Diğer', desc: 'Genel iletişim, öneri veya başka bir tür.' },
 ]
 
 const STEPS = [
@@ -89,7 +89,7 @@ Kısa Biyografim:
             <aside className="submit-v2-guide">
               <div className="submit-v2-guide-card">
                 <div className="submit-v2-guide-badge">
-                  <span>🍓 AÇIK BAŞVURU REHBERİ</span>
+                  <span>AÇIK BAŞVURU REHBERİ</span>
                 </div>
 
                 <h2 className="submit-v2-guide-title">Neler Gönderebilirsin?</h2>
@@ -129,7 +129,7 @@ Kısa Biyografim:
             <div className="submit-v2-form-wrap">
               <div className="submit-v2-email-box">
                 <div className="submit-v2-email-header">
-                  <span className="submit-v2-email-tag">✉️ EDİTÖR MASASI</span>
+                  <span className="submit-v2-email-tag">EDİTÖR MASASI</span>
                   <h2 className="submit-v2-form-title">Eserini E-posta ile Gönder</h2>
                   <p className="submit-v2-form-sub">
                     Yayın kurulumuz başvuruları doğrudan editöryal e-posta kutumuz üzerinden kabul etmektedir.
@@ -150,7 +150,7 @@ Kısa Biyografim:
                       id="btn-copy-submission-email"
                       aria-label="E-posta adresini panoya kopyala"
                     >
-                      {copied ? 'Kopyalandı! ✓' : 'Adresi Kopyala 📋'}
+                      {copied ? 'Kopyalandı! ✓' : 'Adresi Kopyala'}
                     </button>
                     <a
                       href={mailtoUrl}
@@ -166,7 +166,7 @@ Kısa Biyografim:
                 {/* E-postada Yer Alması Gereken Bilgiler Rehberi */}
                 <div className="submit-checklist-card">
                   <h3 className="submit-checklist-title">
-                    📋 E-postana Neleri Eklemelisin?
+                    E-postana Neleri Eklemelisin?
                   </h3>
                   <ul className="submit-checklist-list">
                     <li>

@@ -94,7 +94,7 @@ export default function Navbar({ user, isAdmin: propIsAdmin, onOpenWelcomeLetter
           </div>
 
           <p className="announcement-center-text">
-            {settings.announcement_text || 'Hey Chaps! Welcome to Çilek Dergisi 🍓'}
+            {settings.announcement_text || 'Hey Chaps! Welcome to Çilek Dergisi'}
           </p>
 
           <div className="announcement-socials-spacer" aria-hidden="true" />
@@ -150,7 +150,10 @@ export default function Navbar({ user, isAdmin: propIsAdmin, onOpenWelcomeLetter
               id="btn-nav-letter"
               aria-label="Hoş geldin mektubu"
             >
-              <span style={{ fontSize: '1.4rem' }}>💌</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="4" width="20" height="16" rx="2" />
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+              </svg>
             </button>
           )}
 
@@ -254,7 +257,7 @@ export default function Navbar({ user, isAdmin: propIsAdmin, onOpenWelcomeLetter
               }}
               style={{ background: 'var(--c-cream)', border: '1.5px solid var(--c-bordo)', color: 'var(--c-bordo)' }}
             >
-              <span>💌</span> Hoş Geldin Mektubu
+              Hoş Geldin Mektubu
             </button>
           )}
 

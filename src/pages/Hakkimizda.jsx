@@ -5,22 +5,18 @@ import { useSiteContent, DEFAULT_SITE_CONTENT } from '../lib/siteContent'
 
 const MISSION_ITEMS = [
   {
-    icon: '✍️',
     title: 'Özgür Sesler',
     desc: 'Kalıpların dışına çıkma cesaretini bulanların, kendi sesini özgürce ve gururla duyurabileceği dinamik bir alan!'
   },
   {
-    icon: '⚡',
     title: 'İlham Veren Editoryal',
     desc: 'Her kelimeye özen, her görsele tutku! Gençliğin hızını ve ritmini yakalayan heyecan verici editoryal dokunuşlar.'
   },
   {
-    icon: '🍓',
     title: 'Topluluk & Dayanışma',
     desc: '15–25 yaş arası yaratıcı zihinlerin birbirine güç verdiği, birlikte parıldayan sıcacık bir ekosistem!'
   },
   {
-    icon: '📖',
     title: 'Koleksiyonluk Dergi Hissi',
     desc: 'Her sayfasında elle tutulur bir duygu; saklanan, paylaşılan ve kalpleri ısıtan bir dergi deneyimi!'
   }

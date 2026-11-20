@@ -195,7 +195,7 @@ export default function MagazinePage({ user, isAdmin }) {
       <div className="magazine-page-wrapper">
         <Navbar user={user} isAdmin={isAdmin} />
         <div className="mag-page-loader-screen">
-          <span style={{ fontSize: '3rem' }}>🍓</span>
+          <img src="/logo2.png" alt="Çilek Dergi" style={{ width: '48px', height: '48px', objectFit: 'contain' }} />
           <h2 className="mag-loader-title">Sayı Bulunamadı</h2>
           <p className="mag-loader-sub">Aradığınız dergi sayısı mevcut değil veya yayından kaldırılmış olabilir.</p>
           <Link to="/dergiler" className="btn-magazine-download-pdf" style={{ marginTop: '1.5rem', display: 'inline-flex' }}>
@@ -221,10 +221,10 @@ export default function MagazinePage({ user, isAdmin }) {
 
             <div className="magazine-top-meta">
               <span className="magazine-issue-badge">
-                🍓 Sayı {String(magazine.issue_number || 1).padStart(2, '0')}
+                Sayı {String(magazine.issue_number || 1).padStart(2, '0')}
               </span>
               <span className="magazine-top-date">
-                Kapak: Aralık 2026 · Dijital: 18 Kasım 2026
+                Aralık 2026 Sayısı
               </span>
             </div>
           </div>
@@ -260,12 +260,7 @@ export default function MagazinePage({ user, isAdmin }) {
                 </h1>
                 <div className="magazine-info-pubdate-wrap">
                   <p className="magazine-info-pubdate">
-                    <span className="pubdate-badge">Kapak Dönemi: <strong>Aralık 2026</strong></span>
-                    <span className="pubdate-sep">·</span>
-                    <span className="pubdate-badge pubdate-digital">Dijital Yayın: <strong>{new Date(magazine.published_date || '2026-11-18').toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}</strong></span>
-                  </p>
-                  <p className="magazine-pubdate-explainer">
-                    ℹ️ <em>Kapakta yer alan "Aralık 2026", derginin resmi yayın dönemini; 18 Kasım 2026 ise internette okurlarla ilk buluştuğu dijital yayın tarihini ifade eder.</em>
+                    <span className="pubdate-badge">Yayın Dönemi: <strong>Aralık 2026</strong></span>
                   </p>
                 </div>
               </div>
@@ -291,7 +286,7 @@ export default function MagazinePage({ user, isAdmin }) {
                 )}
 
                 <a href="#issue-comments-section" className="btn-magazine-scroll-comments" id="btn-scroll-comments">
-                  💬 Yorumlar
+                  Okur Yorumları
                 </a>
               </div>
             </div>

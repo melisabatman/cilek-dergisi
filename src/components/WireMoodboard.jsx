@@ -37,7 +37,6 @@ export default function WireMoodboard({ onOpenWelcomeLetter }) {
               <div className="mini-binder-clip" aria-hidden="true" />
               <div className="stickers-cluster">
                 <img src="/icons/cilek-vintage.png" alt="Çilek Çıkartması" className="sticker-strawberry-img" />
-                <span className="sticker-lucky-clover" title="Şans">🍀</span>
               </div>
             </div>
 
@@ -113,16 +112,15 @@ export default function WireMoodboard({ onOpenWelcomeLetter }) {
                 onClick={onOpenWelcomeLetter}
                 title="Hoş Geldin Mektubunu Aç"
               >
-                <div className="mini-mail-tag">💌 ÖZEL MEKTUP</div>
+                <div className="mini-mail-tag">ÖZEL MEKTUP</div>
                 <span className="mini-postcard-title">Sevgili Okura Mektup</span>
-                <span className="mini-postcard-hint">Tıkla ve Aç ✂️</span>
+                <span className="mini-postcard-hint">Tıkla ve Aç</span>
               </button>
             </div>
 
-            {/* 7. ÖĞE: Sevimli Karaca / Maskot (Sağ Alt - Referanstaki Ceylan Gibi) */}
+            {/* 7. ÖĞE: Bağımsız Kültür Rozeti */}
             <div className="board-pin-item item-fawn-mascot" style={{ bottom: '8%', right: '6%' }}>
               <div className="mascot-badge" title="Çilek Dostu">
-                <span className="mascot-emoji">🦌</span>
                 <span className="mascot-label">Bağımsız Kültür</span>
               </div>
             </div>
@@ -142,7 +140,7 @@ export default function WireMoodboard({ onOpenWelcomeLetter }) {
             className="btn-capsule-glossy btn-capsule-red"
             onClick={onOpenWelcomeLetter}
           >
-            <span>Hoş Geldin Mektubunu Oku 💌</span>
+            <span>Hoş Geldin Mektubunu Oku</span>
             <span className="capsule-arrow" aria-hidden="true">›</span>
           </button>
         </div>

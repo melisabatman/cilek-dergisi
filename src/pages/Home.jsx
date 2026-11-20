@@ -203,21 +203,21 @@ export default function Home({ user, isAdmin }) {
               {/* Sayı 01'den Öne Çıkan Başlıklar (Teaser Rozetleri) */}
               <div className="home-hero-teasers-box">
                 <span className="home-hero-teasers-label">
-                  🍓 <strong>Sayı 01'den Öne Çıkanlar:</strong>
+                  <strong>Sayı 01 Seçkisi:</strong>
                 </span>
                 <div className="home-hero-teasers-list">
-                  <span className="home-hero-teaser-pill">✨ Ah Şu Retro...</span>
-                  <span className="home-hero-teaser-pill">📖 Güneşin Gölgesinde Kalanlar</span>
-                  <span className="home-hero-teaser-pill">☕ Bir Yaz Öğledensonrası</span>
-                  <span className="home-hero-teaser-pill">🌊 Bağımsız Edebiyat</span>
+                  <span className="home-hero-teaser-pill">Ah Şu Retro...</span>
+                  <span className="home-hero-teaser-pill">Güneşin Gölgesinde Kalanlar</span>
+                  <span className="home-hero-teaser-pill">Bir Yaz Öğledensonrası</span>
+                  <span className="home-hero-teaser-pill">Bağımsız Edebiyat</span>
                 </div>
               </div>
 
               <p className="home-hero-note">
                 <strong className="home-hero-note-strong">
-                  Sayı 01 (Aralık 2026) Yayında!
+                  Sayı 01 Yayında
                 </strong>
-                {' '}· 18 Kasım 2026'da dijital raflara çıktı · Hemen sayfaları çevir!
+                {' '}· Aralık 2026 sayısı yayında · Hemen sayfaları çevir ve keşfet!
               </p>
             </div>
 
@@ -327,7 +327,6 @@ export default function Home({ user, isAdmin }) {
 
                 {/* Pano Üzerindeki Dekoratif Not Rozeti */}
                 <div className="home-wireboard-tag" aria-hidden="true">
-                  <span className="home-wireboard-tag-icon">📌</span>
                   <span className="home-wireboard-tag-text">{settings.home_toc_tag || `Sayı ${featuredMag.issue_number ? String(featuredMag.issue_number).padStart(2, '0') : '01'} Seçkisi`}</span>
                 </div>
 
@@ -385,13 +384,12 @@ export default function Home({ user, isAdmin }) {
               </div>
               <div className="home-values-grid">
                 {[
-                  { icon: '✍️', label: 'Craftsmanship', desc: 'Özgür kalemler ve titiz, ilham verici editoryal dokunuşlar!' },
-                  { icon: '⚡', label: 'Energy & Soul', desc: 'Her satırında gençliğin dinamizmini ve tutkusunu hissettiren anlatılar!' },
-                  { icon: '🎨', label: 'Playfulness', desc: 'Kalıpları yıkan, sınır tanımayan deneysel sanat ve edebiyat!' },
-                  { icon: '🍓', label: 'Community', desc: '15–25 yaş üreticilerin ve meraklı okurların güçlü dayanışması!' },
+                  { label: 'Craftsmanship', desc: 'Özgür kalemler ve titiz, ilham verici editoryal dokunuşlar.' },
+                  { label: 'Energy & Soul', desc: 'Her satırında gençliğin dinamizmini ve tutkusunu hissettiren anlatılar.' },
+                  { label: 'Playfulness', desc: 'Kalıpları yıkan, sınır tanımayan deneysel sanat ve edebiyat.' },
+                  { label: 'Community', desc: '15–25 yaş üreticilerin ve meraklı okurların güçlü dayanışması.' },
                 ].map((v) => (
                   <div key={v.label} className="home-value-card">
-                    <span className="home-value-icon">{v.icon}</span>
                     <strong className="home-value-label">{v.label}</strong>
                     <p className="home-value-desc">{v.desc}</p>
                   </div>
@@ -405,7 +403,7 @@ export default function Home({ user, isAdmin }) {
         <section className="home-quiz-teaser-section" aria-label="Çilek Quiz Club">
           <div className="container">
             <div className="home-quiz-teaser-header">
-              <span className="home-quiz-teaser-eyebrow">✦ ÇİLEK DERGİSİ ÖZEL KULÜBÜ ✦</span>
+              <span className="home-quiz-teaser-eyebrow">ÇİLEK DERGİSİ ÖZEL KULÜBÜ</span>
               <h2 className="home-quiz-teaser-title">
                 ÇİLEK <span className="serif-italic">QUIZ CLUB</span>
               </h2>
@@ -442,7 +440,7 @@ export default function Home({ user, isAdmin }) {
 
                     <div className="quiz-card-footer">
                       <span className="quiz-card-qcount">
-                        🍓 {quiz.questionsCount} Özel Soru
+                        {quiz.questionsCount} Özel Soru
                       </span>
                       <Link
                         to={`/testler/${quiz.slug}`}
@@ -459,7 +457,7 @@ export default function Home({ user, isAdmin }) {
 
             <div className="home-quiz-teaser-cta-wrap">
               <Link to="/testler" className="btn-home-quiz-explore-all" id="btn-home-explore-quiz-club">
-                <span>✨</span> Tüm Testleri & Quiz Club'ı Keşfet →
+                Tüm Testleri & Quiz Club'ı Keşfet →
               </Link>
             </div>
           </div>

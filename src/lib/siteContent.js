@@ -29,7 +29,7 @@ export const DEFAULT_SITE_SETTINGS = {
 
   // ── DUYURU BANDI (ÜST ANNOUNCEMENT BAR) ───────────────────
   announcement_is_active: false,
-  announcement_text: '✨ Yeni sayımız yayında! Sayfaları çevirmek için hemen tıkla.',
+  announcement_text: 'Yeni sayımız yayında! Sayfaları çevirmek için hemen tıkla.',
   announcement_link: '/dergiler',
 
   // ── QUIZ CLUB TESTLERİ VERİSİ (CUSTOM QUIZZES & UPCOMING) ─
@@ -44,7 +44,7 @@ export const DEFAULT_SITE_SETTINGS = {
   hero_subtitle: '15–25 yaş arası bağımsız yaratıcılar için sınırları kaldıran editoryal sahne! Her sayıda keşfedilmeyi bekleyen yepyeni anlatılar, şiirler, görsel seriler ve koleksiyonluk dijital zine ruhu.',
   hero_cta_text: 'Son Sayıyı Oku →',
   hero_cta_archive: 'Arşivi İncele',
-  hero_marquee: 'Sayı 01 Yayında · Şimdi Oku · Her Ay Yepyeni Bir Macera · Genç, Özgür, Bağımsız! · Çilek Dergisi · ',
+  hero_marquee: 'Sayı 01 Yayında · Şimdi Oku · Her Ay Yeni Bir Sayı · Bağımsız Gençlik · Çilek Dergisi · ',
 
   // ── 2. ANA SAYFA - TELLİ PANO (BU SAYIDA SENİ NELER BEKLİYOR) ──
   home_toc_tag: 'Sayı 01 Seçkisi',
@@ -269,27 +269,19 @@ export async function fetchSiteSettings() {
         }
       })
 
-      // Birleştirme: Varsayılanlar < Master all_settings (kullanıcının en son kaydettiği) < Daha yeni bireysel güncellemeler
-      const dbSettings = {
-        ...DEFAULT_SITE_SETTINGS,
-        ...masterSettings,
-        ...individualSettings
-      }
-
-      // Zaman damgası kontrolü: Yerel değişiklikler veritabanındaki verilerden yeniyse yerel veri korunur
-      const dbTimestamp = Math.max(
-        Number(dbSettings._last_saved) || 0,
-        masterUpdatedAt
-      )
+      // Birleştirme: Veritabanından gelen gerçek veriler her zaman yerel önbelleğin üzerindedir!
+      // Böylece bilgisayardan yapılan tüm değişiklikler mobilde ve tüm cihazlarda anında görünür.
+      const isCurrentlyInAdmin = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')
       const localTimestamp = Number(localData._last_saved) || 0
+      const dbTimestamp = Math.max(Number(dbSettings._last_saved) || 0, masterUpdatedAt)
 
       let merged
-      if (localTimestamp && localTimestamp > dbTimestamp) {
-        // Yerel ayarlar daha güncel: veritabanı boşlukları doldurur, yerel değişiklikler ezilmez
+      // SADECE admin panelindeyken ve admin henüz DB'ye basmadığı taslak düzenlemeleri varsa yerel veriyi koru
+      if (isCurrentlyInAdmin && localTimestamp > dbTimestamp) {
         merged = { ...DEFAULT_SITE_SETTINGS, ...dbSettings, ...localData }
       } else {
-        // Veritabanı daha güncel veya ilk yükleme
-        merged = { ...DEFAULT_SITE_SETTINGS, ...localData, ...dbSettings }
+        // Okuyucu ve mobil sayfalarında veritabanı doğrudan esastır
+        merged = { ...DEFAULT_SITE_SETTINGS, ...dbSettings }
       }
 
       try {
@@ -498,15 +490,43 @@ export function useSiteContent() {
   useEffect(() => {
     reload()
 
+    // Sayfa içi yerel olay dinleyicisi
     const handleUpdate = (e) => {
       if (e.detail) {
         setSettings(e.detail)
       }
     }
-
     window.addEventListener(UPDATE_EVENT_NAME, handleUpdate)
+
+    // Mobil cihazlarda sekmeye veya tarayıcıya geri dönüldüğünde en güncel veriyi anında yeniden çek
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        reload()
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    // Supabase Realtime Kanalı: Bilgisayarda admin kaydettiğinde mobilde otomatik anında güncelle
+    let channel = null
+    try {
+      channel = supabase
+        .channel('public:site_settings_realtime')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'site_settings' },
+          () => {
+            reload()
+          }
+        )
+        .subscribe()
+    } catch (_) {}
+
     return () => {
       window.removeEventListener(UPDATE_EVENT_NAME, handleUpdate)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      if (channel) {
+        try { supabase.removeChannel(channel) } catch (_) {}
+      }
     }
   }, [reload])
 

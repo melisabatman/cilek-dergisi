@@ -9,7 +9,7 @@
      - Açık pembe:      #F3D8DC — SADECE çok küçük dokunuşlarda (hover arka planı, ince çizgiler); ASLA geniş alan rengi değil
    ================================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,600;1,700;1,800;1,900&family=Manrope:wght@500;600;700;800&subset=latin,latin-ext&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,500;1,600;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&subset=latin,latin-ext&display=swap');
 
 :root {
   /* ── 6 TEMEL ÇİLEK MEYVESİ RENK PALETİ ────────────────── */
@@ -78,12 +78,12 @@
   --yellow-cta: var(--color-primary);
   --yellow-hover: var(--color-primary);
 
-  /* Fontlar */
-  --font-luxury: 'Playfair Display', 'DM Serif Display', Georgia, serif;
-  --font-cover: 'Playfair Display', 'DM Serif Display', Georgia, serif;
-  --font-serif: 'Playfair Display', 'DM Serif Display', Georgia, serif;
-  --font-sans: 'Manrope', system-ui, -apple-system, sans-serif;
-  --font-body: 'Manrope', system-ui, -apple-system, sans-serif;
+  /* Fontlar - Asil & Okunaklı Editoryal Dergi Tipografisi */
+  --font-luxury: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  --font-cover: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
+  --font-serif: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', 'Manrope', system-ui, -apple-system, sans-serif;
+  --font-body: 'Plus Jakarta Sans', 'Manrope', system-ui, -apple-system, sans-serif;
 
   /* İkincil Vurgu & Efekt Değişkenleri */
   --accent-gold: var(--color-seed, #E8B54D);
@@ -120,10 +120,12 @@ body {
   background-color: var(--c-bg);
   color: var(--c-text);
   font-family: var(--font-sans);
-  font-weight: 600;
-  line-height: 1.65;
+  font-weight: 450;
+  line-height: 1.7;
+  letter-spacing: -0.01em;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   cursor: url('/cursors/pixel-pink-star.png') 14 3, url('/cursors/pixel-pink-star.svg') 14 3, auto;
 }
 
@@ -20741,73 +20743,70 @@ p,
 }
 
 /* ==========================================================================
-   SAYI 01 TEASERS & KAPAK DÖNEMİ / YAYIN TARİHİ STİLLERİ
+   SAYI 01 TEASERS & KAPAK DÖNEMİ / YAYIN TARİHİ STİLLERİ (ASİL & ZARİF)
    ========================================================================== */
 .home-hero-teasers-box {
-  margin-top: 1.1rem;
-  margin-bottom: 0.5rem;
-  padding: 0.85rem 1.1rem;
-  background: rgba(255, 255, 255, 0.78);
-  border: 1.5px dashed rgba(190, 38, 37, 0.28);
-  border-radius: 12px;
-  backdrop-filter: blur(4px);
+  margin-top: 1.2rem;
+  margin-bottom: 0.6rem;
+  padding: 0.9rem 1.15rem;
+  background: #FFFDFB;
+  border: 1px solid rgba(190, 38, 37, 0.14);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(61, 39, 48, 0.04);
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.55rem;
 }
 
 .home-hero-teasers-label {
-  font-size: 0.82rem;
+  font-family: var(--font-luxury);
+  font-size: 0.95rem;
   font-weight: 700;
   color: var(--color-primary);
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
 }
 
 .home-hero-teasers-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.45rem;
+  gap: 0.5rem;
 }
 
 .home-hero-teaser-pill {
   display: inline-flex;
   align-items: center;
-  background: #FFF9F4;
-  border: 1px solid rgba(190, 38, 37, 0.18);
+  background: #FFFFFF;
+  border: 1px solid rgba(190, 38, 37, 0.14);
   color: #3b2820;
+  font-family: var(--font-sans);
   font-size: 0.82rem;
-  font-weight: 600;
-  padding: 0.3rem 0.65rem;
+  font-weight: 500;
+  padding: 0.32rem 0.75rem;
   border-radius: 999px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
-  transition: transform 0.2s ease, background 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
 }
 
 .home-hero-teaser-pill:hover {
   transform: translateY(-1px);
-  background: #FFF0E8;
+  background: #FFF7F4;
   border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .magazine-info-pubdate-wrap {
   margin-top: 0.6rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.9rem;
   display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
+  align-items: center;
 }
 
 .magazine-info-pubdate {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.92rem;
-  color: var(--color-text);
   margin: 0;
 }
 
@@ -20815,29 +20814,13 @@ p,
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  background: rgba(190, 38, 37, 0.07);
-  padding: 0.25rem 0.65rem;
+  background: #FFFDFB;
+  padding: 0.3rem 0.75rem;
   border-radius: 6px;
-  border: 1px solid rgba(190, 38, 37, 0.18);
+  border: 1px solid rgba(190, 38, 37, 0.15);
+  font-size: 0.88rem;
   font-weight: 600;
-}
-
-.pubdate-badge.pubdate-digital {
-  background: rgba(22, 101, 52, 0.06);
-  border-color: rgba(22, 101, 52, 0.18);
-  color: #14532d;
-}
-
-.pubdate-sep {
-  color: #aaa;
-  font-weight: 700;
-}
-
-.magazine-pubdate-explainer {
-  font-size: 0.8rem;
-  color: #715b51;
-  margin: 0;
-  line-height: 1.45;
+  color: var(--color-primary);
 }
 
 
