@@ -71,6 +71,7 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
   // Durumlar
   const [currentPageIndex, setCurrentPageIndex] = useState(0)
   const currentPageIndexRef = useRef(0)
+  const isFlippingRef = useRef(false)
   useEffect(() => {
     currentPageIndexRef.current = currentPageIndex
   }, [currentPageIndex])
@@ -295,6 +296,7 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
   const handlePrev = useCallback(() => {
     const pf = flipbookRef.current
     if (!pf) return
+    if (isFlippingRef.current) return
     try {
       const state = pf.getState ? pf.getState() : null
       if (state === 'flipping') return
@@ -302,44 +304,21 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
       const cur = pf.getCurrentPageIndex ? pf.getCurrentPageIndex() : (currentPageIndexRef.current || 0)
       if (cur <= 0) return
 
-      const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
-      if (isMobile) {
-        // Mobilde tek sayfa dikey modda en kararlı sayfa geçişi
-        try {
-          pf.turnToPrevPage()
-        } catch {
-          try { pf.flipPrev() } catch { }
-        }
-      } else {
-        try {
-          pf.flipPrev()
-        } catch {
-          try { pf.turnToPrevPage() } catch { }
-        }
-        setTimeout(() => {
-          if (flipbookRef.current && flipbookRef.current.getCurrentPageIndex() === cur) {
-            try { flipbookRef.current.turnToPrevPage() } catch { }
-          }
-        }, 150)
-      }
-
+      isFlippingRef.current = true
+      pf.flipPrev()
       setTimeout(() => {
-        if (flipbookRef.current) {
-          const newIdx = flipbookRef.current.getCurrentPageIndex?.()
-          if (typeof newIdx === 'number' && !isNaN(newIdx)) {
-            setCurrentPageIndex(newIdx)
-          }
-        }
-      }, 50)
+        isFlippingRef.current = false
+      }, 420)
     } catch (err) {
       console.warn('handlePrev error:', err)
-      try { pf.turnToPrevPage() } catch { }
+      isFlippingRef.current = false
     }
   }, [])
 
   const handleNext = useCallback(() => {
     const pf = flipbookRef.current
     if (!pf) return
+    if (isFlippingRef.current) return
     try {
       const state = pf.getState ? pf.getState() : null
       if (state === 'flipping') return
@@ -348,23 +327,14 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
       const total = pf.getPageCount ? pf.getPageCount() : (totalPagesCountRef.current || 0)
       if (total > 0 && cur >= total - 1) return
 
-      try {
-        pf.flipNext()
-      } catch {
-        try { pf.turnToNextPage() } catch { }
-      }
+      isFlippingRef.current = true
+      pf.flipNext()
       setTimeout(() => {
-        if (flipbookRef.current && flipbookRef.current.getCurrentPageIndex() === cur) {
-          try { flipbookRef.current.turnToNextPage() } catch { }
-        }
-        const newIdx = flipbookRef.current?.getCurrentPageIndex?.()
-        if (typeof newIdx === 'number' && !isNaN(newIdx)) {
-          setCurrentPageIndex(newIdx)
-        }
-      }, 450)
+        isFlippingRef.current = false
+      }, 420)
     } catch (err) {
       console.warn('handleNext error:', err)
-      try { pf.turnToNextPage() } catch { }
+      isFlippingRef.current = false
     }
   }, [])
 
@@ -620,10 +590,10 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
       usePortrait: isMobile,
       mobileScrollSupport: false,
       useMouseEvents: true, // Fare ve parmakla tutup kıvırma/katlama desteği
-      disableFlipByClick: false, // Dahili köşe çevirme ve API tetiklemelerini kilitleme
+      disableFlipByClick: true, // Dahili rastgele tıklamayı kapat, tek ve kontrollü handleNext/handlePrev kullan (sayfa atlamasını önler)
       clickEventForward: false,
-      swipeDistance: isMobile ? 16 : 20,
-      flippingTime: 480, // Doğal, akıcı yaprak çevirme süresi
+      swipeDistance: isMobile ? 25 : 30,
+      flippingTime: 400, // Doğal, akıcı yaprak çevirme süresi
       showPageCorners: true, // Mobilde de köşelerin kıvrılıp sayfa çevirmeyi hissettirmesi
       maxShadowOpacity: 0.32,
       drawShadow: true,
@@ -637,6 +607,7 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
         didPanRef.current = false
         return
       }
+      if (isFlippingRef.current) return
       const pfInstance = flipbookRef.current
       if (!pfInstance) return
       try {
@@ -939,28 +910,9 @@ export default function MagazineReader({ magazine, user, isAdmin, embedded = fal
         setIsPanning(false)
       }
 
-      // Normal boyuttayken (1.0x) yatay swipe ile sayfa çevirme
-      if (zoomLevelRef.current === 1.0 && touchStartXRef.current !== null && e.changedTouches && e.changedTouches.length === 1) {
-        const endX = e.changedTouches[0].clientX
-        const endY = e.changedTouches[0].clientY
-        const diffX = endX - touchStartXRef.current
-        const diffY = endY - touchStartYRef.current
-
-        if (Math.abs(diffX) > 44 && Math.abs(diffX) > Math.abs(diffY) * 1.4) {
-          const pf = flipbookRef.current
-          if (pf) {
-            try {
-              if (pf.getState() === 'flipping') return
-            } catch { }
-          }
-          if (diffX < 0) {
-            handleNext()
-          } else {
-            handlePrev()
-          }
-        }
-      }
-
+      // Dokunma koordinatlarını sıfırla
+      // NOT: Sayfa çevirme (swipe/flip), PageFlip kütüphanesinin kendi dahili touch motoruyla (useMouseEvents: true) pürüzsüzce yürütülür.
+      // Burada fazladan handleNext/handlePrev çağırmak sayfayı ikişer ikişer atlatıyordu.
       touchStartXRef.current = null
       touchStartYRef.current = null
     }
