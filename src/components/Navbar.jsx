@@ -4,6 +4,7 @@ import { supabase, checkIsAdmin } from '../lib/supabase'
 import { useSiteContent } from '../lib/siteContent'
 
 const NAV_LINKS = [
+  { to: '/',             label: 'ANA SAYFA'    },
   { to: '/dergiler',     label: 'DERGİLER'     },
   { to: '/testler',      label: 'TESTLER'      },
   { to: '/hakkimizda',   label: 'HAKKIMIZDA'   },

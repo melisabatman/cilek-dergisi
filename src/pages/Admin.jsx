@@ -619,8 +619,12 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
     if (e) e.preventDefault()
     setSavingLetter(true)
     try {
-      await updateContent({ letter: letterState })
-      showFeedback('success', 'Hoş Geldin Mektubu başarıyla güncellendi!')
+      const res = await updateContent({ letter: letterState })
+      if (res && res.dbSaved === false) {
+        showFeedback('error', '⚠️ Mektup yerel belleğe kaydedildi ancak oturum süreniz dolduğu için veritabanına aktarılamadı. Lütfen girişinizi yenileyin.')
+      } else {
+        showFeedback('success', 'Hoş Geldin Mektubu başarıyla güncellendi!')
+      }
     } catch (err) {
       showFeedback('error', 'Mektup kaydedilirken hata oluştu.')
     } finally {
@@ -640,7 +644,14 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
   // 4. SİTE METİNLERİ & CMS İŞLEMLERİ (TÜM SAYFALAR)
   // -------------------------------------------------------------
   const handleSiteChange = (field, val) => {
-    setSiteState(prev => ({ ...prev, [field]: val }))
+    setSiteState(prev => {
+      const next = { ...prev, [field]: val }
+      try {
+        const local = getLocalSiteSettings()
+        localStorage.setItem('cilek_site_settings_v3', JSON.stringify({ ...local, ...next, _last_saved: Date.now() }))
+      } catch (_) {}
+      return next
+    })
   }
 
   const handleUploadImageForField = async (fieldKey, file, prefix = 'site') => {
@@ -669,7 +680,14 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
     setSavingSite(true)
     try {
       const res = await updateSettings(siteState)
-      showFeedback('success', '✨ Değişiklikler başarıyla kaydedildi ve tüm sitede güncellendi!')
+      if (res && res.dbSaved === false) {
+        showFeedback(
+          'error',
+          '⚠️ Değişiklikler tarayıcınıza kaydedildi ancak oturum süreniz dolduğu için veritabanına ulaşılamadı. Lütfen admin girişinizi yenileyip tekrar kaydedin.'
+        )
+      } else {
+        showFeedback('success', '✨ Değişiklikler başarıyla kaydedildi ve tüm sitede güncellendi!')
+      }
       return res
     } catch (err) {
       showFeedback('error', 'Ayarlar kaydedilirken hata oluştu: ' + (err?.message || err))
@@ -782,8 +800,12 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
     if (e) e.preventDefault()
     setSavingMediaSettings(true)
     try {
-      await updateContent({ media: mediaState })
-      showFeedback('success', '✨ Harika! Site fotoğraf tercihleri başarıyla kaydedildi!')
+      const res = await updateContent({ media: mediaState })
+      if (res && res.dbSaved === false) {
+        showFeedback('error', '⚠️ Fotoğraf tercihleri yerel olarak kaydedildi ancak oturum süreniz dolduğu için veritabanına aktarılamadı. Lütfen girişinizi yenileyin.')
+      } else {
+        showFeedback('success', '✨ Harika! Site fotoğraf tercihleri başarıyla kaydedildi!')
+      }
     } catch (err) {
       showFeedback('error', 'Fotoğraf tercihleri kaydedilemedi.')
     } finally {
@@ -885,7 +907,7 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
                 window.location.href = '/'
               }}
             >
-              ← Siteyi Gör
+              ← Ana Sayfaya Dön
             </a>
             <div className="admin-brand-info">
               <a
@@ -933,6 +955,19 @@ export default function Admin({ user, isAdmin: propIsAdmin }) {
       <div className="admin-main-container">
         {/* Sekmeler (Tab Bar) - Tüm Yönetim Sekmeleri */}
         <div className="admin-tabs-nav" role="tablist">
+          {/* Ana Sayfaya Dön Sekmesi */}
+          <a
+            href="/"
+            className="admin-tab-btn admin-tab-btn-home"
+            title="Ana Sayfaya Dön"
+            id="tab-btn-home"
+            onClick={(e) => {
+              e.preventDefault()
+              navigate('/')
+            }}
+          >
+            🏠 Ana Sayfa
+          </a>
           <button
             type="button"
             role="tab"

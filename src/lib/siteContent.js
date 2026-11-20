@@ -236,45 +236,55 @@ export async function fetchSiteSettings() {
   try {
     const { data, error } = await supabase
       .from('site_settings')
-      .select('key, value')
+      .select('key, value, updated_at')
 
     if (!error && Array.isArray(data) && data.length > 0) {
-      const dbSettings = {}
+      // 1. Önce master (tüm ayarlar) kaydını al (all_settings veya main_content)
+      const masterRow = data.find(r => r.key === 'all_settings') || data.find(r => r.key === 'main_content')
+      const masterUpdatedAt = masterRow?.updated_at ? new Date(masterRow.updated_at).getTime() : 0
+      const masterSettings = (masterRow?.value && typeof masterRow.value === 'object') ? masterRow.value : {}
 
+      // 2. Bireysel anahtar-değer satırlarını topla
+      const individualSettings = {}
       data.forEach((row) => {
-        if (!row || !row.key) return
-        if (row.key === 'main_content' || row.key === 'all_settings') {
-          // Toplu JSON nesnesi
-          if (row.value && typeof row.value === 'object') {
-            Object.assign(dbSettings, row.value)
-            // Eğer eski formatta site altındaysa
-            if (row.value.site) Object.assign(dbSettings, row.value.site)
-            if (row.value.media?.founder_photo) dbSettings.about_founder_photo_url = row.value.media.founder_photo
-            if (row.value.media?.founder_2_photo) dbSettings.about_founder_2_photo_url = row.value.media.founder_2_photo
-            if (row.value.media?.about_photo_1) dbSettings.about_photo_1_url = row.value.media.about_photo_1
-            if (row.value.media?.about_photo_2) dbSettings.about_photo_2_url = row.value.media.about_photo_2
-          }
-        } else {
-          // Bireysel anahtar-değer
-          let val = row.value
-          if (val && typeof val === 'object' && 'val' in val) {
-            val = val.val
-          } else if (typeof val === 'string') {
-            try {
-              const unquoted = JSON.parse(val)
-              if (typeof unquoted === 'string') val = unquoted
-            } catch (_) {}
-          }
-          dbSettings[row.key] = val
+        if (!row || !row.key || row.key === 'all_settings' || row.key === 'main_content') return
+        const rowTime = row.updated_at ? new Date(row.updated_at).getTime() : 0
+        let val = row.value
+        if (val && typeof val === 'object' && 'val' in val) {
+          val = val.val
+        } else if (typeof val === 'string') {
+          try {
+            const unquoted = JSON.parse(val)
+            if (typeof unquoted === 'string') val = unquoted
+          } catch (_) {}
+        }
+
+        // KRİTİK KURAL: Bireysel satır YALNIZCA master kayıttan daha YENİ ise master'ı günceller!
+        // Eski (Nov 18 gibi ilk yükleme) satırlarının kullanıcının kaydettiği güncel all_settings'i ezmesi engellenir.
+        if (rowTime > masterUpdatedAt) {
+          individualSettings[row.key] = val
+        } else if (!(row.key in masterSettings)) {
+          // Master'da henüz olmayan eski veya ek bir anahtarsa ekle
+          individualSettings[row.key] = val
         }
       })
 
-      // Zaman damgası kontrolü: Yerel değişiklikler veritabanındaki eski verilerden yeniyse yerel veri korunur
-      const dbTimestamp = Number(dbSettings._last_saved) || (dbSettings.updated_at ? new Date(dbSettings.updated_at).getTime() : 0)
+      // Birleştirme: Varsayılanlar < Master all_settings (kullanıcının en son kaydettiği) < Daha yeni bireysel güncellemeler
+      const dbSettings = {
+        ...DEFAULT_SITE_SETTINGS,
+        ...masterSettings,
+        ...individualSettings
+      }
+
+      // Zaman damgası kontrolü: Yerel değişiklikler veritabanındaki verilerden yeniyse yerel veri korunur
+      const dbTimestamp = Math.max(
+        Number(dbSettings._last_saved) || 0,
+        masterUpdatedAt
+      )
       const localTimestamp = Number(localData._last_saved) || 0
 
       let merged
-      if (localTimestamp && localTimestamp >= dbTimestamp) {
+      if (localTimestamp && localTimestamp > dbTimestamp) {
         // Yerel ayarlar daha güncel: veritabanı boşlukları doldurur, yerel değişiklikler ezilmez
         merged = { ...DEFAULT_SITE_SETTINGS, ...dbSettings, ...localData }
       } else {
@@ -299,11 +309,15 @@ export async function fetchSiteSettings() {
  */
 export async function saveSiteSettings(newSettings) {
   const currentLocal = getLocalSiteSettings()
+  const now = Date.now()
+  const nowIso = new Date().toISOString()
+
   const merged = {
     ...DEFAULT_SITE_SETTINGS,
     ...currentLocal,
     ...newSettings,
-    _last_saved: Date.now()
+    _last_saved: now,
+    updated_at: nowIso
   }
 
   // 1. Önce anında yerel belleğe kaydet (kullanıcı bekletilmez)
@@ -318,9 +332,24 @@ export async function saveSiteSettings(newSettings) {
 
   // 3. Supabase'e kalıcı olarak kaydet
   let dbSuccess = false
+  let dbErrorMessage = ''
   try {
-    // A) Önce tek ve birleşik ana ayar JSON nesnesini kaydet
-    const nowIso = new Date().toISOString()
+    // A) Oturumun geçerliliğini kontrol et ve gerekirse arka planda yenile
+    try {
+      const { data: sessionData } = await supabase.auth.getSession()
+      if (sessionData?.session) {
+        const expiresAt = sessionData.session.expires_at || 0
+        const nowSec = Math.floor(Date.now() / 1000)
+        // Eğer token süresi dolmuşsa veya 5 dakikadan az kalmışsa yenile
+        if (expiresAt - nowSec < 300) {
+          await supabase.auth.refreshSession()
+        }
+      }
+    } catch (authErr) {
+      console.warn('[saveSiteSettings auth check warn]:', authErr)
+    }
+
+    // B) Önce tek ve birleşik ana ayar JSON nesnesini kaydet
     const masterRecords = [
       {
         key: 'all_settings',
@@ -341,10 +370,11 @@ export async function saveSiteSettings(newSettings) {
     if (!masterErr) {
       dbSuccess = true
     } else {
+      dbErrorMessage = masterErr.message || 'Veritabanı kayıt hatası'
       console.warn('[saveSiteSettings master upsert warn]:', masterErr.message)
     }
 
-    // B) Kritik tekil anahtarları ayrı ayrı kaydet (birinin hata vermesi ana kaydı bozmaz)
+    // C) Kritik tekil anahtarları ayrı ayrı kaydet
     const criticalKeys = [
       'quizzes_custom',
       'upcoming_quizzes_custom',
@@ -362,14 +392,37 @@ export async function saveSiteSettings(newSettings) {
       'announcement_text',
       'contact_email',
       'contact_phone',
-      'brand_name'
+      'brand_name',
+      'hero_eyebrow',
+      'hero_title_line1',
+      'hero_title_italic',
+      'hero_title_script',
+      'hero_subtitle',
+      'hero_cta_text',
+      'hero_cta_archive',
+      'home_toc_tag',
+      'editorial_headline',
+      'editorial_tag',
+      'editorial_lead',
+      'features_title',
+      'about_title',
+      'about_story_title',
+      'about_paragraph_1',
+      'about_paragraph_2',
+      'about_paragraph_3',
+      'magazines_title',
+      'magazines_subtitle',
+      'team_page_title',
+      'team_page_description',
+      'contact_title',
+      'contact_subtitle'
     ]
 
     const individualRows = criticalKeys
       .filter(k => k in merged && merged[k] !== undefined)
       .map(k => ({
         key: k,
-        value: typeof merged[k] === 'object' ? merged[k] : { val: merged[k] },
+        value: typeof merged[k] === 'object' && merged[k] !== null ? merged[k] : { val: merged[k] },
         updated_at: nowIso
       }))
 
@@ -381,10 +434,11 @@ export async function saveSiteSettings(newSettings) {
       } catch (_) {}
     }
   } catch (err) {
+    dbErrorMessage = err.message || 'Bilinmeyen veritabanı hatası'
     console.warn('[saveSiteSettings supabase error]:', err)
   }
 
-  return { success: true, dbSaved: dbSuccess, data: merged }
+  return { success: true, dbSaved: dbSuccess, dbError: dbErrorMessage, data: merged }
 }
 
 /**

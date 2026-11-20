@@ -3254,6 +3254,25 @@ button {
   border-bottom-color: var(--red);
 }
 
+.admin-tab-btn-home {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  background: rgba(190, 38, 37, 0.08) !important;
+  color: #BE2625 !important;
+  border-radius: 8px 8px 0 0 !important;
+  text-decoration: none !important;
+  font-weight: 800 !important;
+  border-bottom: 3px solid transparent !important;
+  transition: all var(--t-fast) !important;
+}
+
+.admin-tab-btn-home:hover {
+  background: #BE2625 !important;
+  color: #FFFFFF !important;
+  border-bottom-color: #BE2625 !important;
+}
+
 /* İki Kolonlu Grid */
 .admin-two-col-grid {
   display: grid;
