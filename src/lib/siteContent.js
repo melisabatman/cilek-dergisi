@@ -254,20 +254,18 @@ export async function fetchSiteSettings() {
           val = val.val
         } else if (typeof val === 'string') {
           try {
-            const unquoted = JSON.parse(val)
-            if (typeof unquoted === 'string') val = unquoted
+            val = JSON.parse(val)
           } catch (_) {}
         }
 
-        // KRİTİK KURAL: Bireysel satır YALNIZCA master kayıttan daha YENİ ise master'ı günceller!
-        // Eski (Nov 18 gibi ilk yükleme) satırlarının kullanıcının kaydettiği güncel all_settings'i ezmesi engellenir.
-        if (rowTime > masterUpdatedAt) {
-          individualSettings[row.key] = val
-        } else if (!(row.key in masterSettings)) {
-          // Master'da henüz olmayan eski veya ek bir anahtarsa ekle
+        // KRİTİK KURAL: Bireysel satır YALNIZCA master kayıttan daha YENİ veya eşitse, ya da master'da yoksa ekle
+        if (rowTime >= masterUpdatedAt || !(row.key in masterSettings)) {
           individualSettings[row.key] = val
         }
       })
+
+      // Veritabanından gelen master ve bireysel ayarları birleştir
+      const dbSettings = { ...masterSettings, ...individualSettings }
 
       // Birleştirme: Veritabanından gelen gerçek veriler her zaman yerel önbelleğin üzerindedir!
       // Böylece bilgisayardan yapılan tüm değişiklikler mobilde ve tüm cihazlarda anında görünür.

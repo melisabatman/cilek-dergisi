@@ -290,7 +290,7 @@ export default function QuizClub({ user, isAdmin }) {
                   <div className="quiz-intro-card">
                     <div className="quiz-intro-media">
                       <img
-                        src={activeQuiz.coverImage}
+                        src={resolveQuizImage(activeQuiz.coverImage)}
                         alt={activeQuiz.title}
                         className="quiz-intro-img"
                       />

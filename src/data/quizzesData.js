@@ -248,7 +248,7 @@ export const QUIZZES = [
     subtitle: "90'lar, Y2K, coquette veya old money... Sen hangi döneme aitsin?",
     badge: 'ESTETİK & TARZ TESTİ',
     readingTime: '3 dk',
-    coverImage: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=1000&q=80',
+    coverImage: '/api/file?key=covers%2Fquiz_cover_hangi-donemin-kizisin_1795087106412_abbey.jpg',
     accentColor: '#6B9B7C',
     questionsCount: 9,
     description: "Slip elbiselerden fiyonklara, vintage kasetlerden ışıltılı lipglosslara kadar her dönemin bambaşka bir ruhu var. Senin kalbin hangi dönemin melodisiyle atıyor? Gerçek stil kimliğini ve estetik dönemini keşfetme zamanı!",
@@ -259,7 +259,7 @@ export const QUIZZES = [
         role: 'Zahmetsiz Havalı & Sahici',
         tagline: 'Siyah Beyaz Nostalji & Slip Elbiseler',
         quote: '“Sadelik, en yüksek zarafettir.”',
-        image: 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=1000&q=80',
+        image: '/api/file?key=covers%2Fquiz_hangi-donemin-kizisin_90s_1795087170719_90s.jpg',
         color: '#3D2730',
         traits: ['Cool', 'Minimalist', 'Zamansız', 'Sahici', 'Nostaljik'],
         description: 'Sen sadeliğin gücüne inanan gerçek bir 90’lar ruhusun! Dökümlü slip elbiseler, vintage deri ceketler, fırçasız doğal saçlar ve kahve tonlarında dudaklar tam senin tarzın. Gösterişli süslemeler yerine duru bir estetiği tercih edersin. Az konuşur, tarzınla çok şey söylersin.',
@@ -271,7 +271,7 @@ export const QUIZZES = [
         role: 'Işıltılı, Cesur ve Eğlenceli',
         tagline: 'Pembe Lipglosslar & Fütüristik Nostalji',
         quote: '“Daha fazla sim, daha fazla pembe ve sınırsız pop enerjisi!”',
-        image: 'https://images.unsplash.com/photo-1516762689617-e1cffcef479d?auto=format&fit=crop&w=1000&q=80',
+        image: '/api/file?key=covers%2Fquiz_hangi-donemin-kizisin_y2k_1795087121678_birtney.jpg',
         color: '#E05A8D',
         traits: ['Enerjik', 'Işıltılı', 'Cesur', 'Trend Öncüsü', 'Eğlenceli'],
         description: 'Sen milenyumun ilk yıllarındaki o taptaze, parlak ve kaygısız enerjisin! Düşük bel kumaşlar, parıltılı kelebek tokalar, pembe lipgloss ve kapaklı telefon estetiği senin imzan. Hayatı çok ciddiye alıp neşeni kaybetmezsin; girdiğin her ortama eğlence ve ışıltı getirirsin.',
@@ -283,7 +283,7 @@ export const QUIZZES = [
         role: 'Naif, Zarif ve Şiirsel',
         tagline: 'İpek Kurdeleler & Çilekli Düşler',
         quote: '“Hayat, vintage bir aşk romanı gibi incelikle yaşanmalı.”',
-        image: 'https://images.unsplash.com/photo-1518895949257-7621c3c786d7?auto=format&fit=crop&w=1000&q=80',
+        image: '/api/file?key=covers%2Fquiz_hangi-donemin-kizisin_coquette_1795087305718_coquette.jpg',
         color: '#D87A8C',
         traits: ['Romantik', 'Zarif', 'Duygusal', 'Masalsı', 'İncelikli'],
         description: 'Sen dünyaya pembe bir tülün arkasından bakan, fiyonkları ve dantelleri kalbinde taşıyan bir coquette ruhsun! Çilekli tatlılar, el yazısı mektuplar, klasik bale zarafeti ve melankolik aşk şarkıları seni anlatır. Kırılgan görünüşünün altında hislerine sadık çok güçlü bir iç dünya vardır.',
@@ -295,7 +295,7 @@ export const QUIZZES = [
         role: 'Sessiz Lüksün Temsilcisi',
         tagline: 'Nesilden Nesile Aktarılan Asalet',
         quote: '“Gerçek zenginlik bağırmaz, fısıldar.”',
-        image: 'https://images.unsplash.com/photo-1485230895905-ec40ba36b9bc?auto=format&fit=crop&w=1000&q=80',
+        image: '/api/file?key=covers%2Fquiz_hangi-donemin-kizisin_oldmoney_1795087232123_lily.jpg',
         color: '#284638',
         traits: ['Asil', 'Seçkin', 'Disiplinli', 'Kaliteli', 'Zevk Sahibi'],
         description: 'Sen trendlerin ötesinde, zamana meydan okuyan bir asaletsin! Kaşmir kazaklar, tenis kortları, klasik inci küpeler ve ata sporu zarafeti senin doğanda var. Logoların arkasına saklanmaz, kumaşın dokusundan ve dikimin kalitesinden anlarsın. Nezaketin ve duruşunla her zaman bir adım öndesin.',
@@ -307,7 +307,7 @@ export const QUIZZES = [
         role: 'Taze, Dengeli ve Işıltılı',
         tagline: 'Sabah Matchası & İç Huzur',
         quote: '“İç huzur, nemli bir cilt ve berrak bir zihin.”',
-        image: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=1000&q=80',
+        image: '/api/file?key=covers%2Fquiz_hangi-donemin-kizisin_cleangirl_1795087198486_clean.jpg',
         color: '#7EA28C',
         traits: ['Dengeli', 'Organik', 'Taze', 'Minimalist', 'Düzenli'],
         description: 'Sen modern çağın en ferah nefesisin! Parlak ve taze bir cilt, taranmış kaşlar, altın halka küpeler, buzlu matcha ve sabah yürüyüşleri senin ritmini oluşturur. Hayatındaki fazlalıklardan arınmışsın. Hem zihnini hem bedenini besleyen bir denge içinde parıldıyorsun.',
@@ -319,7 +319,7 @@ export const QUIZZES = [
         role: 'Filtresiz, Asi ve Spontane',
         tagline: 'Flaşlı Fotoğraflar & Rock’n Roll',
         quote: '“Müzik yüksek, ışıklar loş ve anı yaşamak tek kural.”',
-        image: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=1000&q=80',
+        image: '/api/file?key=covers%2Fquiz_hangi-donemin-kizisin_indiesleaze_1795087224353_indie.jpg',
         color: '#5A4A78',
         traits: ['Özgür', 'Filtresiz', 'Spontane', 'Asi', 'Gece İnsanı'],
         description: 'Sen hiçbir şeyin kusursuz olmasını istemeyen, kaosun içindeki gerçekliği seven bir gece kuşusun! Flaşlı dijital kameralar, hafif dağılmış göz kalemi, vintage grup tişörtleri ve sabaha karşı dinlenen gitar riffleri tam senin havan. Filtrelere ve sahte mükemmelliklere karnın tok; sen hayatı olduğu gibi seviyorsun.',
@@ -446,7 +446,7 @@ export const QUIZZES = [
     subtitle: 'Romantik bir hayalperest misin, hırslı bir kariyer kızı mı, yoksa kendi dünyasında yaşayan gizemli biri mi?',
     badge: 'KİŞİLİK & ARKETİP TESTİ',
     readingTime: '3 dk',
-    coverImage: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=1000&q=80',
+    coverImage: '/api/file?key=covers%2Fquiz_cover_hayatinin-basrol-karakteri_1795086786339_anne.jpg',
     accentColor: '#E8B54D',
     questionsCount: 9,
     description: 'Eğer hayatın ödüllü bir sinema filmi olsaydı, senin karakterin seyirciyi nasıl büyülerdi? Kalbinin rehberliğinde yürüyen bir hayalperest mi, zirveye odaklanmış güçlü bir lider mi, yoksa rüzgarı arkasına almış özgür bir gezgin mi? İçindeki başrolü ortaya çıkarma zamanı!',
@@ -457,7 +457,7 @@ export const QUIZZES = [
         role: 'Kendi Şiirini Yaşayan Ruh',
         tagline: 'Kalbinin Sesini Dinleyen Bir Sinema Karakteri',
         quote: '“Dünya ne kadar hızlanırsa hızlansın, ben kalbimin ritminde yürürüm.”',
-        image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1000&q=80',
+        image: '/api/file?key=covers%2Fquiz_hayatinin-basrol-karakteri_romantic_1795086832242_romantic.jpg',
         color: '#D4738C',
         traits: ['Duygusal', 'Şefkatli', 'Şair Ruhlu', 'Sezgisel', 'İlham Veren'],
         description: 'Senin filmin, sonbahar yapraklarının savrulduğu melankolik ama sıcacık bir Fransız filmine benziyor. Hayattaki en büyük gücün derin hissetme yeteneğin. Başkalarının aceleyle geçtiği küçük anlarda bir mucize bulursun. Aşk, dostluk ve incelik senin dünyanı yönetir; çevrene koşulsuz bir sevgi ve ışık yayarsın.',
@@ -469,7 +469,7 @@ export const QUIZZES = [
         role: 'Zirveyi Adım Adım İnşa Eden',
         tagline: 'Kararlı, Şık ve Durdurulamaz',
         quote: '“Gelecek beklenmez; azimle, şıklıkla ve emekle inşa edilir.”',
-        image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1000&q=80',
+        image: '/api/file?key=covers%2Fquiz_hayatinin-basrol-karakteri_ambitious_1795086877196_elle.jpg',
         color: '#8A1C2C',
         traits: ['Kararlı', 'Lider', 'Disiplinli', 'Vizyoner', 'Kendinden Emin'],
         description: 'Senin filmin, New York silüetinin önünde hızlı adımlarla yürüyen ilham verici bir başarı hikayesi! Ne istediğini çok iyi biliyorsun ve oraya nasıl gideceğinin haritası aklında hazır. Engeller seni korkutmaz; aksine azmini kamçılar. Hem zekanın hem de stilinin gücüyle girdiğin her kapıyı aralarsın.',
@@ -481,7 +481,7 @@ export const QUIZZES = [
         role: 'Kalıplara Sığmayan Maceracı',
         tagline: 'Spontane, Bağımsız ve Sonsuz Meraklı',
         quote: '“Rüzgar nereye eserse değil, merakım nereye çekerse oraya!”',
-        image: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1000&q=80',
+        image: '/api/file?key=covers%2Fquiz_hayatinin-basrol-karakteri_free_spirit_1795086934792_lorelai.jpg',
         color: '#6B9B7C',
         traits: ['Özgür', 'Spontane', 'Cesur', 'Maceracı', 'Filtresiz'],
         description: 'Senin filmin, açık pencereli bir arabayla gün batımına doğru sürülen harika bir yol hikayesi! Rutinler ve kurallar sana göre değil. Bir sırt çantasıyla yeni şehirlere gitmek, tanımadığın insanlarla kahkaha paylaşmak ve bilinmeyene adım atmak senin yaşam iksirin. Ruhun hiçbir kafese sığmaz.',
@@ -493,7 +493,7 @@ export const QUIZZES = [
         role: 'Derin Suların Sakin Gücü',
         tagline: 'Az Konuşan, Çok Şey Bilen Büyüleyici Aura',
         quote: '“Az konuşup çok görmek, dünyanın en büyük zarafetidir.”',
-        image: 'https://images.unsplash.com/photo-1509967419530-da38b4704bc6?auto=format&fit=crop&w=1000&q=80',
+        image: '/api/file?key=covers%2Fquiz_hayatinin-basrol-karakteri_mysterious_1795087000859_claude.jpg',
         color: '#3D2730',
         traits: ['Gizemli', 'Gözlemci', 'Zeki', 'Seçici', 'Karizmatik'],
         description: 'Senin filmin, loş ışıklar altında geçen büyüleyici bir neo-noir sinema başyapıtı. Kalabalıkların ortasında bile kendine has sessiz bir auran vardır. İnsanlar senin ne düşündüğünü merak eder çünkü sen her kelimeni özenle seçersin. Sezgilerin bir dedektif kadar keskin, iç dünyan ise dipsiz bir kütüphane kadar zengin.',
@@ -505,7 +505,7 @@ export const QUIZZES = [
         role: 'Hayatı Dolu Dolu Yaşayan Cesur Kalp',
         tagline: 'Korkusuzca Deneyen & Unutulmaz Kılan',
         quote: '“Sonunda hatırlayacağımız tek şey, aldığımız cesur kararlar olacak.”',
-        image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1000&q=80',
+        image: '/api/file?key=covers%2Fquiz_hayatinin-basrol-karakteri_adventurer_1795087038169_sydney.jpg',
         color: '#E8B54D',
         traits: ['Cesur', 'Tutkulu', 'Enerjik', 'İnisiyatif Alan', 'Unutulmaz'],
         description: 'Senin filmin, temposu bir saniye bile düşmeyen heyecan dolu bir macera! Konfor alanında oturup beklemek sana göre değil; hayatı doğrudan yakasından tutup yaşamayı seversin. Başkalarının “yapamazsın” dediği şeyleri bir meydan okuma olarak görür, her maceradan paha biçilmez bir hikaye çıkarırsın.',
@@ -654,13 +654,13 @@ export function getEffectiveQuizzes(customQuizzes) {
     return QUIZZES
   }
 
-  // Her varsayılan testi al ve custom verilerle akıllıca harmanla
-  return QUIZZES.map(defaultQuiz => {
+  // 1. Her varsayılan testi al ve custom verilerle akıllıca harmanla
+  const mergedDefaults = QUIZZES.map(defaultQuiz => {
     const customQuiz = customQuizzes.find(cq => cq.id === defaultQuiz.id)
     if (!customQuiz) return defaultQuiz
 
     const mergedResults = { ...defaultQuiz.results }
-    if (customQuiz.results) {
+    if (customQuiz.results && typeof customQuiz.results === 'object') {
       Object.entries(customQuiz.results).forEach(([resKey, resObj]) => {
         const defaultRes = defaultQuiz.results?.[resKey] || {}
         mergedResults[resKey] = {
@@ -678,6 +678,17 @@ export function getEffectiveQuizzes(customQuizzes) {
       results: mergedResults
     }
   })
+
+  // 2. Kullanıcının sıfırdan eklediği özel testler varsa (id'si varsayılanlarda olmayanlar) koru
+  const customOnly = customQuizzes
+    .filter(cq => cq && cq.id && !QUIZZES.some(dq => dq.id === cq.id))
+    .map(cq => ({
+      ...cq,
+      coverImage: resolveQuizImage(cq.coverImage, gossipGirlCover),
+      results: cq.results || {}
+    }))
+
+  return [...mergedDefaults, ...customOnly]
 }
 
 export function getEffectiveUpcomingQuizzes(customUpcoming) {
