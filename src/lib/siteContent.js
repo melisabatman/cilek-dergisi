@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from './supabase'
 
-const STORAGE_KEY = 'cilek_site_settings_v3'
+const STORAGE_KEY = 'cilek_site_settings_v5'
 const UPDATE_EVENT_NAME = 'cilek_site_settings_updated'
 
 /**
@@ -505,6 +505,8 @@ export function useSiteContent() {
       }
     }
     document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('focus', reload)
+    window.addEventListener('online', reload)
 
     // Supabase Realtime Kanalı: Bilgisayarda admin kaydettiğinde mobilde otomatik anında güncelle
     let channel = null

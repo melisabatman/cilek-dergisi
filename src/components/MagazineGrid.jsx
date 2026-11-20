@@ -5,77 +5,17 @@ import { getSafeMediaUrl } from '../lib/r2'
 
 const ALL_MAGAZINES_FALLBACK = [
   {
-    id: 'f-1',
+    id: 'e337343d-bed8-4c28-8e3c-5a52d2619d0b',
     issue_number: 1,
-    title: 'Sayı 01 — Başlangıç',
-    published_date: '2024-01-11',
-    description: 'Her şeyin bir başlangıcı var. Yeni başlangıçların, ilk adımların ve sıfırdan kurmanın hikâyeleri.',
-    toc: ['İlk Sayfanın Heyecanı', 'Çilek Dergisi Doğuyor', 'Bağımsız Yayıncılık Yolu', 'Korkulara Rağmen Yola Çıkmak'],
-    cover_image_url: null,
-    month_name: 'Ocak',
-    year: '2024',
-    theme: 'cream'
-  },
-  {
-    id: 'f-2',
-    issue_number: 2,
-    title: 'Sayı 02 — Kök & Bahar',
-    published_date: '2024-02-11',
-    description: 'Nereden geldiğimiz, bizi kim yaptığımızı şekillendirir. Nakışlar, çiçekler ve bellek.',
-    toc: ['Geçmişin Ayak İzleri', 'Büyüdüğümüz Evler ve Odalar', 'Kuşaklararası Sohbet'],
-    cover_image_url: '/icons/icon2.png',
-    month_name: 'Şubat',
-    year: '2024',
-    theme: 'forest'
-  },
-  {
-    id: 'f-3',
-    issue_number: 3,
-    title: 'Sayı 03 — Dönüşüm',
-    published_date: '2024-03-11',
-    description: 'Değişim kaçınılmazdır ama her dönüşüm bir seçim taşır. Stüdyo notları ve tasarım dili.',
-    toc: ['Eski Alışkanlıklara Veda', 'Yeniden Başlama Cesareti', 'İçsel Dönüşüm'],
-    cover_image_url: '/icons/icon4.png',
-    month_name: 'Mart',
-    year: '2024',
+    title: 'Sayı 01 — Ah Şu Retro...',
+    published_date: '2026-11-18',
+    description: 'Kendi sesini özgürce haykırdığın alan! 15-25 yaş bağımsız yaratıcı gençlik dergisi.',
+    toc: ['Güneşin Gölgesinde Kalanlar', 'Bir Yaz Öğledensonrası Notları', 'Deniz Kenarında Bağımsız Edebiyat', 'Mevsim Değişirken İç Dünyamız'],
+    cover_image_url: 'https://pub-f78a1a3cdd5a4aefae2d5638cdb54f87.r2.dev/covers/e337343d-bed8-4c28-8e3c-5a52d2619d0b_cover.png',
+    month_name: 'Aralık',
+    year: '2026',
     theme: 'bordo'
-  },
-  {
-    id: 'f-4',
-    issue_number: 4,
-    title: 'Sayı 04 — Özgürlük',
-    published_date: '2024-04-11',
-    description: 'Özgürlük; hem bir his, hem de gündelik bir eylem. Sokak çekimleri ve manifestolar.',
-    toc: ['Sınırların Ötesinde Yaşamak', 'Kendi Alanını İnşa Etmek', 'Özgür Kelimeler'],
-    cover_image_url: '/icons/icon1.png',
-    month_name: 'Nisan',
-    year: '2024',
-    theme: 'leaf'
-  },
-  {
-    id: 'f-5',
-    issue_number: 5,
-    title: 'Sayı 05 — Sessizlik',
-    published_date: '2024-05-11',
-    description: 'Bazen en güçlü ses, içten gelendir. Şiirler, duygu haritaları ve kişisel itiraflar.',
-    toc: ['Sessizliğin Gücü', 'Kendi Kelimelerini Bulmak', 'Yalnızlıkta Üretmek'],
-    cover_image_url: null,
-    month_name: 'Mayıs',
-    year: '2024',
-    theme: 'murdum'
-  },
-  {
-    id: 'f-6',
-    issue_number: 6,
-    title: 'Sayı 06 — Yaz Dönemi',
-    published_date: '2024-06-11',
-    description: 'Yaz mevsiminin hafifliği ve sonsuzluk hissi. Uzak yollar, sıcak sokaklar, yeni başlangıçlar.',
-    toc: ['Yaz Günlüğü', 'Sonsuz Bir Tatilde Olsaydık', 'Güneşin Rengi', 'Deniz Kokulu Şiirler'],
-    cover_image_url: null,
-    month_name: 'Haziran',
-    year: '2024',
-    theme: 'pink'
-  },
+  }
 ]
 
 // Fallback renk stilleri: YALNIZCA BELİRTİLEN 9 MARKA RENGİ
@@ -269,7 +209,18 @@ export default function MagazineGrid({ user, isAdmin }) {
     }
   }, [])
 
-  useEffect(() => { fetchMagazines() }, [fetchMagazines])
+  useEffect(() => {
+    fetchMagazines()
+    window.addEventListener('focus', fetchMagazines)
+    const handleVis = () => {
+      if (document.visibilityState === 'visible') fetchMagazines()
+    }
+    document.addEventListener('visibilitychange', handleVis)
+    return () => {
+      window.removeEventListener('focus', fetchMagazines)
+      document.removeEventListener('visibilitychange', handleVis)
+    }
+  }, [fetchMagazines])
 
   const total = magazines.length
 

@@ -68,51 +68,77 @@ export default function Home({ user, isAdmin }) {
     if (searchParams.get('welcome') === 'true') setIsWelcomeModalOpen(true)
   }, [searchParams])
 
-  // Dergileri çek
+  // Dergileri çek (Mobilde sekme aktifleştiğinde otomatik tazele)
   useEffect(() => {
     const TR_MONTHS = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık']
-    supabase.from('magazines').select('*').order('issue_number', { ascending: true })
-      .then(({ data, error }) => {
-        if (!error && data && data.length > 0) {
-          const mapped = data.map(m => ({
-            ...m,
-            cover_image_url: getSafeMediaUrl(m.cover_image_url),
-            pdf_url: getSafeMediaUrl(m.pdf_url),
-            month_name: m.published_date ? TR_MONTHS[new Date(m.published_date).getMonth()] : ''
-          }))
-          setAllMagazines(mapped)
-          setLatestMag(mapped[mapped.length - 1])
-        } else {
-          setLatestMag(FEATURED_FALLBACKS[FEATURED_FALLBACKS.length - 1])
-        }
-      })
+    const fetchMags = () => {
+      supabase.from('magazines').select('*').order('issue_number', { ascending: true })
+        .then(({ data, error }) => {
+          if (!error && data && data.length > 0) {
+            const mapped = data.map(m => ({
+              ...m,
+              cover_image_url: getSafeMediaUrl(m.cover_image_url),
+              pdf_url: getSafeMediaUrl(m.pdf_url),
+              month_name: m.published_date ? TR_MONTHS[new Date(m.published_date).getMonth()] : ''
+            }))
+            setAllMagazines(mapped)
+            setLatestMag(mapped[mapped.length - 1])
+          } else {
+            setLatestMag(FEATURED_FALLBACKS[FEATURED_FALLBACKS.length - 1])
+          }
+        })
+    }
+
+    fetchMags()
+    window.addEventListener('focus', fetchMags)
+    const handleVis = () => {
+      if (document.visibilityState === 'visible') fetchMags()
+    }
+    document.addEventListener('visibilitychange', handleVis)
+
+    return () => {
+      window.removeEventListener('focus', fetchMags)
+      document.removeEventListener('visibilitychange', handleVis)
+    }
   }, [])
 
   // Ekip üyelerini çek
   useEffect(() => {
-    supabase.from('team_members').select('*').order('order_index', { ascending: true })
-      .then(({ data, error }) => {
-        if (!error && data && data.length > 0) {
-          const mapped = data.map(m => ({
-            ...m,
-            photo_url: getSafeMediaUrl(m.photo_url)
-          }))
-          setTeamMembers(mapped)
-          const kurucular = mapped.filter(m =>
-            m.role?.toLowerCase().includes('kurucu') ||
-            m.role?.toLowerCase().includes('founder')
-          )
-          const fList = kurucular.length > 0 ? kurucular : mapped
-          setFounders(fList)
-          setFounder(fList[0] || mapped[0])
-        } else {
-          setFounders(TEAM_FALLBACK.slice(0, 1))
-          setFounder(TEAM_FALLBACK[0])
-        }
-      })
+    const fetchTeam = () => {
+      supabase.from('team_members').select('*').order('order_index', { ascending: true })
+        .then(({ data, error }) => {
+          if (!error && data && data.length > 0) {
+            const mapped = data.map(m => ({
+              ...m,
+              photo_url: getSafeMediaUrl(m.photo_url)
+            }))
+            setTeamMembers(mapped)
+            const kurucular = mapped.filter(m =>
+              m.role?.toLowerCase().includes('kurucu') ||
+              m.role?.toLowerCase().includes('founder')
+            )
+            const fList = kurucular.length > 0 ? kurucular : mapped
+            setFounders(fList)
+            setFounder(fList[0] || mapped[0])
+          } else {
+            setFounders(TEAM_FALLBACK.slice(0, 1))
+            setFounder(TEAM_FALLBACK[0])
+          }
+        })
+    }
+
+    fetchTeam()
+    window.addEventListener('focus', fetchTeam)
+    return () => window.removeEventListener('focus', fetchTeam)
   }, [])
 
-  const featuredMag = latestMag || allMagazines[allMagazines.length - 1]
+  const featuredMag = React.useMemo(() => {
+    if (settings.featured_issue_number) {
+      const match = allMagazines.find(m => String(m.issue_number) === String(settings.featured_issue_number))
+      if (match) return match
+    }
+    return latestMag || allMagazines[allMagazines.length - 1] || FEATURED_FALLBACKS[0]
+  }, [allMagazines, latestMag, settings.featured_issue_number])
 
   const handleReadIssue = () => {
     if (featuredMag) {
