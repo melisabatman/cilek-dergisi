@@ -42,7 +42,7 @@ export default function CountdownSection({ settings }) {
   const subtitleText = settings?.countdown_subtitle || 'Yeni sayımız matbaada hazırlanıyor; taptaze röportajlar, cesur denemeler ve nakış nakış işlenmiş sayfalarla çok yakında dijital raflarda!'
   const completedText = settings?.countdown_completed_text || 'Yeni sayımız hazır! Çok yakında dijital raflarda yerini alacak.'
   const btnText = settings?.countdown_btn_text || 'Bize Katıl / İçerik Gönder →'
-  const btnLink = settings?.countdown_btn_link || '/iletisim'
+  const btnLink = settings?.countdown_btn_link || '/yazi-gonderi'
 
   const timeUnits = [
     { label: 'GÜN', value: String(timeLeft.days).padStart(2, '0') },

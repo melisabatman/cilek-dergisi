@@ -114,7 +114,8 @@ export default function Footer({ showTicker = false }) {
             <Link to="/dergiler">Dergiler</Link>
             <Link to="/testler">Testler (Quiz Club)</Link>
             <Link to="/hakkimizda">Hakkımızda</Link>
-            <Link to="/iletisim">Yazı Gönderin</Link>
+            <Link to="/yazi-gonderi">Yazı Gönderi</Link>
+            <Link to="/iletisim">İletişim</Link>
             <Link to="/auth">Giriş Yap</Link>
           </nav>
         </div>

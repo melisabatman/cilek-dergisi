@@ -42,9 +42,9 @@ export default function MagazineSpreadSection({ photoUrl = null }) {
                   <path d="M 15 5 C 22 5, 22 0, 30 0 C 38 0, 38 5, 45 5 C 52 5, 52 0, 60 0 C 68 0, 68 5, 75 5 C 82 5, 82 0, 90 0 C 98 0, 95 10, 95 18 C 95 25, 100 25, 100 32 C 100 40, 95 40, 95 48 C 95 55, 100 55, 100 62 C 100 70, 95 70, 95 78 C 95 85, 100 88, 92 92 C 85 95, 82 100, 75 100 C 68 100, 68 95, 60 95 C 52 95, 52 100, 45 100 C 38 100, 38 95, 30 95 C 22 95, 22 100, 15 100 C 8 100, 5 95, 5 88 C 5 80, 0 80, 0 72 C 0 65, 5 65, 5 58 C 5 50, 0 50, 0 42 C 0 35, 5 35, 5 28 C 5 20, 0 15, 8 8 Z" fill="var(--color-seed)" />
                 </svg>
                 <div className="scallop-text-content">
-                  <span className="badge-big-val">{settings.editorial_badge_1_val || 'Sayı 06'}</span>
+                  <span className="badge-big-val">{settings.editorial_badge_1_val || 'Sayı 01'}</span>
                   <span className="badge-sub-label">{settings.editorial_badge_1_label || 'GÜNCEL SAYI'}</span>
-                  <span className="badge-price-sub">{settings.editorial_badge_1_sub || '(YAZ 2024)'}</span>
+                  <span className="badge-price-sub">{settings.editorial_badge_1_sub || '(ARALIK 2026)'}</span>
                 </div>
               </div>
 

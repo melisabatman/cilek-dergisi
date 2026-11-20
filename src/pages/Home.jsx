@@ -11,12 +11,16 @@ import { QUIZZES, getEffectiveQuizzes, resolveQuizImage } from '../data/quizzesD
 
 // ─── Fallback dergi verisi ────────────────────────────────────────────────────
 const FEATURED_FALLBACKS = [
-  { id: 'f-1', issue_number: 1, title: 'Sayı 01 — Başlangıç', cover_image_url: null, published_date: '2024-01-11', description: 'Bağımsız bir alanın ilk soluğu; 15-25 yaş kuşağı için kaleme alınan ilk sayı.', toc: ['İlk Sayfanın Heyecanı', 'Çilek Dergisi Doğuyor', 'Bağımsız Genç Anlatılar'], month_name: 'Ocak' },
-  { id: 'f-2', issue_number: 2, title: 'Sayı 02 — Kök & Bahar', cover_image_url: '/icons/icon2.png', published_date: '2024-02-11', description: 'Nereden geldiğimiz, bizi kim yaptığımızı şekillendirir. Nakışlar, çiçekler ve bellek.', toc: ['Geçmişin Ayak İzleri', 'Büyüdüğümüz Evler ve Odalar'], month_name: 'Şubat' },
-  { id: 'f-3', issue_number: 3, title: 'Sayı 03 — Dönüşüm', cover_image_url: '/icons/icon4.png', published_date: '2024-03-11', description: 'Değişim kaçınılmazdır ama her dönüşüm bir seçim taşır. Stüdyo notları ve tasarım dili.', toc: ['Eski Alışkanlıklara Veda', 'Yeniden Başlama Cesareti'], month_name: 'Mart' },
-  { id: 'f-4', issue_number: 4, title: 'Sayı 04 — Özgürlük', cover_image_url: '/icons/icon1.png', published_date: '2024-04-11', description: 'Özgürlük; hem bir his, hem de gündelik bir eylem. Sokak çekimleri ve manifestolar.', toc: ['Sınırların Ötesinde Yaşamak', 'Kendi Alanını İnşa Etmek'], month_name: 'Nisan' },
-  { id: 'f-5', issue_number: 5, title: 'Sayı 05 — Sessizlik', cover_image_url: null, published_date: '2024-05-11', description: 'Bazen en güçlü ses, içten gelendir. Şiirler, duygu haritaları ve kişisel itiraflar.', toc: ['Sessizliğin Gücü', 'Kendi Kelimelerini Bulmak'], month_name: 'Mayıs' },
-  { id: 'f-6', issue_number: 6, title: 'Sayı 06 — Yaz Dönemi', cover_image_url: null, published_date: '2024-06-11', description: 'Yaz mevsiminin hafifliği ve sonsuzluk hissi. Uzak yollar, sıcak sokaklar, yeni başlangıçlar.', toc: ['Yaz Günlüğü', 'Sonsuz Bir Tatilde Olsaydık', 'Güneşin Rengi', 'Deniz Kokulu Şiirler'], month_name: 'Haziran' },
+  {
+    id: 'e337343d-bed8-4c28-8e3c-5a52d2619d0b',
+    issue_number: 1,
+    title: 'Sayı 01 — Ah Şu Retro...',
+    cover_image_url: 'https://pub-f78a1a3cdd5a4aefae2d5638cdb54f87.r2.dev/covers/e337343d-bed8-4c28-8e3c-5a52d2619d0b_cover.png',
+    published_date: '2026-11-18',
+    description: 'Kendi sesini özgürce haykırdığın alan! 15-25 yaş arası genç yaratıcılar için bağımsız gençlik dergisi.',
+    toc: ['Güneşin Gölgesinde Kalanlar', 'Bir Yaz Öğledensonrası Notları', 'Deniz Kenarında Bağımsız Edebiyat', 'Mevsim Değişirken İç Dünyamız'],
+    month_name: 'Aralık 2026'
+  }
 ]
 
 // ─── Fallback ekip verisi ──────────────────────────────────────────────────────
@@ -30,7 +34,7 @@ const TEAM_FALLBACK = [
 ]
 
 // ─── Kayan marquee metni ──────────────────────────────────────────────────────
-const MARQUEE_TEXT = 'Sayı 06 Yayında · Şimdi Oku · Her Ay Yepyeni Bir Macera · Genç, Özgür, Bağımsız! · Çilek Dergisi · '
+const MARQUEE_TEXT = 'Sayı 01 Yayında · Şimdi Oku · Her Ay Yepyeni Bir Macera · Genç, Özgür, Bağımsız! · Çilek Dergisi · '
 
 // ─── Yardımcı: ✦ ve benzeri yıldız sembollerini temizleme ─────────────────────
 const cleanSparkles = (str) => {
@@ -116,11 +120,26 @@ export default function Home({ user, isAdmin }) {
     }
   }
 
-  // TOC parse yardımcı
+  // TOC parse yardımcı (boşsa varsayılan kart başlıklarını getir)
   const parseToc = (toc) => {
-    if (!toc) return []
-    if (Array.isArray(toc)) return toc
-    try { return JSON.parse(toc) } catch { return [] }
+    let list = []
+    if (Array.isArray(toc) && toc.length > 0) {
+      list = toc
+    } else if (typeof toc === 'string' && toc.trim()) {
+      try {
+        const parsed = JSON.parse(toc)
+        if (Array.isArray(parsed) && parsed.length > 0) list = parsed
+      } catch {
+        list = toc.split(/[\n,]+/).map(s => s.trim()).filter(Boolean)
+      }
+    }
+    if (list.length > 0) return list
+    return [
+      settings.home_toc_card_1_title || 'Güneşin Gölgesinde Kalanlar',
+      settings.home_toc_card_2_title || 'Bir Yaz Öğledensonrası Notları',
+      settings.home_toc_card_3_title || 'Deniz Kenarında Bağımsız Edebiyat',
+      settings.home_toc_card_4_title || 'Mevsim Değişirken İç Dünyamız'
+    ]
   }
 
   const founderPhoto = getSafeMediaUrl(
@@ -174,17 +193,31 @@ export default function Home({ user, isAdmin }) {
               </p>
               <div className="home-hero-actions">
                 <button type="button" className="home-btn-primary" onClick={handleReadIssue} id="btn-hero-read-issue">
-                  {cleanSparkles(settings.hero_cta_text) || 'SAYIYI OKU →'}
+                  {cleanSparkles(settings.hero_cta_text) || 'Son Sayıyı Oku →'}
                 </button>
                 <Link to="/dergiler" className="home-btn-secondary" id="btn-hero-all-issues">
                   {cleanSparkles(settings.hero_cta_archive) || 'Tüm Sayılar'}
                 </Link>
               </div>
+
+              {/* Sayı 01'den Öne Çıkan Başlıklar (Teaser Rozetleri) */}
+              <div className="home-hero-teasers-box">
+                <span className="home-hero-teasers-label">
+                  🍓 <strong>Sayı 01'den Öne Çıkanlar:</strong>
+                </span>
+                <div className="home-hero-teasers-list">
+                  <span className="home-hero-teaser-pill">✨ Ah Şu Retro...</span>
+                  <span className="home-hero-teaser-pill">📖 Güneşin Gölgesinde Kalanlar</span>
+                  <span className="home-hero-teaser-pill">☕ Bir Yaz Öğledensonrası</span>
+                  <span className="home-hero-teaser-pill">🌊 Bağımsız Edebiyat</span>
+                </div>
+              </div>
+
               <p className="home-hero-note">
                 <strong className="home-hero-note-strong">
-                  Sayı {currentIssueNum} yayında!
+                  Sayı 01 (Aralık 2026) Yayında!
                 </strong>
-                {' '}· Hemen keşfet, sayfaları çevir ve ilhamı yakala!
+                {' '}· 18 Kasım 2026'da dijital raflara çıktı · Hemen sayfaları çevir!
               </p>
             </div>
 
@@ -295,7 +328,7 @@ export default function Home({ user, isAdmin }) {
                 {/* Pano Üzerindeki Dekoratif Not Rozeti */}
                 <div className="home-wireboard-tag" aria-hidden="true">
                   <span className="home-wireboard-tag-icon">📌</span>
-                  <span className="home-wireboard-tag-text">{settings.home_toc_tag || `Sayı ${featuredMag.issue_number || '06'} Seçkisi`}</span>
+                  <span className="home-wireboard-tag-text">{settings.home_toc_tag || `Sayı ${featuredMag.issue_number ? String(featuredMag.issue_number).padStart(2, '0') : '01'} Seçkisi`}</span>
                 </div>
 
                 <div className="home-toc-grid">

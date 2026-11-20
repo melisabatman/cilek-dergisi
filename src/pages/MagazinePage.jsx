@@ -223,14 +223,9 @@ export default function MagazinePage({ user, isAdmin }) {
               <span className="magazine-issue-badge">
                 🍓 Sayı {String(magazine.issue_number || 1).padStart(2, '0')}
               </span>
-              {magazine.published_date && (
-                <span className="magazine-top-date">
-                  {new Date(magazine.published_date).toLocaleDateString('tr-TR', {
-                    month: 'long',
-                    year: 'numeric'
-                  })}
-                </span>
-              )}
+              <span className="magazine-top-date">
+                Kapak: Aralık 2026 · Dijital: 18 Kasım 2026
+              </span>
             </div>
           </div>
         </div>
@@ -263,15 +258,16 @@ export default function MagazinePage({ user, isAdmin }) {
                 <h1 className="magazine-info-main-title">
                   {magazine.title}
                 </h1>
-                {magazine.published_date && (
+                <div className="magazine-info-pubdate-wrap">
                   <p className="magazine-info-pubdate">
-                    Yayın Tarihi: {new Date(magazine.published_date).toLocaleDateString('tr-TR', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric'
-                    })}
+                    <span className="pubdate-badge">Kapak Dönemi: <strong>Aralık 2026</strong></span>
+                    <span className="pubdate-sep">·</span>
+                    <span className="pubdate-badge pubdate-digital">Dijital Yayın: <strong>{new Date(magazine.published_date || '2026-11-18').toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}</strong></span>
                   </p>
-                )}
+                  <p className="magazine-pubdate-explainer">
+                    ℹ️ <em>Kapakta yer alan "Aralık 2026", derginin resmi yayın dönemini; 18 Kasım 2026 ise internette okurlarla ilk buluştuğu dijital yayın tarihini ifade eder.</em>
+                  </p>
+                </div>
               </div>
 
               {/* Aksiyon Butonları (PDF İndir + Yorumlara Kaydır) */}

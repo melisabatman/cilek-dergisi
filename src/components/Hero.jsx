@@ -23,8 +23,8 @@ export default function Hero() {
               <Link to="/hakkimizda" className="hero-pill-btn" id="btn-quick-hakkimizda">
                 Hakkımızda
               </Link>
-              <Link to="/iletisim" className="hero-pill-btn" id="btn-quick-iletisim">
-                Yazı Gönderin
+              <Link to="/yazi-gonderi" className="hero-pill-btn" id="btn-quick-iletisim">
+                Yazı Gönderi
               </Link>
             </div>
           </div>

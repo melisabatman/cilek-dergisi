@@ -44,10 +44,10 @@ export const DEFAULT_SITE_SETTINGS = {
   hero_subtitle: '15–25 yaş arası bağımsız yaratıcılar için sınırları kaldıran editoryal sahne! Her sayıda keşfedilmeyi bekleyen yepyeni anlatılar, şiirler, görsel seriler ve koleksiyonluk dijital zine ruhu.',
   hero_cta_text: 'Son Sayıyı Oku →',
   hero_cta_archive: 'Arşivi İncele',
-  hero_marquee: 'Sayı 06 Yayında · Şimdi Oku · Her Ay Yepyeni Bir Macera · Genç, Özgür, Bağımsız! · Çilek Dergisi · ',
+  hero_marquee: 'Sayı 01 Yayında · Şimdi Oku · Her Ay Yepyeni Bir Macera · Genç, Özgür, Bağımsız! · Çilek Dergisi · ',
 
   // ── 2. ANA SAYFA - TELLİ PANO (BU SAYIDA SENİ NELER BEKLİYOR) ──
-  home_toc_tag: 'Sayı Seçkisi',
+  home_toc_tag: 'Sayı 01 Seçkisi',
   home_toc_card_1_title: 'Güneşin Gölgesinde Kalanlar',
   home_toc_card_1_desc: 'Yaz mevsiminin yakıcı sıcağında, gölgede kalan içsel monologlar ve büyüme sancıları.',
   home_toc_card_2_title: 'Bir Yaz Öğledensonrası Notları',
@@ -77,9 +77,9 @@ export const DEFAULT_SITE_SETTINGS = {
   editorial_headline: 'Senin sesin çağırdı.',
   editorial_headline_italic: 'Çilek sayfaları seni bekliyor!',
   editorial_lead: '15-25 yaş arası genç yaratıcılar için sınırları kaldıran editoryal alan! Yeni anlatılar, şiirler, cesur görsel seriler ve koleksiyonluk dergi deneyimi seni bekliyor.',
-  editorial_badge_1_val: 'Sayı 06',
+  editorial_badge_1_val: 'Sayı 01',
   editorial_badge_1_label: 'GÜNCEL SAYI',
-  editorial_badge_1_sub: '(YAZ 2024)',
+  editorial_badge_1_sub: '(ARALIK 2026)',
   editorial_badge_2_val: '15-25',
   editorial_badge_2_label: 'YAŞ ALANI',
   editorial_badge_2_sub: 'ÖZGÜN SES',
@@ -112,12 +112,12 @@ export const DEFAULT_SITE_SETTINGS = {
   countdown_subtitle: 'Yeni sayımız matbaada hazırlanıyor; taptaze röportajlar, cesur denemeler ve nakış nakış işlenmiş sayfalarla çok yakında dijital raflarda!',
   countdown_completed_text: 'Yeni sayımız yayında! Hemen yukarıdaki raflardan keşfedebilirsiniz.',
   countdown_btn_text: 'Bize Katıl / İçerik Gönder →',
-  countdown_btn_link: '/iletisim',
+  countdown_btn_link: '/yazi-gonderi',
 
   // ── 7. KATILIM ÇAĞRISI / BANNER ────────────────────────────
   home_cta_title: 'Sayfalarda Yerini Al!',
   home_cta_desc: 'Şiir, öykü, illüstrasyon veya fotoğraf... Çilek\'in yeni sayısında senin de izin, senin de güçlü sesin olsun!',
-  home_cta_button: 'Bize Yaz / İletişim →',
+  home_cta_button: 'Bize Yaz / Yazı Gönder →',
 
   // ── 8. HAKKIMIZDA SAYFASI ──────────────────────────────────
   about_title: 'Biz Kimiz?',

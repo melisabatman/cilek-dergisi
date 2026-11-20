@@ -81,7 +81,7 @@ export default function WireMoodboard({ onOpenWelcomeLetter }) {
                 <p className="note-text">
                   15-25 yaşındaysan; şiirini, denemeni veya çizimini sonraki sayımıza gönderebilirsin.
                 </p>
-                <Link to="/iletisim" className="note-cta-link">
+                <Link to="/yazi-gonderi" className="note-cta-link">
                   Bize Yaz Gönder →
                 </Link>
               </div>

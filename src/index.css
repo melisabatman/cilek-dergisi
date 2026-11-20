@@ -20740,3 +20740,104 @@ p,
   color: #888;
 }
 
+/* ==========================================================================
+   SAYI 01 TEASERS & KAPAK DÖNEMİ / YAYIN TARİHİ STİLLERİ
+   ========================================================================== */
+.home-hero-teasers-box {
+  margin-top: 1.1rem;
+  margin-bottom: 0.5rem;
+  padding: 0.85rem 1.1rem;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1.5px dashed rgba(190, 38, 37, 0.28);
+  border-radius: 12px;
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.home-hero-teasers-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.home-hero-teasers-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.home-hero-teaser-pill {
+  display: inline-flex;
+  align-items: center;
+  background: #FFF9F4;
+  border: 1px solid rgba(190, 38, 37, 0.18);
+  color: #3b2820;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.home-hero-teaser-pill:hover {
+  transform: translateY(-1px);
+  background: #FFF0E8;
+  border-color: var(--color-primary);
+}
+
+.magazine-info-pubdate-wrap {
+  margin-top: 0.6rem;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.magazine-info-pubdate {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.92rem;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.pubdate-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: rgba(190, 38, 37, 0.07);
+  padding: 0.25rem 0.65rem;
+  border-radius: 6px;
+  border: 1px solid rgba(190, 38, 37, 0.18);
+  font-weight: 600;
+}
+
+.pubdate-badge.pubdate-digital {
+  background: rgba(22, 101, 52, 0.06);
+  border-color: rgba(22, 101, 52, 0.18);
+  color: #14532d;
+}
+
+.pubdate-sep {
+  color: #aaa;
+  font-weight: 700;
+}
+
+.magazine-pubdate-explainer {
+  font-size: 0.8rem;
+  color: #715b51;
+  margin: 0;
+  line-height: 1.45;
+}
+
+
