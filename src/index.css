@@ -9,7 +9,7 @@
      - Açık pembe:      #F3D8DC — SADECE çok küçük dokunuşlarda (hover arka planı, ince çizgiler); ASLA geniş alan rengi değil
    ================================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Syne:wght@600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,600;1,700;1,800;1,900&family=Manrope:wght@500;600;700;800&subset=latin,latin-ext&display=swap');
 
 :root {
   /* ── 6 TEMEL ÇİLEK MEYVESİ RENK PALETİ ────────────────── */
@@ -78,14 +78,12 @@
   --yellow-cta: var(--color-primary);
   --yellow-hover: var(--color-primary);
 
-  /* Fontlar - Y2K Pop-Zine Havası & Yüksek Okunabilirlik */
-  --font-luxury: 'Syne', 'Space Grotesk', sans-serif;
-  --font-display: 'Syne', 'Space Grotesk', sans-serif;
-  --font-y2k: 'Space Grotesk', sans-serif;
-  --font-cover: 'Syne', sans-serif;
-  --font-serif: 'Playfair Display', Georgia, serif;
-  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  /* Fontlar */
+  --font-luxury: 'Playfair Display', 'DM Serif Display', Georgia, serif;
+  --font-cover: 'Playfair Display', 'DM Serif Display', Georgia, serif;
+  --font-serif: 'Playfair Display', 'DM Serif Display', Georgia, serif;
+  --font-sans: 'Manrope', system-ui, -apple-system, sans-serif;
+  --font-body: 'Manrope', system-ui, -apple-system, sans-serif;
 
   /* İkincil Vurgu & Efekt Değişkenleri */
   --accent-gold: var(--color-seed, #E8B54D);
@@ -10882,35 +10880,29 @@ button {
 
 .home-hero-title {
   font-family: var(--font-luxury);
-  font-size: clamp(3.2rem, 7vw, 5.2rem);
-  font-weight: 800;
-  line-height: 1.0;
+  font-size: clamp(3.2rem, 7vw, 5.5rem);
+  line-height: 0.95;
   letter-spacing: -2px;
   color: var(--c-red);
   margin-bottom: 20px;
-  text-transform: uppercase;
 }
 
 .home-hero-title-italic {
-  display: inline-block;
-  font-family: var(--font-serif);
+  display: block;
   font-style: italic;
   color: var(--c-red);
-  font-weight: 600;
-  text-transform: none;
-  letter-spacing: -0.5px;
+  font-weight: 700;
 }
 
 .home-hero-title-script {
   display: block;
   font-family: var(--font-luxury);
-  font-style: normal;
+  font-style: italic;
   color: var(--c-red);
-  font-weight: 800;
-  font-size: clamp(2.8rem, 6.2vw, 4.6rem);
-  margin-top: -2px;
-  letter-spacing: -1.5px;
-  text-transform: uppercase;
+  font-weight: 600;
+  font-size: clamp(2.8rem, 6vw, 4.8rem);
+  margin-top: -4px;
+  letter-spacing: -1px;
 }
 
 .home-hero-copy {
@@ -20829,58 +20821,6 @@ p,
   font-size: 0.88rem;
   font-weight: 600;
   color: var(--color-primary);
-}
-
-/* ==========================================================================
-   Y2K EDİTORYAL & OKUNAKLI TİPOGRAFİ GELİŞTİRMELERİ
-   ========================================================================== */
-.top-announcement-bar,
-.hero-marquee-track,
-.home-marquee-track,
-.marquee-content,
-.marquee-text-item {
-  font-family: var(--font-y2k);
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.home-sec-title,
-.wire-board-title,
-.magazine-info-main-title,
-.about-v2-opening,
-.submit-v2-guide-title,
-.submit-v2-form-title {
-  font-family: var(--font-luxury);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-.cassius-nav-link {
-  font-family: var(--font-y2k);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-
-.btn-your-space,
-.home-btn-primary,
-.home-btn-secondary,
-.hero-button,
-.btn-cilek-primary,
-.btn-magazine-download-pdf,
-.btn-cilek-quiz-start {
-  font-family: var(--font-luxury);
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
-.magazine-issue-badge,
-.home-wireboard-tag-text,
-.quiz-card-number,
-.scallop-text-content .badge-big-val {
-  font-family: var(--font-y2k);
-  font-weight: 700;
-  letter-spacing: 0.03em;
 }
 
 
